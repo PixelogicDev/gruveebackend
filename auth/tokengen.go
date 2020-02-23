@@ -10,15 +10,11 @@ import (
 	"log"
 
 	firebase "firebase.google.com/go"
-	"google.golang.org/api/option"
 )
 
 func init() {
-	ctx := context.Background()
-	conf := option.WithCredentialsFile("../../config/gruveeAdminPrivateKey.json")
-
 	// Initialize firebase admin
-	_, err := firebase.NewApp(ctx, nil, conf)
+	_, err := firebase.NewApp(context.Background(), nil)
 	
 	if err != nil {
 		log.Fatalf("firebase.NewApp: %v", err)
