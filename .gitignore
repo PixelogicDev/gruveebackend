@@ -1,2 +1,5 @@
 # Config
 config/*
+
+# Vendor Folder
+**/vendor

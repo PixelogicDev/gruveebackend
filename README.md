@@ -38,10 +38,15 @@ If you are interested in becoming a member of the team check out the **[Pixelogi
 
 ## Tech Stack
 
-| Stack        | Tech                                                              |                                                                |
-| ------------ | :---------------------------------------------------------------- | :------------------------------------------------------------- |
-| IDE          | [Visual Studio Code](https://code.visualstudio.com/)              | You can use your preferred IDE but this is the one we like 🙃  |
-| Backend      | [Firebase (Repo)](https://github.com/PixelogicDev/Gruvee-Backend) | Serverless Functions in Firebase using GoLang                  |
-| Frontend     | [React Native 0.60]([LinkToReactNative0.60](https://www.npmjs.com/package/react-native))                        | Utilising Javascript to develop this cross platform mobile app |
+| Stack    | Tech                                                                                     |                                                                |
+| -------- | :--------------------------------------------------------------------------------------- | :------------------------------------------------------------- |
+| IDE      | [Visual Studio Code](https://code.visualstudio.com/)                                     | You can use your preferred IDE but this is the one we like 🙃  |
+| Backend  | [Firebase (Repo)](https://github.com/PixelogicDev/Gruvee-Backend)                        | Serverless Functions in Firebase using GoLang                  |
+| Frontend | [React Native 0.60]([LinkToReactNative0.60](https://www.npmjs.com/package/react-native)) | Utilising Javascript to develop this cross platform mobile app |
 
 > ALL of these sections are open for contributions and are highly encouraged!
+
+## Important Commands
+
+### Deploy Function To Cloud
+`gcloud functions deploy <FunctionName> --entry-point <ActualFunctionFileName> --runtime go111 --trigger-http --allow-unauthenticated`
