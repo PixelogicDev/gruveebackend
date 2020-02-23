@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
-	generator "github.com/PixelogicDev/Gruvee-Backend/tokengen/tokengen"
+	generator "github.com/PixelogicDev/Gruvee-Backend/tokengen"
 )
 
 func main() {
