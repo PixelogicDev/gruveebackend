@@ -1,6 +1,6 @@
-<h1 align="center">Grüvee-Backend</h1>
+<h1 align="center">Groovy-Backend</h1>
 <p align="center">
-  <strong>Let's get Grüvee with a new social, collaborative playlist for iPhone and Android</strong>
+  <strong>Let's get Groovy with a new social, collaborative playlist for iPhone and Android</strong>
 </p>
 
 <p align="center">
@@ -26,7 +26,7 @@
   
 </h3>
 
-Grüvee is an open source social, collabortive playlist made by the [PixelogicDev Twitch Community](https://twitch.tv/pixelogicdev). This project was entirely made live, on Twitch while receiving help from chat and contributing to Pull Requests here!
+Groovy is an open source social, collabortive playlist made by the [PixelogicDev Twitch Community](https://twitch.tv/pixelogicdev). This project was entirely made live, on Twitch while receiving help from chat and contributing to Pull Requests here!
 
 This is currently the Backend portion of the platform. We are currently building a Mobile client that can be found [here](https://github.com/PixelogicDev/Gruvee-Mobile)!
 
