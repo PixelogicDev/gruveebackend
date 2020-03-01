@@ -38,19 +38,20 @@ If you are interested in becoming a member of the team check out the **[Pixelogi
 
 ## Tech Stack
 
-| Stack    | Tech                                                                                     |                                                                |
-| -------- | :--------------------------------------------------------------------------------------- | :------------------------------------------------------------- |
-| IDE      | [Visual Studio Code](https://code.visualstudio.com/)                                     | You can use your preferred IDE but this is the one we like 🙃  |
-| Backend  | [Firebase (Repo)](https://github.com/PixelogicDev/Gruvee-Backend)                        | Serverless Functions in Firebase using GoLang                  |
-| Frontend | [React Native 0.60]([LinkToReactNative0.60](https://www.npmjs.com/package/react-native)) | Utilising Javascript to develop this cross platform mobile app |
+| Stack    | Tech                                                                                       |                                                                |
+| -------- | :----------------------------------------------------------------------------------------- | :------------------------------------------------------------- |
+| IDE      | [Visual Studio Code](https://code.visualstudio.com/)                                       | You can use your preferred IDE but this is the one we like 🙃  |
+| Backend  | [Firebase (Repo)](https://github.com/PixelogicDev/Gruvee-Backend)                          | Serverless Functions in Firebase using GoLang                  |
+| Frontend | [React Native 0.60](<[LinkToReactNative0.60](https://www.npmjs.com/package/react-native)>) | Utilising Javascript to develop this cross platform mobile app |
 
 > ALL of these sections are open for contributions and are highly encouraged!
 
 ## Important Notes
 
 ### Deploy Function To Cloud
-`gcloud functions deploy <FunctionName> --entry-point <ActualFunctionFileName> --runtime go113 --trigger-http --allow-unauthenticated`
 
 - cd into auth folder and deploy from there
+  `gcloud functions deploy <FunctionName> --entry-point <ActualFunctionFileName> --runtime go113 --trigger-http --allow-unauthenticated`
+
 - when testing locally, cd into cmd folder, run go build and then run ./cmd
 - `export GOOGLE_APPLICATION_CREDENTIALS="../../config/adminSdkSecret.json"`
