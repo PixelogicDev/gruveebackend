@@ -46,7 +46,11 @@ If you are interested in becoming a member of the team check out the **[Pixelogi
 
 > ALL of these sections are open for contributions and are highly encouraged!
 
-## Important Commands
+## Important Notes
 
 ### Deploy Function To Cloud
-`gcloud functions deploy <FunctionName> --entry-point <ActualFunctionFileName> --runtime go111 --trigger-http --allow-unauthenticated`
+`gcloud functions deploy <FunctionName> --entry-point <ActualFunctionFileName> --runtime go113 --trigger-http --allow-unauthenticated`
+
+- cd into auth folder and deploy from there
+- when testing locally, cd into cmd folder, run go build and then run ./cmd
+- `export GOOGLE_APPLICATION_CREDENTIALS="../../config/adminSdkSecret.json"`
