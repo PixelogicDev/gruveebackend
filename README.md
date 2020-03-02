@@ -53,5 +53,5 @@ If you are interested in becoming a member of the team check out the **[Pixelogi
 - cd into auth folder and deploy from there
   `gcloud functions deploy <FunctionName> --entry-point <ActualFunctionFileName> --runtime go113 --trigger-http --allow-unauthenticated`
 
-- when testing locally, cd into cmd folder, run go build and then run ./cmd
-- `export GOOGLE_APPLICATION_CREDENTIALS="../../config/adminSdkSecret.json"`
+- When testing locally, cd into auth folder, run `go run ./cmd/main.go`
+- `export GOOGLE_APPLICATION_CREDENTIALS="../config/adminSdkSecret.json"`
