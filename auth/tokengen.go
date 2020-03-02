@@ -19,12 +19,12 @@ import (
 	auth "firebase.google.com/go/auth"
 )
 
-// GenerateTokenRequest includes the UID for the user that we want to create a custom token for
+// GenerateTokenRequest represents the UID for the user that we want to create a custom token for
 type GenerateTokenRequest struct {
 	UID string
 }
 
-// GenerateTokenResponse includes what we will send back to the client
+// GenerateTokenResponse represents what we will send back to the client
 type GenerateTokenResponse struct {
 	Token string `json:"token"`
 }
@@ -35,7 +35,7 @@ func init() {
 	// Init Firebase App
 	app, err := firebase.NewApp(context.Background(), nil)
 	if err != nil {
-		log.Fatalf("firebase.NewApp: %v", err)
+		log.Printf("firebase.NewApp: %v", err)
 		return
 	}
 
@@ -44,7 +44,7 @@ func init() {
 	// Init Fireabase Auth Admin
 	client, err = app.Auth(context.Background())
 	if err != nil {
-		log.Fatalf("auth.Client: %v", err)
+		log.Printf("auth.Client: %v", err)
 		return
 	}
 
@@ -53,29 +53,21 @@ func init() {
 
 // GenerateCustomToken generates a CustomToken for Firebase Login
 func GenerateCustomToken(writer http.ResponseWriter, request *http.Request) {
-	// Thinking about sending 3rd Party token here
-	// then call 3rd party endpoint to get user data
-	// Then we also know that this person has just authed with 3rd Party platform
-	// Then here we call our write to DB
-	// Then we can return JWT to that client
+	// If this is getting called, we have already authorized the user by verifying their API token is valid and pulls back their data
 	var tokenRequest GenerateTokenRequest
 
 	// Decode json from request
 	err := json.NewDecoder(request.Body).Decode(&tokenRequest)
 	if err != nil {
-		log.Fatalf("json.NewDecoder: %v", err)
+		log.Printf("json.NewDecoder: %v", err)
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// Is this person authorized to mint a token?
-	// IE - Have they authenticated with a third party service such as spotify
-
 	// Garahorn - "We need to generate the quantum GUID once the flux capacitor reaches terminal velocity." (02/24/20)
-	// Get Custom Firebase Token
 	token, err := client.CustomToken(context.Background(), tokenRequest.UID)
 	if err != nil {
-		log.Fatalf("client.CustomToken: %v", err)
+		log.Printf("client.CustomToken: %v", err)
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
 	}

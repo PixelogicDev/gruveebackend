@@ -93,11 +93,23 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 
+		// Set UserExists to true unless changes later on
+		spotifyMeResponse.UserExists = true
+
 		// Check DB for user, if there return user object else return nil
 		authorizeWithSpotifyResp, userErr := getUser(spotifyMeResponse.ID)
 		if userErr != nil {
 			http.Error(writer, userErr.Error(), http.StatusBadRequest)
 			log.Printf("AuthorizeWithSpotify: %v", userErr)
+			return
+		}
+
+		// We don't have user. Pass data to client to send to createUser Function
+		if authorizeWithSpotifyResp == nil && userErr == nil {
+			spotifyMeResponse.UserExists = false
+			writer.WriteHeader(http.StatusOK)
+			writer.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(writer).Encode(spotifyMeResponse)
 			return
 		}
 
@@ -108,7 +120,6 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 			json.NewEncoder(writer).Encode(authorizeWithSpotifyResp)
 		}
 
-		// Create new user if nil
 		return
 	}
 
@@ -116,6 +127,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 	log.Println("AuthorizeWithSpotify: ApiToken was empty.")
 }
 
+// sillyonly - "So 140 char? is this twitter or a coding stream!" (03/02/20)
 func getUser(uid string) (*AuthorizeWithSpotifyResponse, error) {
 	// Go to firestore and check for uid
 	fbID := "spotify:" + uid
@@ -128,7 +140,8 @@ func getUser(uid string) (*AuthorizeWithSpotifyResponse, error) {
 	// If uid does not exist return nil
 	userSnap, err := user.Get(context.Background())
 	if status.Code(err) == codes.NotFound {
-		return nil, fmt.Errorf("doesUserExist: %v uid does not exist", fbID)
+		log.Printf(fbID)
+		return nil, nil
 	}
 
 	// UID does exist, return firestore user
@@ -152,6 +165,7 @@ func getUser(uid string) (*AuthorizeWithSpotifyResponse, error) {
 		PreferredSocialPlatform: *preferredPlatform,
 		SocialPlatforms:         *socialPlatforms,
 		Username:                firestoreUser.Username,
+		UserExists:              true,
 	}
 
 	return &authorizeWithSpotifyResponse, nil

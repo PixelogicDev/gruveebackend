@@ -17,6 +17,7 @@ type SpotifyMeResponse struct {
 	ID          string         `json:"id"`
 	Images      []SpotifyImage `json:"images"`
 	Product     string         `json:"product"`
+	UserExists  bool           `json:"userExists"`
 }
 
 // SpotifyRequestError represents the Spotify Error Object
@@ -38,6 +39,7 @@ type AuthorizeWithSpotifyResponse struct {
 	PreferredSocialPlatform FirestoreSocialPlatform   `json:"preferredSocialPlatform"`
 	SocialPlatforms         []FirestoreSocialPlatform `json:"socialPlatforms"`
 	Username                string                    `json:"username"`
+	UserExists              bool                      `json:"userExists"`
 }
 
 // FirestoreUser respresents the data stored in Firestore for an user
