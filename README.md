@@ -48,6 +48,38 @@ If you are interested in becoming a member of the team check out the **[Pixelogi
 
 ## Important Notes
 
+- [x] Write down process to get everything in Golang running
+- [x] Make sure to outline the Golang extension and settings used, ie: commit a vscode setting file
+- [ ] We need to fix up the file structure
+- [ ] Rename repo to `gruveebackend`
+
+### Golang Setup (https://www.digitalocean.com/community/tutorials/understanding-the-gopath)
+
+1. Make sure to install Golang (we are using v1.13)
+2. Find your GOPATH. ALWAYS located in this path (`$HOME/go`) unless put otherwise
+   1. Example GOPATH: `Users/alecdilanchian/go`
+   2. Example GOPATH/BIN:`Users/alecdilanchian/go/bin`
+3. Add GOPATH env variable
+   Example:
+
+```
+export GOPATH="$HOME/go"
+export GOBIN="$HOME/go/bin"
+export PATH=$PATH:$GOBIN:$GOPATH
+```
+
+4. Make sure `gruveebackend` is in your GOPATH (This helps a lot. I promise)
+   1. Clone repo from Github
+   2. Open up `GOPATH/src/github.com/
+   3. Create folder called `pixelogicdev`
+   4. `cd pixelogicdev` and move `gruveebackend` into the folder
+
+### Golang and VSCode Extensions
+
+1. Will make sure to have a vscode settings file included in the repo for consistent settings, but for informational purposes download extension from here: https://code.visualstudio.com/docs/languages/go
+2. This repo includes a [`.vscode/settings.json`](.vscode/settings.json) & [`.vscode/extensions.json`](.vscode/extensions.json)
+3. These should get you started pretty much right away when you open up the repo
+
 ### Deploy Function To Cloud
 
 - cd into auth folder and deploy from there
