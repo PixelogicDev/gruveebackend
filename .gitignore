@@ -1,5 +1,5 @@
 # Config
-config/*
+internal/*
 
 # Vendor Folder
 **/vendor

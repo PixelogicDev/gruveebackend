@@ -1,11 +1,12 @@
+package spotifyauth
+
 // thoastyk - "X O X" (02/26/20)
 // thoastyk - "_ X O" (02/26/20)
 // thoastyk - "X _ O" (02/26/20)
 // creativenobu - "Have you flutter tried?" (02/26/20)
 // TheDkbay - "If this were made in Flutter Alec would already be done but he loves to pain himself and us by using inferior technology maybe he will learn in the future." (03/02/20)
 // OnePocketPimp - "Alec had an Idea at this moment in time 9:53 am 3-1-2020" (03/01/20)
-package auth
-
+// ZenonLoL - "go mod vendor - it just works" (03/08/20)
 import (
 	"context"
 	"encoding/json"
@@ -14,6 +15,7 @@ import (
 	"net/http"
 
 	firestore "cloud.google.com/go/firestore"
+	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -39,7 +41,7 @@ func init() {
 
 // AuthorizeWithSpotify will verify spotify creds are valid and return that user or create a new user if the creds valid
 func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
-	var spotifyAuthRequest SpotifyAuthRequest
+	var spotifyAuthRequest firebase.SpotifyAuthRequest
 
 	authResponseErr := json.NewDecoder(request.Body).Decode(&spotifyAuthRequest)
 	if authResponseErr != nil {
@@ -69,7 +71,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		// Check to see if request was valid
 		if resp.StatusCode != http.StatusOK {
 			// Conver Spotify Error Object
-			var spotifyErrorObj SpotifyRequestError
+			var spotifyErrorObj firebase.SpotifyRequestError
 
 			err := json.NewDecoder(resp.Body).Decode(&spotifyErrorObj)
 			if err != nil {
@@ -83,7 +85,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 
-		var spotifyMeResponse SpotifyMeResponse
+		var spotifyMeResponse firebase.SpotifyMeResponse
 		// syszen - "wait that it? #easyGo"(02/27/20)
 		// LilCazza - "Why the fuck doesn't this shit work" (02/27/20)
 		responseErr := json.NewDecoder(resp.Body).Decode(&spotifyMeResponse)
@@ -105,6 +107,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		}
 
 		// We don't have user. Pass data to client to send to createUser Function
+		// Let's call another firebase function to create our user
 		if authorizeWithSpotifyResp == nil && userErr == nil {
 			spotifyMeResponse.UserExists = false
 			writer.WriteHeader(http.StatusOK)
@@ -128,7 +131,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 }
 
 // sillyonly - "So 140 char? is this twitter or a coding stream!" (03/02/20)
-func getUser(uid string) (*AuthorizeWithSpotifyResponse, error) {
+func getUser(uid string) (*firebase.AuthorizeWithSpotifyResponse, error) {
 	// Go to firestore and check for uid
 	fbID := "spotify:" + uid
 
@@ -145,7 +148,7 @@ func getUser(uid string) (*AuthorizeWithSpotifyResponse, error) {
 	}
 
 	// UID does exist, return firestore user
-	var firestoreUser FirestoreUser
+	var firestoreUser firebase.FirestoreUser
 	dataErr := userSnap.DataTo(&firestoreUser)
 	if dataErr != nil {
 		return nil, fmt.Errorf("doesUserExist: %v", dataErr)
@@ -158,7 +161,7 @@ func getUser(uid string) (*AuthorizeWithSpotifyResponse, error) {
 	}
 
 	// Convert user to response object
-	authorizeWithSpotifyResponse := AuthorizeWithSpotifyResponse{
+	authorizeWithSpotifyResponse := firebase.AuthorizeWithSpotifyResponse{
 		Email:                   firestoreUser.Email,
 		ID:                      firestoreUser.ID,
 		Playlists:               []string{},
@@ -171,17 +174,17 @@ func getUser(uid string) (*AuthorizeWithSpotifyResponse, error) {
 	return &authorizeWithSpotifyResponse, nil
 }
 
-func fetchChildRefs(refs []*firestore.DocumentRef) (*[]FirestoreSocialPlatform, *FirestoreSocialPlatform, error) {
+func fetchChildRefs(refs []*firestore.DocumentRef) (*[]firebase.FirestoreSocialPlatform, *firebase.FirestoreSocialPlatform, error) {
 	docsnaps, err := firestoreClient.GetAll(context.Background(), refs)
 	if err != nil {
 		return nil, nil, fmt.Errorf("fetchChildRefs: %v", err)
 	}
 
-	var platforms []FirestoreSocialPlatform
-	var preferredService FirestoreSocialPlatform
+	var platforms []firebase.FirestoreSocialPlatform
+	var preferredService firebase.FirestoreSocialPlatform
 
 	for _, userSnap := range docsnaps {
-		var socialPlatform FirestoreSocialPlatform
+		var socialPlatform firebase.FirestoreSocialPlatform
 
 		dataErr := userSnap.DataTo(&socialPlatform)
 		if dataErr != nil {

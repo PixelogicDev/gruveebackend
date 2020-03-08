@@ -1,6 +1,7 @@
-// no_neon_one - "go to GO or no to GO" (03/01/20)
-package auth
+package firebase
 
+// no_neon_one - "go to GO or no to GO" (03/01/20)
+// no_neon_one - "I think Microsoft named .Net so it wouldn’t show up in a Unix directory listing (by Oktal )." (03/08/20)
 import (
 	firestore "cloud.google.com/go/firestore"
 )

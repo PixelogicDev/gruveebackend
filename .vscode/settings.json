@@ -4,15 +4,15 @@
 	"go.useCodeSnippetsOnFunctionSuggest": true,
 	"go.lintTool": "golint",
 	"go.toolsEnvVars": {
-		"GOFLAGS": "-mod=vendor",
 		"GO111MODULE": "on"
 	},
 	"terminal.integrated.env.osx": {
-		"GOFLAGS": "-mod=vendor",
 		"GO111MODULE": "on"
 	},
 	"terminal.integrated.env.windows": {
-		"GOFLAGS": "-mod=vendor",
 		"GO111MODULE": "on"
+	},
+	"files.exclude": {
+		"internal/adminSdkSecret.json": true
 	}
 }

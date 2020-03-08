@@ -1,3 +1,5 @@
+package tokengen
+
 // Remaiten - “Maybe now is the time to switch to Vue Native Kappa” (02/22/20)
 // BackeyM - "It's go time 🙃" (02/22/20)
 // TheDkbay - "It's double go time" (02/22/20)
@@ -5,9 +7,7 @@
 // Tensei_c - "rust > go :P" (02/24/20)
 // pahnev - "swift > rust" (02/24/20)
 // jackconceprio - "I like pineapple juice any line" (02/25/20)
-
-package auth
-
+// OnePocketPimp - "TODO: Create Dog Treat API to properly reward all good doggos on streaming platforms" (03/08/20)
 import (
 	"context"
 	"encoding/json"
