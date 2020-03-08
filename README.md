@@ -38,10 +38,57 @@ If you are interested in becoming a member of the team check out the **[Pixelogi
 
 ## Tech Stack
 
-| Stack        | Tech                                                              |                                                                |
-| ------------ | :---------------------------------------------------------------- | :------------------------------------------------------------- |
-| IDE          | [Visual Studio Code](https://code.visualstudio.com/)              | You can use your preferred IDE but this is the one we like 🙃  |
-| Backend      | [Firebase (Repo)](https://github.com/PixelogicDev/Gruvee-Backend) | Serverless Functions in Firebase using GoLang                  |
-| Frontend     | [React Native 0.60]([LinkToReactNative0.60](https://www.npmjs.com/package/react-native))                        | Utilising Javascript to develop this cross platform mobile app |
+| Stack    | Tech                                                                                       |                                                                |
+| -------- | :----------------------------------------------------------------------------------------- | :------------------------------------------------------------- |
+| IDE      | [Visual Studio Code](https://code.visualstudio.com/)                                       | You can use your preferred IDE but this is the one we like 🙃  |
+| Backend  | [Firebase (Repo)](https://github.com/PixelogicDev/Gruvee-Backend)                          | Serverless Functions in Firebase using GoLang                  |
+| Frontend | [React Native 0.60](<[LinkToReactNative0.60](https://www.npmjs.com/package/react-native)>) | Utilising Javascript to develop this cross platform mobile app |
 
 > ALL of these sections are open for contributions and are highly encouraged!
+
+## Important Notes
+
+- [x] Write down process to get everything in Golang running
+- [x] Make sure to outline the Golang extension and settings used, ie: commit a vscode setting file
+- [x] We need to fix up the file structure
+- [ ] Rename repo to `gruveebackend`
+
+### Golang Setup (https://www.digitalocean.com/community/tutorials/understanding-the-gopath)
+
+1. Make sure to install Golang (we are using v1.13)
+2. Find your GOPATH. ALWAYS located in this path (`$HOME/go`) unless put otherwise
+   1. Example GOPATH: `Users/alecdilanchian/go`
+   2. Example GOPATH/BIN:`Users/alecdilanchian/go/bin`
+3. Add GOPATH env variable
+   Example:
+
+```
+export GOPATH="$HOME/go"
+export GOBIN="$HOME/go/bin"
+export PATH=$PATH:$GOBIN:$GOPATH
+```
+
+4. Make sure `gruveebackend` is in your GOPATH (This helps a lot. I promise)
+   1. Clone repo from Github
+   2. Open up `GOPATH/src/github.com/
+   3. Create folder called `pixelogicdev`
+   4. `cd pixelogicdev` and move `gruveebackend` into the folder
+
+5. We deploy to Github so our internal packages will be good to go 
+   1. They need to be in master to be picked up properly
+   2. We need to `git tag` them 
+   3. We can then deploy to Firebase
+
+### Golang and VSCode Extensions
+
+1. Will make sure to have a vscode settings file included in the repo for consistent settings, but for informational purposes download extension from here: https://code.visualstudio.com/docs/languages/go
+2. This repo includes a [`.vscode/settings.json`](.vscode/settings.json) & [`.vscode/extensions.json`](.vscode/extensions.json)
+3. These should get you started pretty much right away when you open up the repo
+
+### Deploy Function To Cloud
+
+- cd into auth folder and deploy from there
+  `gcloud functions deploy authorizeWithSpotify --entry-point AuthorizeWithSpotify --runtime go113 --trigger-http --allow-unauthenticated`
+
+- When testing locally, cd into auth folder, run `go run ./cmd/main.go`
+- `export GOOGLE_APPLICATION_CREDENTIALS="./internal/adminSdkSecret.json"`

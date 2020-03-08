@@ -1,0 +1,18 @@
+{
+	"prettier.useTabs": true,
+	"go.autocompleteUnimportedPackages": true,
+	"go.useCodeSnippetsOnFunctionSuggest": true,
+	"go.lintTool": "golint",
+	"go.toolsEnvVars": {
+		"GO111MODULE": "on"
+	},
+	"terminal.integrated.env.osx": {
+		"GO111MODULE": "on"
+	},
+	"terminal.integrated.env.windows": {
+		"GO111MODULE": "on"
+	},
+	"files.exclude": {
+		"internal/adminSdkSecret.json": true
+	}
+}
