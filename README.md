@@ -51,7 +51,7 @@ If you are interested in becoming a member of the team check out the **[Pixelogi
 - [x] Write down process to get everything in Golang running
 - [x] Make sure to outline the Golang extension and settings used, ie: commit a vscode setting file
 - [x] We need to fix up the file structure
-- [ ] Rename repo to `gruveebackend`
+- [x] Rename repo to `gruveebackend`
 
 ### Golang Setup (https://www.digitalocean.com/community/tutorials/understanding-the-gopath)
 
