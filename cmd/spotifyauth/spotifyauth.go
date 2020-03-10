@@ -1,8 +1,11 @@
 package spotifyauth
 
-// thoastyk - "X O X" (02/26/20)
-// thoastyk - "_ X O" (02/26/20)
-// thoastyk - "X _ O" (02/26/20)
+// thoastyk 	"X O X" (02/26/20)
+// thoastyk 	"_ X O" (02/26/20)
+// pheonix_d123	"O O X I wanna interrupt the tic-tac-toe." (03/08/20)
+// Belonix97  	"X O O I want to interrupt the interrupted tic-tac-toe line." (03/08/20)
+// ItsAstrix  	"O O X I wanna interrupt the tic-tac-toe." (03/08/20)
+// thoastyk 	"X _ O" (02/26/20)
 // creativenobu - "Have you flutter tried?" (02/26/20)
 // TheDkbay - "If this were made in Flutter Alec would already be done but he loves to pain himself and us by using inferior technology maybe he will learn in the future." (03/02/20)
 // OnePocketPimp - "Alec had an Idea at this moment in time 9:53 am 3-1-2020" (03/01/20)

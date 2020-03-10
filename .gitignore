@@ -1,5 +1,5 @@
 # Config
-internal/*
+**/adminSdkSecret.json
 
 # Vendor Folder
 **/vendor
