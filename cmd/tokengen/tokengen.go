@@ -11,23 +11,13 @@ package tokengen
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
-	firebase "firebase.google.com/go"
+	"firebase.google.com/go"
 	auth "firebase.google.com/go/auth"
+	gruveeFirebase "github.com/pixelogicdev/gruveebackend/pkg/firebase"
 )
-
-// GenerateTokenRequest represents the UID for the user that we want to create a custom token for
-type GenerateTokenRequest struct {
-	UID string
-}
-
-// GenerateTokenResponse represents what we will send back to the client
-type GenerateTokenResponse struct {
-	Token string `json:"token"`
-}
 
 var client *auth.Client
 
@@ -39,7 +29,7 @@ func init() {
 		return
 	}
 
-	fmt.Println("Firebase app initialized.")
+	log.Printf("Firebase app initialized.")
 
 	// Init Fireabase Auth Admin
 	client, err = app.Auth(context.Background())
@@ -48,13 +38,13 @@ func init() {
 		return
 	}
 
-	fmt.Println("Auth client initialized.")
+	log.Printf("Auth client initialized.")
 }
 
 // GenerateCustomToken generates a CustomToken for Firebase Login
 func GenerateCustomToken(writer http.ResponseWriter, request *http.Request) {
 	// If this is getting called, we have already authorized the user by verifying their API token is valid and pulls back their data
-	var tokenRequest GenerateTokenRequest
+	var tokenRequest gruveeFirebase.GenerateTokenRequest
 
 	// Decode json from request
 	err := json.NewDecoder(request.Body).Decode(&tokenRequest)
@@ -73,7 +63,7 @@ func GenerateCustomToken(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Create reponse object and pass it along
-	tokenResponse := GenerateTokenResponse{Token: token}
+	tokenResponse := gruveeFirebase.GenerateTokenResponse{Token: token}
 	writer.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(writer).Encode(tokenResponse)
 }

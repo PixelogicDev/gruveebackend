@@ -10,10 +10,13 @@ package spotifyauth
 // TheDkbay - "If this were made in Flutter Alec would already be done but he loves to pain himself and us by using inferior technology maybe he will learn in the future." (03/02/20)
 // OnePocketPimp - "Alec had an Idea at this moment in time 9:53 am 3-1-2020" (03/01/20)
 // ZenonLoL - "go mod vendor - it just works" (03/08/20)
+// gamma7869 - "Maybe if I get Corona, I could finally get friends. Corona Friends?" (03/12/20)
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -39,7 +42,7 @@ func init() {
 	}
 
 	firestoreClient = client
-	log.Println("Firestore initialized")
+	log.Printf("Firestore initialized")
 }
 
 // AuthorizeWithSpotify will verify spotify creds are valid and return that user or create a new user if the creds valid
@@ -98,9 +101,6 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 
-		// Set UserExists to true unless changes later on
-		spotifyMeResponse.UserExists = true
-
 		// Check DB for user, if there return user object else return nil
 		authorizeWithSpotifyResp, userErr := getUser(spotifyMeResponse.ID)
 		if userErr != nil {
@@ -109,13 +109,48 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 
-		// We don't have user. Pass data to client to send to createUser Function
-		// Let's call another firebase function to create our user
+		// We do not have our user
 		if authorizeWithSpotifyResp == nil && userErr == nil {
-			spotifyMeResponse.UserExists = false
+			// First, generate & write social platform object
+			log.Printf("Calling createSocialPlatform")
+			socialPlatDocRef, socialPlatData := createSocialPlatform(writer, spotifyMeResponse, spotifyAuthRequest)
+			log.Printf("%v", socialPlatDocRef)
+
+			// Then, generate & write Firestore User object
+			log.Printf("About to call createUser")
+			var firestoreUser = createUser(writer, spotifyMeResponse, socialPlatDocRef)
+			if firestoreUser == nil {
+				http.Error(writer, "firestoreUser could not be created", http.StatusBadRequest)
+				log.Printf("AuthorizeWithSpotify: %v", userErr)
+				return
+			}
+
+			// Finally, get custom JWT
+			log.Println("Getting custom JWT")
+			var customToken = getCustomToken(writer, firestoreUser.ID)
+			if customToken == nil {
+				http.Error(writer, "Could not get Custom JWT", http.StatusBadRequest)
+				log.Printf("AuthorizeWithSpotify: %v", userErr)
+				return
+			}
+
+			// Return jwt and user object
+			log.Println(customToken)
+
+			// sillyonly: "path.addLine(to: CGPoint(x: rect.width, y: rect.height))" (03/13/20)
 			writer.WriteHeader(http.StatusOK)
 			writer.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(writer).Encode(spotifyMeResponse)
+			var spoitfyAuthResp = firebase.AuthorizeWithSpotifyResponse{
+				Email:                   firestoreUser.Email,
+				ID:                      firestoreUser.ID,
+				Playlists:               firestoreUser.Playlists,
+				PreferredSocialPlatform: *socialPlatData,
+				SocialPlatforms:         []firebase.FirestoreSocialPlatform{*socialPlatData},
+				Username:                firestoreUser.Username,
+				JWT:                     customToken.Token,
+			}
+
+			json.NewEncoder(writer).Encode(spoitfyAuthResp)
 			return
 		}
 
@@ -130,23 +165,28 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	http.Error(writer, "AuthorizeWithSpotify: ApiToken was empty.", http.StatusBadRequest)
-	log.Println("AuthorizeWithSpotify: ApiToken was empty.")
+	log.Printf("AuthorizeWithSpotify: ApiToken was empty.")
 }
 
 // sillyonly - "So 140 char? is this twitter or a coding stream!" (03/02/20)
 func getUser(uid string) (*firebase.AuthorizeWithSpotifyResponse, error) {
+	log.Printf("WE ARE HERE.")
 	// Go to firestore and check for uid
 	fbID := "spotify:" + uid
 
-	user := firestoreClient.Doc("users/" + fbID)
-	if user == nil {
+	log.Printf(fbID)
+
+	userRef := firestoreClient.Doc("users/" + fbID)
+	if userRef == nil {
 		return nil, fmt.Errorf("doesUserExist: users/%s is an odd path", fbID)
 	}
 
+	log.Printf("WE GOT SOME USER.")
+
 	// If uid does not exist return nil
-	userSnap, err := user.Get(context.Background())
+	userSnap, err := userRef.Get(context.Background())
 	if status.Code(err) == codes.NotFound {
-		log.Printf(fbID)
+		log.Printf("User with id %s was not found", fbID)
 		return nil, nil
 	}
 
@@ -171,7 +211,6 @@ func getUser(uid string) (*firebase.AuthorizeWithSpotifyResponse, error) {
 		PreferredSocialPlatform: *preferredPlatform,
 		SocialPlatforms:         *socialPlatforms,
 		Username:                firestoreUser.Username,
-		UserExists:              true,
 	}
 
 	return &authorizeWithSpotifyResponse, nil
@@ -191,7 +230,8 @@ func fetchChildRefs(refs []*firestore.DocumentRef) (*[]firebase.FirestoreSocialP
 
 		dataErr := userSnap.DataTo(&socialPlatform)
 		if dataErr != nil {
-			fmt.Println(dataErr)
+			log.Printf("DATA ERROR")
+			log.Printf("%v", dataErr)
 		}
 
 		if socialPlatform.IsPreferredService {
@@ -202,6 +242,187 @@ func fetchChildRefs(refs []*firestore.DocumentRef) (*[]firebase.FirestoreSocialP
 	}
 
 	return &platforms, &preferredService, nil
+}
+
+func createUser(writer http.ResponseWriter,
+	spotifyResp firebase.SpotifyMeResponse,
+	socialPlatDocRef *firestore.DocumentRef) *firebase.FirestoreUser {
+
+	// Setup payload
+	if socialPlatDocRef == nil {
+		// Could not create social platform here
+		log.Println("Could not write SocialPlatform Doc to DB")
+		return nil
+	}
+
+	// Create firetoreUser Object
+	var firestoreUser = firebase.FirestoreUser{
+		Email:                   spotifyResp.Email,
+		ID:                      "spotify:" + spotifyResp.ID,
+		Playlists:               []string{},
+		PreferredSocialPlatform: socialPlatDocRef,
+		SocialPlatforms:         []*firestore.DocumentRef{socialPlatDocRef},
+		Username:                spotifyResp.DisplayName,
+	}
+
+	log.Printf("Object built")
+
+	// Create jsonBody
+	jsonPlatform, jsonErr := json.Marshal(firestoreUser)
+	if jsonErr != nil {
+		http.Error(writer, jsonErr.Error(), http.StatusInternalServerError)
+		log.Printf("createSocialPlatform [json.Marshal]: %v", jsonErr)
+		return nil
+	}
+
+	log.Println("Calling createUser function.")
+
+	// Create Request
+	createUserReq, createUserReqErr := http.NewRequest("POST", "http://localhost:8080/createUser", bytes.NewBuffer(jsonPlatform))
+	if createUserReqErr != nil {
+		http.Error(writer, createUserReqErr.Error(), http.StatusInternalServerError)
+		log.Printf("createUser [http.NewRequest]: %v", createUserReqErr)
+		return nil
+	}
+	createUserReq.Header.Add("Content-Type", "application/json")
+
+	createUserResp, httpErr := httpClient.Do(createUserReq)
+	if httpErr != nil {
+		http.Error(writer, httpErr.Error(), http.StatusBadRequest)
+		log.Printf("createUser [client.Do]: %v", httpErr)
+		return nil
+	}
+
+	if createUserResp.StatusCode != http.StatusOK {
+		var body []byte
+		// Get error from body
+		body, _ = ioutil.ReadAll(createUserResp.Body)
+		log.Printf(string(body))
+		// TODO: Probably should return error
+		return nil
+	}
+
+	return &firestoreUser
+}
+
+func createSocialPlatform(writer http.ResponseWriter,
+	spotifyResp firebase.SpotifyMeResponse,
+	authReq firebase.SpotifyAuthRequest) (*firestore.DocumentRef, *firebase.FirestoreSocialPlatform) {
+
+	// Create request body
+	var isPremium = false
+	if spotifyResp.Product == "premium" {
+		isPremium = true
+	}
+
+	var profileImage firebase.SpotifyImage
+	if len(spotifyResp.Images) > 0 {
+		profileImage = spotifyResp.Images[0]
+	} else {
+		profileImage = firebase.SpotifyImage{}
+	}
+
+	var platform = firebase.FirestoreSocialPlatform{
+		APIToken:           authReq.APIToken,
+		RefreshToken:       authReq.RefreshToken,
+		Email:              spotifyResp.Email,
+		ID:                 spotifyResp.ID,
+		IsPreferredService: true, // If creating a new user, this is the first platform which should be the default
+		IsPremium:          isPremium,
+		PlatformName:       "spotify",
+		ProfileImage:       profileImage,
+		Username:           spotifyResp.DisplayName,
+	}
+
+	log.Printf("Object built")
+
+	// Create jsonBody
+	jsonPlatform, jsonErr := json.Marshal(platform)
+	if jsonErr != nil {
+		http.Error(writer, jsonErr.Error(), http.StatusInternalServerError)
+		log.Printf("jsonErr was hit")
+		log.Printf("createSocialPlatform [json.Marshal]: %v", jsonErr)
+		return nil, nil
+	}
+
+	// Create Request
+	socialPlatformReq, newReqErr := http.NewRequest("POST", "http://localhost:8080/createSocialPlatform", bytes.NewBuffer(jsonPlatform))
+	if newReqErr != nil {
+		http.Error(writer, newReqErr.Error(), http.StatusInternalServerError)
+		log.Printf("newReqErr was hit")
+		log.Printf("createSocialPlatform [http.NewRequest]: %v", newReqErr)
+		return nil, nil
+	}
+	socialPlatformReq.Header.Add("Content-Type", "application/json")
+	log.Printf("Req was built")
+
+	// Run firebase function to write platform to database
+	socialPlatformResp, httpErr := httpClient.Do(socialPlatformReq)
+	if httpErr != nil {
+		http.Error(writer, httpErr.Error(), http.StatusBadRequest)
+		log.Printf("createUser [client.Do]: %v", httpErr)
+		return nil, nil
+	}
+
+	if socialPlatformResp.StatusCode != http.StatusOK {
+		// Get error from body
+		var body, _ = ioutil.ReadAll(socialPlatformResp.Body)
+		log.Printf(string(body))
+		// TODO: Probably should return error
+		return nil, nil
+	}
+
+	log.Printf("Document was written to DB successfully")
+	// Get Document reference
+	platformRef := firestoreClient.Doc("social_platforms/" + platform.ID)
+	if platformRef == nil {
+		return nil, nil
+	}
+
+	log.Printf("Made request to create SocialPlatform")
+	return platformRef, &platform
+}
+
+func getCustomToken(writer http.ResponseWriter, uid string) *firebase.GenerateTokenResponse {
+	var tokenRequest = firebase.GenerateTokenRequest{
+		UID: uid,
+	}
+
+	// Create jsonBody
+	jsonPlatform, jsonErr := json.Marshal(tokenRequest)
+	if jsonErr != nil {
+		http.Error(writer, jsonErr.Error(), http.StatusInternalServerError)
+		log.Printf("getCustomToken [json.Marshal]: %v", jsonErr)
+		return nil
+	}
+
+	// Create Request
+	customTokenReq, customTokenReqErr := http.NewRequest("POST", "http://localhost:8080/generateToken", bytes.NewBuffer(jsonPlatform))
+	if customTokenReqErr != nil {
+		http.Error(writer, customTokenReqErr.Error(), http.StatusInternalServerError)
+		log.Printf("getCustomToken [http.NewRequest]: %v", customTokenReqErr)
+		return nil
+	}
+	customTokenReq.Header.Add("Content-Type", "application/json")
+
+	customTokenResp, httpErr := httpClient.Do(customTokenReq)
+	if httpErr != nil {
+		http.Error(writer, httpErr.Error(), http.StatusBadRequest)
+		log.Printf("getCustomToken [client.Do]: %v", httpErr)
+		return nil
+	}
+
+	// Decode the token to send back
+	var tokenResponse firebase.GenerateTokenResponse
+
+	customTokenDecodeErr := json.NewDecoder(customTokenResp.Body).Decode(&tokenResponse)
+	if customTokenDecodeErr != nil {
+		http.Error(writer, customTokenDecodeErr.Error(), http.StatusInternalServerError)
+		log.Printf("getCustomToken [tokenResponse Decoder]: %v", customTokenDecodeErr)
+		return nil
+	}
+
+	return &tokenResponse
 }
 
 // no_neon_one - "BACKEND as a service" (02/29/20)

@@ -8,7 +8,8 @@ import (
 
 // SpotifyAuthRequest includes APIToken needed for Spotify API
 type SpotifyAuthRequest struct {
-	APIToken string `json:"token"`
+	APIToken     string `json:"token"`
+	RefreshToken string `json:"refreshToken"`
 }
 
 // SpotifyMeResponse represents the response coming back from the /me endpoint
@@ -18,7 +19,6 @@ type SpotifyMeResponse struct {
 	ID          string         `json:"id"`
 	Images      []SpotifyImage `json:"images"`
 	Product     string         `json:"product"`
-	UserExists  bool           `json:"userExists"`
 }
 
 // SpotifyRequestError represents the Spotify Error Object
@@ -40,14 +40,14 @@ type AuthorizeWithSpotifyResponse struct {
 	PreferredSocialPlatform FirestoreSocialPlatform   `json:"preferredSocialPlatform"`
 	SocialPlatforms         []FirestoreSocialPlatform `json:"socialPlatforms"`
 	Username                string                    `json:"username"`
-	UserExists              bool                      `json:"userExists"`
+	JWT                     string                    `json:"jwt,omitempty"`
 }
 
 // FirestoreUser respresents the data stored in Firestore for an user
 type FirestoreUser struct {
 	Email                   string                   `firestore:"email"`
 	ID                      string                   `firestore:"id"`
-	Playlists               []string                 `firestre:"playlists"`
+	Playlists               []string                 `firestore:"playlists"`
 	PreferredSocialPlatform *firestore.DocumentRef   `firestore:"preferredSocialPlatform"`
 	SocialPlatforms         []*firestore.DocumentRef `firestore:"socialPlatforms"`
 	Username                string                   `firestore:"username"`
@@ -71,4 +71,14 @@ type SpotifyImage struct {
 	Height int    `json:",omitempty"`
 	URL    string `json:"url"`
 	Width  int    `json:",omitempty"`
+}
+
+// GenerateTokenRequest represents the UID for the user that we want to create a custom token for
+type GenerateTokenRequest struct {
+	UID string
+}
+
+// GenerateTokenResponse represents what we will send back to the client
+type GenerateTokenResponse struct {
+	Token string `json:"token"`
 }

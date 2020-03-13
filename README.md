@@ -69,15 +69,19 @@ export PATH=$PATH:$GOBIN:$GOPATH
 ```
 
 4. Make sure `gruveebackend` is in your GOPATH (This helps a lot. I promise)
+
    1. Clone repo from Github
    2. Open up `GOPATH/src/github.com/
    3. Create folder called `pixelogicdev`
    4. `cd pixelogicdev` and move `gruveebackend` into the folder
 
-5. We deploy to Github so our internal packages will be good to go 
+5. We deploy to Github so our internal packages will be good to go
+
    1. They need to be in master to be picked up properly
-   2. We need to `git tag` them 
+   2. We need to `git tag` them
    3. We can then deploy to Firebase
+
+6. Since packages are being pulled from our actual Github Repo, we will need to use the `replace` command in order to actually see our changes go through. These are located in mod files that need them. We are in the process of setting env variables to trigger this replace methods if needed.
 
 ### Golang and VSCode Extensions
 

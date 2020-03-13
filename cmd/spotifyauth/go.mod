@@ -7,3 +7,5 @@ require (
 	github.com/pixelogicdev/gruveebackend/pkg/firebase v0.0.0-20200308212314-0462fa42269c
 	google.golang.org/grpc v1.27.1
 )
+
+replace github.com/pixelogicdev/gruveebackend/pkg/firebase => ../../pkg/firebase
