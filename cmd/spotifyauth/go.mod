@@ -9,3 +9,9 @@ require (
 )
 
 replace github.com/pixelogicdev/gruveebackend/pkg/firebase => ../../pkg/firebase
+
+replace github.com/pixelogicdev/gruveebackend/cmd/socialplatform => ../cmd/socialplatform
+
+replace github.com/pixelogicdev/gruveebackend/cmd/tokengen => ../cmd/tokengen
+
+replace github.com/pixelogicdev/gruveebackend/cmd/createuser => ../cmd/createuser

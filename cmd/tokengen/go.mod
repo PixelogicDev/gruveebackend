@@ -11,3 +11,9 @@ require (
 
 // ENABLE WHEN IN DEBUG
 replace github.com/pixelogicdev/gruveebackend/pkg/firebase => ../../pkg/firebase
+
+replace github.com/pixelogicdev/gruveebackend/cmd/socialplatform => ../cmd/socialplatform
+
+replace github.com/pixelogicdev/gruveebackend/cmd/spotifyauth => ../cmd/spotifyauth
+
+replace github.com/pixelogicdev/gruveebackend/cmd/createuser => ../cmd/createuser
