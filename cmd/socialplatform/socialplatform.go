@@ -21,12 +21,11 @@ func init() {
 	}
 
 	firestoreClient = client
-	log.Printf("SocialPlatform intialized.")
+	log.Println("SocialPlatform intialized.")
 }
 
 // CreateSocialPlatform will write a new social platform to firestore
 func CreateSocialPlatform(writer http.ResponseWriter, request *http.Request) {
-	// Get payload from body (firebase.FirestoreSocialPlatform)
 	var socialPlatform firebase.FirestoreSocialPlatform
 
 	socialPlatformErr := json.NewDecoder(request.Body).Decode(&socialPlatform)
@@ -36,7 +35,6 @@ func CreateSocialPlatform(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	log.Printf("Received FirestoreSocial payload")
 	// Write SocialPlatform to Firestore
 	_, writeErr := firestoreClient.Collection("social_platforms").Doc(socialPlatform.ID).Set(context.Background(), socialPlatform)
 	if writeErr != nil {
@@ -45,6 +43,5 @@ func CreateSocialPlatform(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// If success, write back that we did good!
 	writer.WriteHeader(http.StatusOK)
 }

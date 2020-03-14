@@ -29,7 +29,7 @@ func init() {
 		return
 	}
 
-	log.Printf("Firebase app initialized.")
+	log.Println("Firebase app initialized.")
 
 	// Init Fireabase Auth Admin
 	client, err = app.Auth(context.Background())
@@ -38,7 +38,7 @@ func init() {
 		return
 	}
 
-	log.Printf("Auth client initialized.")
+	log.Println("Auth client initialized.")
 }
 
 // GenerateCustomToken generates a CustomToken for Firebase Login
