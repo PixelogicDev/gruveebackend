@@ -46,13 +46,6 @@ If you are interested in becoming a member of the team check out the **[Pixelogi
 
 > ALL of these sections are open for contributions and are highly encouraged!
 
-## Important Notes
-
-- [x] Write down process to get everything in Golang running
-- [x] Make sure to outline the Golang extension and settings used, ie: commit a vscode setting file
-- [x] We need to fix up the file structure
-- [x] Rename repo to `gruveebackend`
-
 ### Golang Setup (https://www.digitalocean.com/community/tutorials/understanding-the-gopath)
 
 1. Make sure to install Golang (we are using v1.13)
@@ -81,7 +74,7 @@ export PATH=$PATH:$GOBIN:$GOPATH
    2. We need to `git tag` them
    3. We can then deploy to Firebase
 
-6. Since packages are being pulled from our actual Github Repo, we will need to use the `replace` command in order to actually see our changes go through. These are located in mod files that need them. We are in the process of setting env variables to trigger this replace methods if needed.
+6. Since packages are being pulled from our actual Github Repo, we will need to use the `replace` command in order to actually see our changes go through. These are located in mod files that need them.
 
 ### Golang and VSCode Extensions
 
@@ -89,10 +82,17 @@ export PATH=$PATH:$GOBIN:$GOPATH
 2. This repo includes a [`.vscode/settings.json`](.vscode/settings.json) & [`.vscode/extensions.json`](.vscode/extensions.json)
 3. These should get you started pretty much right away when you open up the repo
 
+### Running Functions Locally
+When you want to run all the functions locally, all you need to do is run `scripts/gorun.sh`. (Currently there is no windows equivalent, but should make one #SOON.) Essentially this will:
+- Add all the replace lines in all the go mod files
+- Build and run the `main.go` file in the root
+
+When adding new functions to this project you will need to also update the build script as follows:
+1. Add a variable for the function replace path. For example if your new function is called `addCoolPerson` create a replace variable that looks like this: `addCoolPerson=github.com/pixelogicdev/gruveebackend/cmd/addcoolperson=../cmd/addcoolperson`
+2. Add a new if statement for `addcoolperon/` directory in the if logic
+3. Make sure to add the new `go mod edit -replace $addCoolPerson` to all other functions (for now it's easier this way to make sure we aren't missing anything)
+
 ### Deploy Function To Cloud
 
-- cd into auth folder and deploy from there
+- cd into cmd/function folder and deploy from there using an example like so:
   `gcloud functions deploy authorizeWithSpotify --entry-point AuthorizeWithSpotify --runtime go113 --trigger-http --allow-unauthenticated`
-
-- When testing locally, cd into auth folder, run `go run ./cmd/main.go`
-- `export GOOGLE_APPLICATION_CREDENTIALS="./internal/adminSdkSecret.json"`
