@@ -68,9 +68,9 @@ type FirestoreSocialPlatform struct {
 
 // SpotifyImage includes data for any image returned in Spotify
 type SpotifyImage struct {
-	Height int    `json:",omitempty"`
-	URL    string `json:"url"`
-	Width  int    `json:",omitempty"`
+	Height int    `firestore:"height,omitempty" json:"height,omitempty"`
+	URL    string `firestore:"url" json:"url"`
+	Width  int    `firestore:"width,omitempty" json:"width,omitempty"`
 }
 
 // GenerateTokenRequest represents the UID for the user that we want to create a custom token for
