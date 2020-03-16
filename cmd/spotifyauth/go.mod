@@ -15,3 +15,5 @@ replace github.com/pixelogicdev/gruveebackend/cmd/socialplatform => ../cmd/socia
 replace github.com/pixelogicdev/gruveebackend/cmd/tokengen => ../cmd/tokengen
 
 replace github.com/pixelogicdev/gruveebackend/cmd/createuser => ../cmd/createuser
+
+replace github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh => ../cmd/socialtokenrefresh

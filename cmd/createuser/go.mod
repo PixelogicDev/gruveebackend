@@ -15,3 +15,5 @@ replace github.com/pixelogicdev/gruveebackend/cmd/spotifyauth => ../cmd/spotifya
 replace github.com/pixelogicdev/gruveebackend/cmd/tokengen => ../cmd/tokengen
 
 replace github.com/pixelogicdev/gruveebackend/cmd/socialplatform => ../cmd/socialplatform
+
+replace github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh => ../cmd/socialtokenrefresh

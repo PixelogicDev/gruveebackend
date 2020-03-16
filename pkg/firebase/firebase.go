@@ -6,9 +6,12 @@ import (
 	firestore "cloud.google.com/go/firestore"
 )
 
+// -- TYPES -- //
+
 // SpotifyAuthRequest includes APIToken needed for Spotify API
 type SpotifyAuthRequest struct {
 	APIToken     string `json:"token"`
+	ExpiresIn    int    `json:"expiresIn"`
 	RefreshToken string `json:"refreshToken"`
 }
 
@@ -55,7 +58,7 @@ type FirestoreUser struct {
 
 // FirestoreSocialPlatform represents the data for a social platform stored in Firestore
 type FirestoreSocialPlatform struct {
-	APIToken           string       `firestore:"apiToken" json:"apiToken"`
+	APIToken           APIToken     `firestore:"apiToken" json:"apiToken"`
 	RefreshToken       string       `firestore:"refreshToken" json:"refreshToken"`
 	Email              string       `firestore:"email" json:"email"`
 	ID                 string       `firestore:"id" json:"id"`
@@ -64,6 +67,14 @@ type FirestoreSocialPlatform struct {
 	PlatformName       string       `firestore:"platformName" json:"platformName"`
 	ProfileImage       SpotifyImage `firestore:"profileImage" json:"profileImage"`
 	Username           string       `firestore:"username" json:"username"`
+}
+
+// APIToken contains the access token and the time in which it expires
+type APIToken struct {
+	CreatedAt string `firestore:"createdAt" json:"createdAt"`
+	ExpiredAt string `firestore:"expiredAt" json:"expiredAt"`
+	Token     string `firestore:"token" json:"token"`
+	ExpiresIn int    `firestore:"expiresIn" json:"expiresIn"`
 }
 
 // SpotifyImage includes data for any image returned in Spotify

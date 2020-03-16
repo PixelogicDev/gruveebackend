@@ -13,16 +13,19 @@ import (
 	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 	"github.com/pixelogicdev/gruveebackend/cmd/createuser"
 	"github.com/pixelogicdev/gruveebackend/cmd/socialplatform"
+	"github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh"
 	"github.com/pixelogicdev/gruveebackend/cmd/spotifyauth"
 	"github.com/pixelogicdev/gruveebackend/cmd/tokengen"
 )
 
+// InukApp - "Swift > Go" (03/15/20)
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	funcframework.RegisterHTTPFunction("/authorizeWithSpotify", spotifyauth.AuthorizeWithSpotify)
 	funcframework.RegisterHTTPFunction("/generateToken", tokengen.GenerateCustomToken)
 	funcframework.RegisterHTTPFunction("/createSocialPlatform", socialplatform.CreateSocialPlatform)
 	funcframework.RegisterHTTPFunction("/createUser", createuser.CreateUser)
+	funcframework.RegisterHTTPFunction("/socialTokenRefresh", socialtokenrefresh.SocialTokenRefresh)
 	// Use PORT environment variable, or default to 8080.
 	port := "8080"
 	if envPort := os.Getenv("PORT"); envPort != "" {

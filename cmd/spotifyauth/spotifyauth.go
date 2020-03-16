@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 
 	firestore "cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
@@ -160,6 +161,15 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 
 	// We have our user
 	if authorizeWithSpotifyResp != nil {
+		// Still need to get our custom token here
+		var customToken, customTokenErr = getCustomToken(authorizeWithSpotifyResp.ID)
+		if customTokenErr != nil {
+			http.Error(writer, customTokenErr.Error(), http.StatusBadRequest)
+			log.Printf("AuthorizeWithSpotify [customToken]: %v", userErr)
+			return
+		}
+		authorizeWithSpotifyResp.JWT = customToken.Token
+
 		writer.WriteHeader(http.StatusOK)
 		writer.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(writer).Encode(authorizeWithSpotifyResp)
@@ -296,9 +306,19 @@ func createSocialPlatform(spotifyResp firebase.SpotifyMeResponse,
 		profileImage = firebase.SpotifyImage{}
 	}
 
+	// Adds the expiresIn time to current time
+	var expiredAtStr = time.Now().Add(time.Second * time.Duration(authReq.ExpiresIn))
+
+	var apiToken = firebase.APIToken{
+		CreatedAt: time.Now().Format(time.RFC3339),
+		ExpiredAt: expiredAtStr.Format(time.RFC3339),
+		ExpiresIn: authReq.ExpiresIn,
+		Token:     authReq.APIToken,
+	}
+
 	// Object that we will write to Firestore
 	var platform = firebase.FirestoreSocialPlatform{
-		APIToken:           authReq.APIToken,
+		APIToken:           apiToken,
 		RefreshToken:       authReq.RefreshToken,
 		Email:              spotifyResp.Email,
 		ID:                 spotifyResp.ID,
