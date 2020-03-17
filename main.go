@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
+	"github.com/joho/godotenv"
 	"github.com/pixelogicdev/gruveebackend/cmd/createuser"
 	"github.com/pixelogicdev/gruveebackend/cmd/socialplatform"
 	"github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh"
@@ -20,6 +21,12 @@ import (
 
 // InukApp - "Swift > Go" (03/15/20)
 func main() {
+	// Load in ENV file
+	goEnvErr := godotenv.Load("./internal/config.yaml")
+	if goEnvErr != nil {
+		log.Printf("SocialTokenRefresh [Load GoEnv]: %v\n", goEnvErr)
+	}
+
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	funcframework.RegisterHTTPFunction("/authorizeWithSpotify", spotifyauth.AuthorizeWithSpotify)
 	funcframework.RegisterHTTPFunction("/generateToken", tokengen.GenerateCustomToken)

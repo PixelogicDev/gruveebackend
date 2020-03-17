@@ -1,1 +1,3 @@
-This folder should include your adminSdkSecret.json
+This folder should include: 
+adminSdkSecret.json
+config.yaml

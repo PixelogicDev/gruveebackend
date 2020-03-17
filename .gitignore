@@ -3,3 +3,6 @@
 
 # Vendor Folder
 **/vendor
+
+# Enviornment Files
+config.yaml

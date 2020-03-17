@@ -94,5 +94,6 @@ When adding new functions to this project you will need to also update the build
 
 ### Deploy Function To Cloud
 
+- Change `config.yaml` file `ENIRONMENT: PROD`
 - cd into cmd/function folder and deploy from there using an example like so:
-  `gcloud functions deploy authorizeWithSpotify --entry-point AuthorizeWithSpotify --runtime go113 --trigger-http --allow-unauthenticated`
+  `gcloud functions deploy authorizeWithSpotify --entry-point AuthorizeWithSpotify --runtime go113 --trigger-http --env-vars-file internal/config.yaml --allow-unauthenticated`

@@ -5,6 +5,7 @@ go 1.13
 require (
 	cloud.google.com/go/firestore v1.1.1
 	github.com/GoogleCloudPlatform/functions-framework-go v1.0.0
+	github.com/joho/godotenv v1.3.0
 	github.com/pixelogicdev/gruveebackend/cmd/createuser v0.0.0-00010101000000-000000000000
 	github.com/pixelogicdev/gruveebackend/cmd/socialplatform v0.0.0
 	github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh v0.0.0-00010101000000-000000000000
