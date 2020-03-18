@@ -11,8 +11,5 @@
 	},
 	"terminal.integrated.env.windows": {
 		"GO111MODULE": "on"
-	},
-	"files.exclude": {
-		"internal/adminSdkSecret.json": true
 	}
 }

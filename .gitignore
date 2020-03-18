@@ -1,5 +1,8 @@
 # Config
-internal/*
+**/adminSdkSecret.json
 
 # Vendor Folder
 **/vendor
+
+# Enviornment Files
+config.yaml
