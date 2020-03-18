@@ -13,15 +13,15 @@ import (
 
 var firestoreClient *firestore.Client
 
+// JackGamesFTW - "TriHard 7" (03/18/20)
 func init() {
 	client, err := firestore.NewClient(context.Background(), "gruvee-3b7c4")
 	if err != nil {
-		log.Printf("SocialPlatform [Init Firestore]: %v", err)
+		log.Printf("CreateSocialPlatform [Init Firestore]: %v", err)
 		return
 	}
-
 	firestoreClient = client
-	log.Println("SocialPlatform intialized.")
+	log.Println("CreateSocialPlatform intialized")
 }
 
 // CreateSocialPlatform will write a new social platform to firestore

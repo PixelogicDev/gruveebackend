@@ -21,9 +21,6 @@ var firestoreClient *firestore.Client
 var spotifyRefreshTokenURI = "https://accounts.spotify.com/api/token"
 
 func init() {
-	// Set httpClient
-	httpClient = &http.Client{}
-
 	// Get Firestore Client
 	client, err := firestore.NewClient(context.Background(), "gruvee-3b7c4")
 	if err != nil {
@@ -31,7 +28,11 @@ func init() {
 		return
 	}
 	firestoreClient = client
-	log.Println("SocialTokenRefreshRequest initialized")
+
+	// Set httpClient
+	httpClient = &http.Client{}
+
+	log.Println("SocialTokenRefresh initialized")
 }
 
 // socialTokenRefreshRequest includes uid to grab all social platforms for user
@@ -51,7 +52,7 @@ type spotifyRefreshTokenResponse struct {
 func SocialTokenRefresh(writer http.ResponseWriter, request *http.Request) {
 	// Check to see if we have env variables
 	if os.Getenv("SPOTIFY_CLIENTID") == "" || os.Getenv("SPOTIFY_SECRET") == "" {
-		log.Printf("SocialTokenRefresh [Check Env Props]: PROPS NOT HERE.")
+		log.Fatalln("SocialTokenRefresh [Check Env Props]: PROPS NOT HERE.")
 		return
 	}
 

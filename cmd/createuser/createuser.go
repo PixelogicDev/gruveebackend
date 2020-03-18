@@ -18,9 +18,8 @@ func init() {
 		log.Printf("CreateUser [Init Firestore]: %v", err)
 		return
 	}
-
 	firestoreClient = client
-	log.Println("Initialized createuser")
+	log.Println("CreateUser Initialized")
 }
 
 // CreateUser will write a new Firebase user to Firestore

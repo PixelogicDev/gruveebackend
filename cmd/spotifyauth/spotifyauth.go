@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	firestore "cloud.google.com/go/firestore"
@@ -29,26 +30,33 @@ import (
 
 var httpClient *http.Client
 var firestoreClient *firestore.Client
-var spotifyMeURI = "https://api.spotify.com/v1/me"
+var spotifyMeURI string
+var hostname string
 
 func init() {
-	// Initialize client
-	httpClient = &http.Client{}
-
 	// Initialize Firestore
-	// TODO: Get way to use env variable for project id
 	client, err := firestore.NewClient(context.Background(), "gruvee-3b7c4")
 	if err != nil {
 		log.Printf("AuthorizeWithSpotify [Init Firestore]: %v", err)
 		return
 	}
-
 	firestoreClient = client
-	log.Printf("Firestore initialized")
+
+	// Initialize client
+	httpClient = &http.Client{}
+	log.Println("AuthorizeWithSpotify initialized")
 }
 
 // AuthorizeWithSpotify will verify Spotify creds are valid and return any associated Firebase user or create a new Firebase user
 func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
+	// Initialize paths
+	spotifyMeURI = "https://api.spotify.com/v1/me"
+	if os.Getenv("ENVIRONMENT") == "DEV" {
+		hostname = "http://localhost:8080"
+	} else if os.Getenv("ENVIRONMENT") == "PROD" {
+		hostname = "https://us-central1-gruvee-3b7c4.cloudfunctions.net"
+	}
+
 	var spotifyAuthRequest firebase.SpotifyAuthRequest
 
 	authResponseErr := json.NewDecoder(request.Body).Decode(&spotifyAuthRequest)
@@ -248,7 +256,7 @@ func fetchChildRefs(refs []*firestore.DocumentRef) (*firebase.FirestoreSocialPla
 
 func createUser(spotifyResp firebase.SpotifyMeResponse,
 	socialPlatDocRef *firestore.DocumentRef) (*firebase.FirestoreUser, error) {
-	var createUserURI = "http://localhost:8080/createUser"
+	var createUserURI = hostname + "/createUser"
 
 	// Create firetoreUser Object
 	var firestoreUser = firebase.FirestoreUser{
@@ -291,7 +299,7 @@ func createUser(spotifyResp firebase.SpotifyMeResponse,
 // createSocialPlatform calls our CreateSocialPlatform Firebase Function to create & write new platform to DB
 func createSocialPlatform(spotifyResp firebase.SpotifyMeResponse,
 	authReq firebase.SpotifyAuthRequest) (*firestore.DocumentRef, *firebase.FirestoreSocialPlatform, error) {
-	var createSocialPlatformURI = "http://localhost:8080/createSocialPlatform"
+	var createSocialPlatformURI = hostname + "/createSocialPlatform"
 
 	// Create request body
 	var isPremium = false
@@ -365,7 +373,7 @@ func createSocialPlatform(spotifyResp firebase.SpotifyMeResponse,
 
 // getCustomRoken calles our GenerateToken Firebase Function to create & return custom JWT
 func getCustomToken(uid string) (*firebase.GenerateTokenResponse, error) {
-	var generateTokenURI = "http://localhost:8080/generateToken"
+	var generateTokenURI = hostname + "/generateToken"
 	var tokenRequest = firebase.GenerateTokenRequest{
 		UID: uid,
 	}

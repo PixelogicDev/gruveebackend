@@ -19,14 +19,17 @@ import (
 	"github.com/pixelogicdev/gruveebackend/cmd/tokengen"
 )
 
-// InukApp - "Swift > Go" (03/15/20)
-func main() {
+func init() {
 	// Load in ENV file
 	goEnvErr := godotenv.Load("./internal/config.yaml")
 	if goEnvErr != nil {
-		log.Printf("SocialTokenRefresh [Load GoEnv]: %v\n", goEnvErr)
+		log.Printf("Main [Load GoEnv]: %v\n", goEnvErr)
 	}
+	log.Println("Main environment variables loaded")
+}
 
+// InukApp - "Swift > Go" (03/15/20)
+func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	funcframework.RegisterHTTPFunction("/authorizeWithSpotify", spotifyauth.AuthorizeWithSpotify)
 	funcframework.RegisterHTTPFunction("/generateToken", tokengen.GenerateCustomToken)
