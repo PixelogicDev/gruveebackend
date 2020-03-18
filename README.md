@@ -8,7 +8,7 @@
         <img src="https://img.shields.io/discord/391635862959554561?label=Discord" alt="Discord members online" />
     </a>
     <a href="https://github.com/pixelogicdev/gruvee">
-        <img alt="GitHub issues" src="https://img.shields.io/github/issues/pixelogicdev/gruvee-backend">
+        <img alt="GitHub issues" src="https://img.shields.io/github/issues/pixelogicdev/gruveebackend">
     </a>
     <a href="#-how-to-contribute">
         <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome!" />

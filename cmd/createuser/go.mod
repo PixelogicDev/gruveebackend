@@ -7,7 +7,6 @@ require (
 	github.com/pixelogicdev/gruveebackend/pkg/firebase v0.0.0-20200308213401-073e9c1ba1b9
 )
 
-// ENABLE WHEN IN DEBUG
 replace github.com/pixelogicdev/gruveebackend/pkg/firebase => ../../pkg/firebase
 
 replace github.com/pixelogicdev/gruveebackend/cmd/spotifyauth => ../cmd/spotifyauth
