@@ -7,13 +7,3 @@ require (
 	github.com/pixelogicdev/gruveebackend/pkg/firebase v0.0.0-20200308212314-0462fa42269c
 	google.golang.org/grpc v1.27.1
 )
-
-replace github.com/pixelogicdev/gruveebackend/pkg/firebase => ../../pkg/firebase
-
-replace github.com/pixelogicdev/gruveebackend/cmd/socialplatform => ../cmd/socialplatform
-
-replace github.com/pixelogicdev/gruveebackend/cmd/tokengen => ../cmd/tokengen
-
-replace github.com/pixelogicdev/gruveebackend/cmd/createuser => ../cmd/createuser
-
-replace github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh => ../cmd/socialtokenrefresh

@@ -8,14 +8,3 @@ require (
 	github.com/pixelogicdev/gruveebackend/pkg/firebase v0.0.0-20200308213401-073e9c1ba1b9
 	google.golang.org/api v0.20.0 // indirect
 )
-
-// ENABLE WHEN IN DEBUG
-replace github.com/pixelogicdev/gruveebackend/pkg/firebase => ../../pkg/firebase
-
-replace github.com/pixelogicdev/gruveebackend/cmd/socialplatform => ../cmd/socialplatform
-
-replace github.com/pixelogicdev/gruveebackend/cmd/spotifyauth => ../cmd/spotifyauth
-
-replace github.com/pixelogicdev/gruveebackend/cmd/createuser => ../cmd/createuser
-
-replace github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh => ../cmd/socialtokenrefresh
