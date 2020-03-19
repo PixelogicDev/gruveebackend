@@ -83,17 +83,53 @@ export PATH=$PATH:$GOBIN:$GOPATH
 3. These should get you started pretty much right away when you open up the repo
 
 ### Running Functions Locally
+
 When you want to run all the functions locally, all you need to do is run `scripts/gorun.sh`. (Currently there is no windows equivalent, but should make one #SOON.) Essentially this will:
+
 - Add all the replace lines in all the go mod files
 - Build and run the `main.go` file in the root
 
 When adding new functions to this project you will need to also update the build script as follows:
+
 1. Add a variable for the function replace path. For example if your new function is called `addCoolPerson` create a replace variable that looks like this: `addCoolPerson=github.com/pixelogicdev/gruveebackend/cmd/addcoolperson=../cmd/addcoolperson`
 2. Add a new if statement for `addcoolperon/` directory in the if logic
 3. Make sure to add the new `go mod edit -replace $addCoolPerson` to all other functions (for now it's easier this way to make sure we aren't missing anything)
+
+### Commit Process
+
+1. Before merging into `master` we need to make sure to go into every function within `/cmd` and remove the replace tags from `go.mod`
+2. We commit changes and verify things work locall
+3. Create a Pull Request to merge into `master`
+4. Once merged into `master` checkout original branch and go into each `/cmd` function and run `go get -u` to update to latest versions
+5. Create another Pull Request to merge the latest
 
 ### Deploy Function To Cloud
 
 - Change `config.yaml` file `ENIRONMENT: PROD`
 - cd into cmd/function folder and deploy from there using an example like so:
   `gcloud functions deploy authorizeWithSpotify --entry-point AuthorizeWithSpotify --runtime go113 --trigger-http --env-vars-file internal/config.yaml --allow-unauthenticated`
+
+### Random Notes
+
+https://github.com/go-modules-by-example/index/blob/master/009_submodules/README.md
+v1.0.0-beta.1
+
+cmd
+-> /createuser
+--> CreatUser (Firebase Function) v0.1.0
+-> /socialplatform
+--> CreateSocialPlatform (Firebase Function) v0.3.0
+--> go.mod
+--> github.conm/pixelogicdev/gruveebackend/cmd/createuser v0.1.0
+
+- Make changes in createuser
+- Need to commit changes
+- Rev version to v0.2.0
+- Merge to master
+- New createUser version available
+- createSocialPlatform woud have to rev to v0.2.0
+- Rev createSocialPlatform to new v0.4.0
+- merge to master etc.
+
+- Utilize .version file for each function
+- Tag each module separately
