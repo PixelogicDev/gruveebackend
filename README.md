@@ -98,38 +98,17 @@ When adding new functions to this project you will need to also update the build
 ### Commit Process
 
 1. Before merging into `master` we need to make sure to go into every function within `/cmd` and remove the replace tags from `go.mod`
-2. We commit changes and verify things work locall
-3. Create a Pull Request to merge into `master`
-4. Once merged into `master` checkout original branch and go into each `/cmd` function and run `go get -u` to update to latest versions
-5. Create another Pull Request to merge the latest
+2. We commit changes and verify things work locally
+3. Make sure to update the `.version` file in whatever module the change was made in
+4. Create a Pull Request to merge into `master`
+5. Once merged into `master` we need to tag the module that was changed (We are using this format: `v1.0.0-beta.{WhateverNumberComesNext}`.)
+6. This should happen on the `master` branch so make sure to pull the latest and start the tagging process
+7. The tag needs to happen on the module like so: `cmd/{ModuleName}/{NewVersionNumber} ([Please use this README for reference](https://github.com/go-modules-by-example/index/blob/master/009_submodules/README.md))
+8. Once all the tags have been added, use `git push origin --tags` to push all the tags to master
+9. Verify that the module is not being used by any other modules. If it is, make sure to make another Pull Request to `master` with this change.
 
 ### Deploy Function To Cloud
 
 - Change `config.yaml` file `ENIRONMENT: PROD`
 - cd into cmd/function folder and deploy from there using an example like so:
   `gcloud functions deploy authorizeWithSpotify --entry-point AuthorizeWithSpotify --runtime go113 --trigger-http --env-vars-file internal/config.yaml --allow-unauthenticated`
-
-### Random Notes
-
-https://github.com/go-modules-by-example/index/blob/master/009_submodules/README.md
-v1.0.0-beta.1
-
-cmd
--> /createuser
---> CreatUser (Firebase Function) v0.1.0
--> /socialplatform
---> CreateSocialPlatform (Firebase Function) v0.3.0
---> go.mod
---> github.conm/pixelogicdev/gruveebackend/cmd/createuser v0.1.0
-
-- Make changes in createuser
-- Need to commit changes
-- Rev version to v0.2.0
-- Merge to master
-- New createUser version available
-- createSocialPlatform woud have to rev to v0.2.0
-- Rev createSocialPlatform to new v0.4.0
-- merge to master etc.
-
-- Utilize .version file for each function
-- Tag each module separately
