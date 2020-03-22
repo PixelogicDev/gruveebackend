@@ -8,6 +8,8 @@ import (
 
 // -- TYPES -- //
 
+// -- SPOTIFY AUTH -- //
+
 // SpotifyAuthRequest includes APIToken needed for Spotify API
 type SpotifyAuthRequest struct {
 	APIToken     string `json:"token"`
@@ -39,18 +41,32 @@ type spotifyRequestErrorDetails struct {
 type AuthorizeWithSpotifyResponse struct {
 	Email                   string                    `json:"email"`
 	ID                      string                    `json:"id"`
-	Playlists               []string                  `json:"playlists"`
+	Playlists               []FirestorePlaylist       `json:"playlists"`
 	PreferredSocialPlatform FirestoreSocialPlatform   `json:"preferredSocialPlatform"`
 	SocialPlatforms         []FirestoreSocialPlatform `json:"socialPlatforms"`
 	Username                string                    `json:"username"`
 	JWT                     string                    `json:"jwt,omitempty"`
 }
 
+// -- GENERATE TOKEN -- //
+
+// GenerateTokenRequest represents the UID for the user that we want to create a custom token for
+type GenerateTokenRequest struct {
+	UID string
+}
+
+// GenerateTokenResponse represents what we will send back to the client
+type GenerateTokenResponse struct {
+	Token string `json:"token"`
+}
+
+// -- FIRESTORE -- //
+
 // FirestoreUser respresents the data stored in Firestore for an user
 type FirestoreUser struct {
 	Email                   string                   `firestore:"email"`
 	ID                      string                   `firestore:"id"`
-	Playlists               []string                 `firestore:"playlists"`
+	Playlists               []*firestore.DocumentRef `firestore:"playlists"`
 	PreferredSocialPlatform *firestore.DocumentRef   `firestore:"preferredSocialPlatform"`
 	SocialPlatforms         []*firestore.DocumentRef `firestore:"socialPlatforms"`
 	Username                string                   `firestore:"username"`
@@ -69,6 +85,19 @@ type FirestoreSocialPlatform struct {
 	Username           string       `firestore:"username" json:"username"`
 }
 
+// FirestorePlaylist represents the data for a playlist store in Firestore
+type FirestorePlaylist struct {
+	ID        string      `firestore:"id" json:"id"`
+	Name      string      `firestore:"name" json:"name"`
+	CreatedBy string      `firestore:"createdBy" json:"createdBy"`
+	Members   []string    `firestore:"members" json:"members"`
+	Songs     []string    `firestore:"songs" json:"songs"`
+	Comments  interface{} `firestore:"comments" json:"comments"` // This will actually need be an object with key:value pair of songId:[Comments]
+	CoverArt  string      `firestore:"coverArt" json:"coverArt"`
+}
+
+// -- FIRESTORE TYPES -- //
+
 // APIToken contains the access token and the time in which it expires
 type APIToken struct {
 	CreatedAt string `firestore:"createdAt" json:"createdAt"`
@@ -82,14 +111,4 @@ type SpotifyImage struct {
 	Height int    `firestore:"height,omitempty" json:"height,omitempty"`
 	URL    string `firestore:"url" json:"url"`
 	Width  int    `firestore:"width,omitempty" json:"width,omitempty"`
-}
-
-// GenerateTokenRequest represents the UID for the user that we want to create a custom token for
-type GenerateTokenRequest struct {
-	UID string
-}
-
-// GenerateTokenResponse represents what we will send back to the client
-type GenerateTokenResponse struct {
-	Token string `json:"token"`
 }
