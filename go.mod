@@ -8,7 +8,7 @@ require (
 	github.com/pixelogicdev/gruveebackend/cmd/createuser v1.0.0-beta.1
 	github.com/pixelogicdev/gruveebackend/cmd/socialplatform v1.0.0-beta.1
 	github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh v1.0.0-beta.1
-	github.com/pixelogicdev/gruveebackend/cmd/spotifyauth v1.0.0-beta.1
+	github.com/pixelogicdev/gruveebackend/cmd/spotifyauth v1.0.0-beta.2
 	github.com/pixelogicdev/gruveebackend/cmd/tokengen v1.0.0-beta.1
 )
 
