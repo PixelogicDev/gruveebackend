@@ -116,7 +116,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Check DB for user, if there return user object else return nil
+	// Check DB for user, if there return user object
 	authorizeWithSpotifyResp, userErr := getUser(spotifyMeResponse.ID)
 	if userErr != nil {
 		http.Error(writer, userErr.Error(), http.StatusBadRequest)
@@ -156,7 +156,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		var spoitfyAuthResp = firebase.AuthorizeWithSpotifyResponse{
 			Email:                   firestoreUser.Email,
 			ID:                      firestoreUser.ID,
-			Playlists:               firestoreUser.Playlists,
+			Playlists:               []firebase.FirestorePlaylist{},
 			PreferredSocialPlatform: *socialPlatData,
 			SocialPlatforms:         []firebase.FirestoreSocialPlatform{*socialPlatData},
 			Username:                firestoreUser.Username,
@@ -210,50 +210,92 @@ func getUser(uid string) (*firebase.AuthorizeWithSpotifyResponse, error) {
 	}
 
 	// Get references from socialPlatforms
-	preferredPlatform, socialErr := fetchChildRefs(firestoreUser.SocialPlatforms)
-	if socialErr != nil {
-		return nil, fmt.Errorf("doesUserExist: %v", socialErr)
+	socialPlatformSnaps, socialPlatformSnapsErr := fetchSnapshots(firestoreUser.SocialPlatforms)
+	if socialPlatformSnapsErr != nil {
+		return nil, fmt.Errorf("FetchSnapshots: %v", socialPlatformSnapsErr)
 	}
+
+	// Conver socialPlatforms to data
+	socialPlatforms, preferredPlatform := snapsToSocialPlatformData(socialPlatformSnaps)
+
+	// Get references from playlists
+	playlistsSnaps, playlistSnapsErr := fetchSnapshots(firestoreUser.Playlists)
+	if playlistSnapsErr != nil {
+		return nil, fmt.Errorf("FetchSnapshots: %v", playlistSnapsErr)
+	}
+
+	// Convert playlists to data
+	playlists := snapsToPlaylistData(playlistsSnaps)
 
 	// Convert user to response object
 	authorizeWithSpotifyResponse := firebase.AuthorizeWithSpotifyResponse{
 		Email:                   firestoreUser.Email,
 		ID:                      firestoreUser.ID,
-		Playlists:               []string{},
-		PreferredSocialPlatform: *preferredPlatform,
-		SocialPlatforms:         []firebase.FirestoreSocialPlatform{*preferredPlatform},
+		Playlists:               playlists,
+		PreferredSocialPlatform: preferredPlatform,
+		SocialPlatforms:         socialPlatforms,
 		Username:                firestoreUser.Username,
 	}
 
 	return &authorizeWithSpotifyResponse, nil
 }
 
-func fetchChildRefs(refs []*firestore.DocumentRef) (*firebase.FirestoreSocialPlatform, error) {
+// fetchSnapshots takes in an array for Firestore Documents references and return their DocumentSnapshots
+func fetchSnapshots(refs []*firestore.DocumentRef) ([]*firestore.DocumentSnapshot, error) {
 	docsnaps, err := firestoreClient.GetAll(context.Background(), refs)
 	if err != nil {
 		return nil, fmt.Errorf("fetchChildRefs: %v", err)
 	}
 
-	var preferredService firebase.FirestoreSocialPlatform
+	return docsnaps, nil
+}
 
-	for _, userSnap := range docsnaps {
-		var socialPlatform firebase.FirestoreSocialPlatform
+// snapsToPlaylistData takes in array of Firestore DocumentSnapshots and retursn array of FirestorePlaylists
+func snapsToPlaylistData(snaps []*firestore.DocumentSnapshot) []firebase.FirestorePlaylist {
+	var playlists []firebase.FirestorePlaylist
 
-		dataErr := userSnap.DataTo(&socialPlatform)
+	for _, playlistSnap := range snaps {
+		var playlist firebase.FirestorePlaylist
+
+		dataErr := playlistSnap.DataTo(&playlist)
 		if dataErr != nil {
-			log.Printf("Encountered error while parsing userSnapshot.")
+			log.Printf("Encountered error while parsing playlist snapshot.")
 			log.Printf("%v", dataErr)
 			continue
 		}
+
+		playlists = append(playlists, playlist)
+	}
+
+	return playlists
+}
+
+// snapsToSocialPlatformData takes in array of Firestore DocumentSnapshots and retursn array of FirestoreSocialPlatforms & PreferredPlatform
+func snapsToSocialPlatformData(snaps []*firestore.DocumentSnapshot) ([]firebase.FirestoreSocialPlatform, firebase.FirestoreSocialPlatform) {
+	var socialPlatforms []firebase.FirestoreSocialPlatform
+	var preferredService firebase.FirestoreSocialPlatform
+
+	for _, socialSnaps := range snaps {
+		var socialPlatform firebase.FirestoreSocialPlatform
+
+		dataErr := socialSnaps.DataTo(&socialPlatform)
+		if dataErr != nil {
+			log.Printf("Encountered error while parsing socialSnaps.")
+			log.Printf("%v", dataErr)
+			continue
+		}
+
+		socialPlatforms = append(socialPlatforms, socialPlatform)
 
 		if socialPlatform.IsPreferredService {
 			preferredService = socialPlatform
 		}
 	}
 
-	return &preferredService, nil
+	return socialPlatforms, preferredService
 }
 
+// createUser takes in the spotify response and returns a new firebase user
 func createUser(spotifyResp firebase.SpotifyMeResponse,
 	socialPlatDocRef *firestore.DocumentRef) (*firebase.FirestoreUser, error) {
 	var createUserURI = hostname + "/createUser"
@@ -262,7 +304,7 @@ func createUser(spotifyResp firebase.SpotifyMeResponse,
 	var firestoreUser = firebase.FirestoreUser{
 		Email:                   spotifyResp.Email,
 		ID:                      "spotify:" + spotifyResp.ID,
-		Playlists:               []string{},
+		Playlists:               []*firestore.DocumentRef{},
 		PreferredSocialPlatform: socialPlatDocRef,
 		SocialPlatforms:         []*firestore.DocumentRef{socialPlatDocRef},
 		Username:                spotifyResp.DisplayName,
