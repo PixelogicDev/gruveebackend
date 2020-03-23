@@ -1,5 +1,7 @@
 package spotifyauth
 
+// InukApp - "Todo: add Plex auth support" (03/22/20)
+// DaedTTV - "32 Font Size Kinda THICC" (03/23/20)
 // thoastyk 	"X O X" (02/26/20)
 // thoastyk 	"_ X O" (02/26/20)
 // pheonix_d123	"O O X I wanna interrupt the tic-tac-toe." (03/08/20)

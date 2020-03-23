@@ -18,6 +18,7 @@ then
     socialPlatformReplace="github.com/pixelogicdev/gruveebackend/cmd/socialplatform=../cmd/socialplatform"
     createUserReplace="github.com/pixelogicdev/gruveebackend/cmd/createuser=../cmd/createuser"
     socialTokenRefreshReplace="github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh=../cmd/socialtokenrefresh"
+    createSocialPlaylistReplace="github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist=../cmd/createsocialplaylist"
     firebaseReplace="github.com/pixelogicdev/gruveebackend/pkg/firebase=../../pkg/firebase"
 
     # add googleCreds to terminal instance
@@ -38,6 +39,7 @@ then
             go mod edit -replace $socialPlatformReplace
             go mod edit -replace $firebaseReplace
             go mod edit -replace $socialTokenRefreshReplace
+            go mod edit -replace $createSocialPlaylistReplace
         fi
 
         if [ "$d" = "socialplatform/" ]
@@ -47,6 +49,7 @@ then
             go mod edit -replace $createUserReplace
             go mod edit -replace $firebaseReplace
             go mod edit -replace $socialTokenRefreshReplace
+            go mod edit -replace $createSocialPlaylistReplace
         fi
 
         if [ "$d" = "spotifyauth/" ]
@@ -56,6 +59,7 @@ then
             go mod edit -replace $createUserReplace
             go mod edit -replace $firebaseReplace
             go mod edit -replace $socialTokenRefreshReplace
+            go mod edit -replace $createSocialPlaylistReplace
         fi
     
         if [ "$d" = "tokengen/" ] 
@@ -65,6 +69,7 @@ then
             go mod edit -replace $createUserReplace
             go mod edit -replace $firebaseReplace
             go mod edit -replace $socialTokenRefreshReplace
+            go mod edit -replace $createSocialPlaylistReplace
         fi
 
         if [ "$d" = "socialtokenrefresh/" ] 
@@ -74,6 +79,17 @@ then
             go mod edit -replace $createUserReplace
             go mod edit -replace $firebaseReplace
             go mod edit -replace $tokengenReplace
+            go mod edit -replace $createSocialPlaylistReplace
+        fi
+
+        if [ "$d" = "createsocialplaylist/" ] 
+        then
+            go mod edit -replace $socialPlatformReplace
+            go mod edit -replace $spotifyAuthReplace 
+            go mod edit -replace $createUserReplace
+            go mod edit -replace $firebaseReplace
+            go mod edit -replace $tokengenReplace
+            go mod edit -replace $socialTokenRefreshReplace
         fi
     
         # Move back up a directory

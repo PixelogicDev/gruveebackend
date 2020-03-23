@@ -10,3 +10,15 @@ require (
 	google.golang.org/genproto v0.0.0-20200319113533-08878b785e9c // indirect
 	google.golang.org/grpc v1.28.0
 )
+
+replace github.com/pixelogicdev/gruveebackend/cmd/socialplatform => ../cmd/socialplatform
+
+replace github.com/pixelogicdev/gruveebackend/cmd/tokengen => ../cmd/tokengen
+
+replace github.com/pixelogicdev/gruveebackend/cmd/createuser => ../cmd/createuser
+
+replace github.com/pixelogicdev/gruveebackend/pkg/firebase => ../../pkg/firebase
+
+replace github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh => ../cmd/socialtokenrefresh
+
+replace github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist => ../cmd/createsocialplaylist
