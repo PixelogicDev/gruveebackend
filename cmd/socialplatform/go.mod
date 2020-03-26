@@ -21,3 +21,5 @@ replace github.com/pixelogicdev/gruveebackend/pkg/firebase => ../../pkg/firebase
 replace github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh => ../cmd/socialtokenrefresh
 
 replace github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist => ../cmd/createsocialplaylist
+
+replace github.com/pixelogicdev/gruveebackend/pkg/social => ../../pkg/social

@@ -14,6 +14,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
+	"github.com/pixelogicdev/gruveebackend/pkg/social"
 )
 
 var httpClient *http.Client
@@ -35,11 +36,6 @@ func init() {
 	log.Println("SocialTokenRefresh initialized")
 }
 
-// socialTokenRefreshRequest includes uid to grab all social platforms for user
-type socialTokenRefreshRequest struct {
-	UID string `json:"uid"`
-}
-
 // spotifyRefreshTokenResponse includes the object returned from a Spotify token refresh
 type spotifyRefreshTokenResponse struct {
 	APIToken  string `json:"access_token"`
@@ -57,7 +53,7 @@ func SocialTokenRefresh(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Receive payload that includes uid
-	var socialTokenReq socialTokenRefreshRequest
+	var socialTokenReq social.TokenRefreshRequest
 
 	// Decode payload
 	socialTokenErr := json.NewDecoder(request.Body).Decode(&socialTokenReq)
@@ -75,10 +71,18 @@ func SocialTokenRefresh(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	if len(*platsToRefresh) == 0 {
+		// No refresh needed, lets return this with no content
+		writer.WriteHeader(http.StatusNoContent)
+		return
+	}
+
 	// Run refresh token logic
-	refreshTokens(*platsToRefresh)
+	refreshTokenResp := refreshTokens(*platsToRefresh)
 
 	writer.WriteHeader(http.StatusOK)
+	writer.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(writer).Encode(refreshTokenResp)
 }
 
 // Helpers
@@ -131,9 +135,13 @@ func fetchChildRefs(refs []*firestore.DocumentRef) (*[]firebase.FirestoreSocialP
 }
 
 // refreshTokens goes through social platform objects and refreshes tokens as necessary
-func refreshTokens(socialPlatforms []firebase.FirestoreSocialPlatform) {
+func refreshTokens(socialPlatforms []firebase.FirestoreSocialPlatform) social.RefreshTokensResponse {
 	// Get current time
 	var currentTime = time.Now()
+	var refreshTokensResp = social.RefreshTokensResponse{
+		RefreshTokens: map[string]social.RefreshToken{},
+	}
+
 	for _, platform := range socialPlatforms {
 		fmt.Printf("Expires In: %d seconds\n", platform.APIToken.ExpiresIn)
 		fmt.Printf("Expired At: %s\n", platform.APIToken.ExpiredAt)
@@ -148,24 +156,29 @@ func refreshTokens(socialPlatforms []firebase.FirestoreSocialPlatform) {
 		if currentTime.After(expiredAtTime) {
 			// Call API refresh
 			fmt.Printf("%s access token is expired. Calling Refresh...\n", platform.PlatformName)
-			spotifyRefreshToken, tokenActionErr := refreshTokenAction(platform)
+			refreshToken, tokenActionErr := refreshTokenAction(platform)
 			if tokenActionErr != nil {
 				fmt.Println(tokenActionErr.Error())
 				continue
 			}
 
+			// Set refresh token in map
+			refreshTokensResp.RefreshTokens[platform.PlatformName] = *refreshToken
+
 			// Set new token data in database
-			writeTokenErr := writeToken(platform.ID, *spotifyRefreshToken)
+			writeTokenErr := writeToken(platform.ID, *refreshToken)
 			if writeTokenErr != nil {
 				fmt.Println(writeTokenErr.Error())
 				continue
 			}
 		}
 	}
+
+	return refreshTokensResp
 }
 
 // refreshTokenAction will call the API per platform and return the data needed
-func refreshTokenAction(platform firebase.FirestoreSocialPlatform) (*spotifyRefreshTokenResponse, error) {
+func refreshTokenAction(platform firebase.FirestoreSocialPlatform) (*social.RefreshToken, error) {
 	var authStr = os.Getenv("SPOTIFY_CLIENTID") + ":" + os.Getenv("SPOTIFY_SECRET")
 
 	// Create Request
@@ -187,19 +200,19 @@ func refreshTokenAction(platform firebase.FirestoreSocialPlatform) (*spotifyRefr
 	}
 
 	// Decode the token to send back
-	var refreshTokenResp spotifyRefreshTokenResponse
+	var refreshTokenResp social.RefreshToken
 	refreshTokenDecodeErr := json.NewDecoder(customTokenResp.Body).Decode(&refreshTokenResp)
 	if refreshTokenDecodeErr != nil {
 		return nil, fmt.Errorf(refreshTokenDecodeErr.Error())
 	}
 
+	// Make sure to add platform name here before continuing
+	refreshTokenResp.PlatformName = platform.PlatformName
 	return &refreshTokenResp, nil
 }
 
 // writeToken will write the new APIToken object to the social platform document
-func writeToken(platformID string, token spotifyRefreshTokenResponse) error {
-	// Create New APIToken Object
-
+func writeToken(platformID string, token social.RefreshToken) error {
 	var expiredAtStr = time.Now().Add(time.Second * time.Duration(token.ExpiresIn))
 	var apiToken = firebase.APIToken{
 		CreatedAt: time.Now().Format(time.RFC3339),

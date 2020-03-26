@@ -1,14 +1,17 @@
 package createsocialplaylist
 
 // Dragonfleas - "bobby drop tables wuz here pog - Dragonfleas - Relevant XKCD" (03/23/20)
+// HMigo - "EN LØK HAR FLERE LAG" (03/26/20)
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
+	"github.com/pixelogicdev/gruveebackend/pkg/social"
 )
 
 // createSocialPlaylistRequest includes the socialPlatform and playlist that will be added
@@ -26,6 +29,7 @@ type spotifyPlaylistRequest struct {
 }
 
 var httpClient *http.Client
+var hostname string
 
 func init() {
 	// Set httpClient
@@ -37,6 +41,13 @@ func init() {
 // ywnklme - "At least something in my life is social 😞" (03/23/20)
 // CreateSocialPlaylist will take in a SocialPlatform and will go create a playlist on the social account itself
 func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
+	// Initialize paths
+	if os.Getenv("ENVIRONMENT") == "DEV" {
+		hostname = "http://localhost:8080"
+	} else if os.Getenv("ENVIRONMENT") == "PROD" {
+		hostname = "https://us-central1-gruvee-3b7c4.cloudfunctions.net"
+	}
+
 	var socialPlaylistReq createSocialPlaylistRequest
 
 	// Decode our object
@@ -53,7 +64,18 @@ func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
 		platformEndpoint = "https://api.spotify.com/v1/users/" + socialPlaylistReq.SocialPlatform.ID + "/playlists"
 	}
 
-	// TODO: Check if API token needs refresh
+	// Check if API token needs refresh
+	apiToken, apiTokenErr := refreshToken(socialPlaylistReq.SocialPlatform)
+	if apiTokenErr != nil {
+		http.Error(writer, apiTokenErr.Error(), http.StatusBadRequest)
+		log.Printf("CreateSocialPlaylist [refreshToken]: %v", apiTokenErr)
+		return
+	}
+
+	if apiToken != nil {
+		log.Println("Setting new APIToken on socialPlatform")
+		socialPlaylistReq.SocialPlatform.APIToken.Token = *apiToken
+	}
 
 	// Call API to create playlist with data
 	createReqErr := createPlaylist(platformEndpoint, socialPlaylistReq.SocialPlatform, socialPlaylistReq.Playlist)
@@ -94,7 +116,7 @@ func createPlaylist(endpoint string, platform firebase.FirestoreSocialPlatform,
 
 	if customTokenResp.StatusCode != http.StatusOK && customTokenResp.StatusCode != http.StatusCreated {
 		// Convert Spotify Error Object
-		var spotifyErrorObj firebase.SpotifyRequestError
+		var spotifyErrorObj social.SpotifyRequestError
 
 		err := json.NewDecoder(customTokenResp.Body).Decode(&spotifyErrorObj)
 		if err != nil {
@@ -107,22 +129,51 @@ func createPlaylist(endpoint string, platform firebase.FirestoreSocialPlatform,
 	return nil
 }
 
-func refreshToken(platform firebase.FirestoreSocialPlatform) firebase.APIToken {
-	// Create jsonBody
-	// jsonPlaylist, jsonErr := json.Marshal(spotifyPlaylistRequest)
-	// if jsonErr != nil {
-	// 	return fmt.Errorf(jsonErr.Error())
-	// }
+func refreshToken(platform firebase.FirestoreSocialPlatform) (*string, error) {
+	var refreshReq = social.TokenRefreshRequest{
+		UID: platform.PlatformName + ":" + platform.ID,
+	}
 
-	// createPlaylistReq, createPlaylistReqErr := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonPlaylist))
-	// if createPlaylistReqErr != nil {
-	// 	return fmt.Errorf(createPlaylistReqErr.Error())
-	// }
+	var tokenRefreshURI = hostname + "/socialTokenRefresh"
+	jsonTokenRefresh, jsonErr := json.Marshal(refreshReq)
+	if jsonErr != nil {
+		return nil, fmt.Errorf(jsonErr.Error())
+	}
 
-	// createPlaylistReq.Header.Add("Content-Type", "application/json")
-	// createPlaylistReq.Header.Add("Authorization", "Bearer "+platform.APIToken.Token)
-	// customTokenResp, httpErr := httpClient.Do(createPlaylistReq)
-	// if httpErr != nil {
-	// 	return fmt.Errorf(httpErr.Error())
-	// }
+	tokenRefreshReq, tokenRefreshReqErr := http.NewRequest("POST", tokenRefreshURI, bytes.NewBuffer(jsonTokenRefresh))
+	if tokenRefreshReqErr != nil {
+		return nil, fmt.Errorf(tokenRefreshReqErr.Error())
+	}
+
+	tokenRefreshReq.Header.Add("Content-Type", "application/json")
+	tokenRefreshReq.Header.Add("User-Type", "Gruvee-Backend")
+	refreshedTokensResp, httpErr := httpClient.Do(tokenRefreshReq)
+	if httpErr != nil {
+		return nil, fmt.Errorf(httpErr.Error())
+	}
+
+	if refreshedTokensResp.StatusCode == http.StatusNoContent {
+		log.Println("Tokens did not need refresh")
+		return nil, nil
+	}
+
+	// Receive payload that includes uid
+	var refreshedTokens social.RefreshTokensResponse
+
+	// Decode payload
+	refreshedTokensErr := json.NewDecoder(refreshedTokensResp.Body).Decode(&refreshedTokens)
+	if refreshedTokensErr != nil {
+		return nil, fmt.Errorf(refreshedTokensErr.Error())
+	}
+
+	// Get token for specified platform
+	platformRefreshToken, doesExist := refreshedTokens.RefreshTokens[platform.PlatformName]
+	if doesExist == false {
+		// Another token needed refresh, but not the one we were looking for
+		log.Printf("%s was not refreshed", platform.PlatformName)
+		return nil, nil
+	}
+
+	log.Println(platformRefreshToken)
+	return &platformRefreshToken.APIToken, nil
 }

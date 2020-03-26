@@ -26,6 +26,7 @@ import (
 
 	firestore "cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
+	"github.com/pixelogicdev/gruveebackend/pkg/social"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -59,7 +60,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		hostname = "https://us-central1-gruvee-3b7c4.cloudfunctions.net"
 	}
 
-	var spotifyAuthRequest firebase.SpotifyAuthRequest
+	var spotifyAuthRequest social.SpotifyAuthRequest
 
 	authResponseErr := json.NewDecoder(request.Body).Decode(&spotifyAuthRequest)
 	if authResponseErr != nil {
@@ -93,7 +94,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 	// Check to see if request was valid
 	if resp.StatusCode != http.StatusOK {
 		// Convert Spotify Error Object
-		var spotifyErrorObj firebase.SpotifyRequestError
+		var spotifyErrorObj social.SpotifyRequestError
 
 		err := json.NewDecoder(resp.Body).Decode(&spotifyErrorObj)
 		if err != nil {
@@ -107,7 +108,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	var spotifyMeResponse firebase.SpotifyMeResponse
+	var spotifyMeResponse social.SpotifyMeResponse
 
 	// syszen - "wait that it? #easyGo"(02/27/20)
 	// LilCazza - "Why the fuck doesn't this shit work" (02/27/20)
@@ -155,7 +156,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		// sillyonly: "path.addLine(to: CGPoint(x: rect.width, y: rect.height))" (03/13/20)
 		writer.WriteHeader(http.StatusOK)
 		writer.Header().Set("Content-Type", "application/json")
-		var spoitfyAuthResp = firebase.AuthorizeWithSpotifyResponse{
+		var spoitfyAuthResp = social.AuthorizeWithSpotifyResponse{
 			Email:                   firestoreUser.Email,
 			ID:                      firestoreUser.ID,
 			Playlists:               []firebase.FirestorePlaylist{},
@@ -189,7 +190,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 }
 
 // sillyonly - "So 140 char? is this twitter or a coding stream!" (03/02/20)
-func getUser(uid string) (*firebase.AuthorizeWithSpotifyResponse, error) {
+func getUser(uid string) (*social.AuthorizeWithSpotifyResponse, error) {
 	// Go to firestore and check for uid
 	fbID := "spotify:" + uid
 	userRef := firestoreClient.Doc("users/" + fbID)
@@ -230,7 +231,7 @@ func getUser(uid string) (*firebase.AuthorizeWithSpotifyResponse, error) {
 	playlists := snapsToPlaylistData(playlistsSnaps)
 
 	// Convert user to response object
-	authorizeWithSpotifyResponse := firebase.AuthorizeWithSpotifyResponse{
+	authorizeWithSpotifyResponse := social.AuthorizeWithSpotifyResponse{
 		Email:                   firestoreUser.Email,
 		ID:                      firestoreUser.ID,
 		Playlists:               playlists,
@@ -298,7 +299,7 @@ func snapsToSocialPlatformData(snaps []*firestore.DocumentSnapshot) ([]firebase.
 }
 
 // createUser takes in the spotify response and returns a new firebase user
-func createUser(spotifyResp firebase.SpotifyMeResponse,
+func createUser(spotifyResp social.SpotifyMeResponse,
 	socialPlatDocRef *firestore.DocumentRef) (*firebase.FirestoreUser, error) {
 	var createUserURI = hostname + "/createUser"
 
@@ -341,8 +342,8 @@ func createUser(spotifyResp firebase.SpotifyMeResponse,
 }
 
 // createSocialPlatform calls our CreateSocialPlatform Firebase Function to create & write new platform to DB
-func createSocialPlatform(spotifyResp firebase.SpotifyMeResponse,
-	authReq firebase.SpotifyAuthRequest) (*firestore.DocumentRef, *firebase.FirestoreSocialPlatform, error) {
+func createSocialPlatform(spotifyResp social.SpotifyMeResponse,
+	authReq social.SpotifyAuthRequest) (*firestore.DocumentRef, *firebase.FirestoreSocialPlatform, error) {
 	var createSocialPlatformURI = hostname + "/createSocialPlatform"
 
 	// Create request body
@@ -416,9 +417,9 @@ func createSocialPlatform(spotifyResp firebase.SpotifyMeResponse,
 }
 
 // getCustomRoken calles our GenerateToken Firebase Function to create & return custom JWT
-func getCustomToken(uid string) (*firebase.GenerateTokenResponse, error) {
+func getCustomToken(uid string) (*social.GenerateTokenResponse, error) {
 	var generateTokenURI = hostname + "/generateToken"
-	var tokenRequest = firebase.GenerateTokenRequest{
+	var tokenRequest = social.GenerateTokenRequest{
 		UID: uid,
 	}
 
@@ -441,7 +442,7 @@ func getCustomToken(uid string) (*firebase.GenerateTokenResponse, error) {
 	}
 
 	// Decode the token to send back
-	var tokenResponse firebase.GenerateTokenResponse
+	var tokenResponse social.GenerateTokenResponse
 	customTokenDecodeErr := json.NewDecoder(customTokenResp.Body).Decode(&tokenResponse)
 	if customTokenDecodeErr != nil {
 		return nil, fmt.Errorf(customTokenDecodeErr.Error())

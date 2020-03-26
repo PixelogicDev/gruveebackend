@@ -20,6 +20,7 @@ then
     socialTokenRefreshReplace="github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh=../cmd/socialtokenrefresh"
     createSocialPlaylistReplace="github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist=../cmd/createsocialplaylist"
     firebaseReplace="github.com/pixelogicdev/gruveebackend/pkg/firebase=../../pkg/firebase"
+    socialReplace="github.com/pixelogicdev/gruveebackend/pkg/social=../../pkg/social"
 
     # add googleCreds to terminal instance
     export GOOGLE_APPLICATION_CREDENTIALS=$googleCredsPath
@@ -40,6 +41,7 @@ then
             go mod edit -replace $firebaseReplace
             go mod edit -replace $socialTokenRefreshReplace
             go mod edit -replace $createSocialPlaylistReplace
+            go mod edit -replace $socialReplace
         fi
 
         if [ "$d" = "socialplatform/" ]
@@ -50,6 +52,7 @@ then
             go mod edit -replace $firebaseReplace
             go mod edit -replace $socialTokenRefreshReplace
             go mod edit -replace $createSocialPlaylistReplace
+            go mod edit -replace $socialReplace
         fi
 
         if [ "$d" = "spotifyauth/" ]
@@ -60,6 +63,7 @@ then
             go mod edit -replace $firebaseReplace
             go mod edit -replace $socialTokenRefreshReplace
             go mod edit -replace $createSocialPlaylistReplace
+            go mod edit -replace $socialReplace
         fi
     
         if [ "$d" = "tokengen/" ] 
@@ -70,6 +74,7 @@ then
             go mod edit -replace $firebaseReplace
             go mod edit -replace $socialTokenRefreshReplace
             go mod edit -replace $createSocialPlaylistReplace
+            go mod edit -replace $socialReplace
         fi
 
         if [ "$d" = "socialtokenrefresh/" ] 
@@ -80,6 +85,7 @@ then
             go mod edit -replace $firebaseReplace
             go mod edit -replace $tokengenReplace
             go mod edit -replace $createSocialPlaylistReplace
+            go mod edit -replace $socialReplace
         fi
 
         if [ "$d" = "createsocialplaylist/" ] 
@@ -90,6 +96,7 @@ then
             go mod edit -replace $firebaseReplace
             go mod edit -replace $tokengenReplace
             go mod edit -replace $socialTokenRefreshReplace
+            go mod edit -replace $socialReplace
         fi
     
         # Move back up a directory
