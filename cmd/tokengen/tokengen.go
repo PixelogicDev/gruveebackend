@@ -16,7 +16,7 @@ import (
 
 	"firebase.google.com/go"
 	auth "firebase.google.com/go/auth"
-	gruveeFirebase "github.com/pixelogicdev/gruveebackend/pkg/firebase"
+	"github.com/pixelogicdev/gruveebackend/pkg/social"
 )
 
 var client *auth.Client
@@ -42,7 +42,7 @@ func init() {
 // GenerateCustomToken generates a CustomToken for Firebase Login
 func GenerateCustomToken(writer http.ResponseWriter, request *http.Request) {
 	// If this is getting called, we have already authorized the user by verifying their API token is valid and pulls back their data
-	var tokenRequest gruveeFirebase.GenerateTokenRequest
+	var tokenRequest social.GenerateTokenRequest
 
 	// Decode json from request
 	err := json.NewDecoder(request.Body).Decode(&tokenRequest)
@@ -61,7 +61,7 @@ func GenerateCustomToken(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Create reponse object and pass it along
-	tokenResponse := gruveeFirebase.GenerateTokenResponse{Token: token}
+	tokenResponse := social.GenerateTokenResponse{Token: token}
 	writer.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(writer).Encode(tokenResponse)
 }

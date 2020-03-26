@@ -12,6 +12,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 	"github.com/joho/godotenv"
+	"github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist"
 	"github.com/pixelogicdev/gruveebackend/cmd/createuser"
 	"github.com/pixelogicdev/gruveebackend/cmd/socialplatform"
 	"github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh"
@@ -36,6 +37,7 @@ func main() {
 	funcframework.RegisterHTTPFunction("/createSocialPlatform", socialplatform.CreateSocialPlatform)
 	funcframework.RegisterHTTPFunction("/createUser", createuser.CreateUser)
 	funcframework.RegisterHTTPFunction("/socialTokenRefresh", socialtokenrefresh.SocialTokenRefresh)
+	funcframework.RegisterHTTPFunction("/createSocialPlaylist", createsocialplaylist.CreateSocialPlaylist)
 	// Use PORT environment variable, or default to 8080.
 	port := "8080"
 	if envPort := os.Getenv("PORT"); envPort != "" {

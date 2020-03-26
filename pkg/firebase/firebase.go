@@ -6,60 +6,6 @@ import (
 	firestore "cloud.google.com/go/firestore"
 )
 
-// -- TYPES -- //
-
-// -- SPOTIFY AUTH -- //
-
-// SpotifyAuthRequest includes APIToken needed for Spotify API
-type SpotifyAuthRequest struct {
-	APIToken     string `json:"token"`
-	ExpiresIn    int    `json:"expiresIn"`
-	RefreshToken string `json:"refreshToken"`
-}
-
-// SpotifyMeResponse represents the response coming back from the /me endpoint
-type SpotifyMeResponse struct {
-	DisplayName string         `json:"display_name"`
-	Email       string         `json:"email"`
-	ID          string         `json:"id"`
-	Images      []SpotifyImage `json:"images"`
-	Product     string         `json:"product"`
-}
-
-// SpotifyRequestError represents the Spotify Error Object
-type SpotifyRequestError struct {
-	Error spotifyRequestErrorDetails `json:"error"`
-}
-
-// SpotifyRequestErrorDetails represents the Spotify Error Object details
-type spotifyRequestErrorDetails struct {
-	Status  int    `json:"status"`
-	Message string `json:"message"`
-}
-
-// AuthorizeWithSpotifyResponse represents the data to send back to the client for a user
-type AuthorizeWithSpotifyResponse struct {
-	Email                   string                    `json:"email"`
-	ID                      string                    `json:"id"`
-	Playlists               []FirestorePlaylist       `json:"playlists"`
-	PreferredSocialPlatform FirestoreSocialPlatform   `json:"preferredSocialPlatform"`
-	SocialPlatforms         []FirestoreSocialPlatform `json:"socialPlatforms"`
-	Username                string                    `json:"username"`
-	JWT                     string                    `json:"jwt,omitempty"`
-}
-
-// -- GENERATE TOKEN -- //
-
-// GenerateTokenRequest represents the UID for the user that we want to create a custom token for
-type GenerateTokenRequest struct {
-	UID string
-}
-
-// GenerateTokenResponse represents what we will send back to the client
-type GenerateTokenResponse struct {
-	Token string `json:"token"`
-}
-
 // -- FIRESTORE -- //
 
 // FirestoreUser respresents the data stored in Firestore for an user
