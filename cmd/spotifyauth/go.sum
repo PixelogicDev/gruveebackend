@@ -99,9 +99,12 @@ github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+o
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
-github.com/pixelogicdev/gruveebackend v0.3.0 h1:8CAywA3pnLFwEE7gFuTNxUBebSyltn9abNipBR2LF78=
 github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.2 h1:ehtKElVKIhJ5eoHCMgZdnjmsEktKTXuPqW7vsRmLZyg=
 github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.2/go.mod h1:wSG3iKVMpEXBNaFJNV3fPBOElt1RKBzt9kOO3LyDlnQ=
+github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.3 h1:NqKfXJfhBxtEohrAyd4fcEG7piFrsD2UL877nNHgJG0=
+github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.3/go.mod h1:wSG3iKVMpEXBNaFJNV3fPBOElt1RKBzt9kOO3LyDlnQ=
+github.com/pixelogicdev/gruveebackend/pkg/social v1.0.0-beta.1 h1:YShEr0Dmj8t0mo5w2cPZr7XW5/Urek5AlKHBMm3KM7s=
+github.com/pixelogicdev/gruveebackend/pkg/social v1.0.0-beta.1/go.mod h1:CkDDB0Y2qx5/JxBPYrxDO69msP7EGu57Tm5W8sByfhI=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
