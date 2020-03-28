@@ -3,6 +3,8 @@ package firebase
 // no_neon_one - "go to GO or no to GO" (03/01/20)
 // no_neon_one - "I think Microsoft named .Net so it wouldn’t show up in a Unix directory listing (by Oktal )." (03/08/20)
 import (
+	"time"
+
 	firestore "cloud.google.com/go/firestore"
 )
 
@@ -40,6 +42,23 @@ type FirestorePlaylist struct {
 	Songs     []string    `firestore:"songs" json:"songs"`
 	Comments  interface{} `firestore:"comments" json:"comments"` // This will actually need be an object with key:value pair of songId:[Comments]
 	CoverArt  string      `firestore:"coverArt" json:"coverArt"`
+}
+
+// FirestoreEvent implements the Firestore event from a trigger function
+type FirestoreEvent struct {
+	OldValue   FirestoreValue `json:"oldValue"`
+	Value      FirestoreValue `json:"value"`
+	UpdateMask struct {
+		FieldPaths []string `json:"fieldPaths"`
+	} `json:"updateMask"`
+}
+
+// FirestoreValue implements the values that come from a Firestore event
+type FirestoreValue struct {
+	CreateTime time.Time     `json:"createTime"`
+	Fields     FirestoreUser `json:"fields"`
+	Name       string        `json:"name"`
+	UpdateTime time.Time     `json:"updateTime"`
 }
 
 // -- FIRESTORE TYPES -- //

@@ -18,6 +18,8 @@ import (
 	"github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh"
 	"github.com/pixelogicdev/gruveebackend/cmd/spotifyauth"
 	"github.com/pixelogicdev/gruveebackend/cmd/tokengen"
+	"github.com/pixelogicdev/gruveebackend/cmd/updatealgolia"
+	"github.com/pixelogicdev/gruveebackend/internal/helpers/localcloudtrigger"
 )
 
 func init() {
@@ -38,6 +40,11 @@ func main() {
 	funcframework.RegisterHTTPFunction("/createUser", createuser.CreateUser)
 	funcframework.RegisterHTTPFunction("/socialTokenRefresh", socialtokenrefresh.SocialTokenRefresh)
 	funcframework.RegisterHTTPFunction("/createSocialPlaylist", createsocialplaylist.CreateSocialPlaylist)
+	funcframework.RegisterEventFunction("/updateAlgolia", updatealgolia.UpdateAlgolia)
+
+	// Local trigger endpoint for cloud event
+	funcframework.RegisterHTTPFunction("/localCloudTrigger", localcloudtrigger.LocalCloudTrigger)
+
 	// Use PORT environment variable, or default to 8080.
 	port := "8080"
 	if envPort := os.Getenv("PORT"); envPort != "" {

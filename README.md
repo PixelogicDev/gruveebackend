@@ -107,8 +107,32 @@ When adding new functions to this project you will need to also update the build
 8. Once all the tags have been added, use `git push origin --tags` to push all the tags to master
 9. Verify that the module is not being used by any other modules. If it is, make sure to make another Pull Request to `master` with this change.
 
+### Test Firebase Function Trigger Events Locally
+1. In `internal/helpers/localCloudTrigger` we had an endpoint that creates a new cloud event that points to a specific cloud trigger.
+2. Using something like Insomnia, trigger the localCloudTrigger endpoint with a `FirestoreEvent` payload.
+3. That gets fired off and will "create" a trigger event for the endpoint you pass to it
+
 ### Deploy Function To Cloud
 
+- Change `config.yaml` file `ENVIORNMENT: PROD`
+- cd into cmd/function folder and deploy from there using an example like so:
+  ```
+    gcloud functions deploy authorizeWithSpotify \ 
+    --entry-point AuthorizeWithSpotify \ 
+    --runtime go113 \ 
+    --trigger-http
+    --allow-unauthenticated
+    --env-vars-file ../..internal/config.yaml \
+  ```
+
+### Deploy Function Trigger To Cloud
 - Change `config.yaml` file `ENIRONMENT: PROD`
 - cd into cmd/function folder and deploy from there using an example like so:
-  `gcloud functions deploy authorizeWithSpotify --entry-point AuthorizeWithSpotify --runtime go113 --trigger-http --env-vars-file internal/config.yaml --allow-unauthenticated`
+  ```
+  gcloud functions deploy SomeFunctionName \
+    --runtime go113 \
+    --trigger-event providers/cloud.firestore/eventTypes/document.create \
+    --trigger-resource "projects/gruvee-3b7c4/databases/(default)/documents/users/{pushId}" \
+    --env-vars-file ../../internal/config.yaml
+  ```  
+- NOTE: The **order** of the args **DOES MATTER.**

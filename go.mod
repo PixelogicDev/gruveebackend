@@ -11,7 +11,8 @@ require (
 	github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh v1.0.0-beta.2
 	github.com/pixelogicdev/gruveebackend/cmd/spotifyauth v1.0.0-beta.3
 	github.com/pixelogicdev/gruveebackend/cmd/tokengen v1.0.0-beta.2
-	github.com/pixelogicdev/gruveebackend/pkg/social v1.0.0-beta.2 // indirect
+	github.com/pixelogicdev/gruveebackend/cmd/updatealgolia v0.0.0-00010101000000-000000000000
+	github.com/pixelogicdev/gruveebackend/internal/helpers/localcloudtrigger v0.0.0-00010101000000-000000000000
 )
 
 replace github.com/pixelogicdev/gruveebackend/cmd/spotifyauth => ./cmd/spotifyauth
@@ -25,6 +26,10 @@ replace github.com/pixelogicdev/gruveebackend/cmd/createuser => ./cmd/createuser
 replace github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh => ./cmd/socialtokenrefresh
 
 replace github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist => ./cmd/createsocialplaylist
+
+replace github.com/pixelogicdev/gruveebackend/cmd/updatealgolia => ./cmd/updatealgolia
+
+replace github.com/pixelogicdev/gruveebackend/internal/helpers/localcloudtrigger => ./internal/helpers/localcloudtrigger
 
 replace github.com/pixelogicdev/gruveebackend/pkg/firebase => ./pkg/firebase
 
