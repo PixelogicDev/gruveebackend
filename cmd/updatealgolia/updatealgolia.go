@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"cloud.google.com/go/functions/metadata"
 	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
 )
@@ -19,8 +20,9 @@ type algoliaUser struct {
 }
 
 // UpdateAlgolia sends new data to Algolia service for indexing
-func UpdateAlgolia(ctx context.Context, e firebase.FirestoreEvent) error {
-	fmt.Println("WE ARE HERE FAM.")
+func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
+	log.Println("[UpdateAlgolia] Starting update...")
+
 	// Get IDs
 	algoliaAppID := os.Getenv("ALGOLIA_APP_ID")
 	if algoliaAppID == "" {
@@ -44,27 +46,29 @@ func UpdateAlgolia(ctx context.Context, e firebase.FirestoreEvent) error {
 	client := search.NewClient(algoliaAppID, algoliaSecretID)
 	index := client.InitIndex(algoliaIndexName)
 
-	// meta, err := metadata.FromContext(ctx)
-	// if err != nil {
-	// 	return fmt.Errorf("metadata.FromContext: %v", err)
-	// }
+	meta, err := metadata.FromContext(ctx)
+	if err != nil {
+		return fmt.Errorf("metadata.FromContext: %v", err)
+	}
 
 	// Print out our trigger data
-	// log.Printf("Function triggered by change to: %v", meta.Resource)
-	log.Printf("New value: %+v", e.Value)
+	log.Printf("Function triggered by change to: %v", meta.Resource)
+	log.Printf("New value: %v", event)
 
 	// Write objects to Algolia
 	res, err := index.SaveObject(algoliaUser{
-		ObjectID: e.Value.Fields.ID,
-		ID:       e.Value.Fields.ID,
-		Email:    e.Value.Fields.Email,
-		Username: e.Value.Fields.Username,
+		ObjectID: event.Value.Fields.ID,
+		ID:       event.Value.Fields.ID,
+		Email:    event.Value.Fields.Email,
+		Username: event.Value.Fields.Username,
 	})
+
+	log.Printf("[UpdateAlgolia] SaveObject Res: %v", res)
+
 	if err != nil {
 		log.Println(err.Error())
 		return fmt.Errorf(err.Error())
 	}
 
-	fmt.Println(res)
 	return nil
 }

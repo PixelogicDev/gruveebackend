@@ -29,7 +29,8 @@ replace github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist => ./cmd/
 
 replace github.com/pixelogicdev/gruveebackend/cmd/updatealgolia => ./cmd/updatealgolia
 
-replace github.com/pixelogicdev/gruveebackend/internal/helpers/localcloudtrigger => ./internal/helpers/localcloudtrigger
+// WIP
+// replace github.com/pixelogicdev/gruveebackend/internal/helpers/localcloudtrigger => ./internal/helpers/localcloudtrigger
 
 replace github.com/pixelogicdev/gruveebackend/pkg/firebase => ./pkg/firebase
 

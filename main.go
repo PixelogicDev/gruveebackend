@@ -42,8 +42,8 @@ func main() {
 	funcframework.RegisterHTTPFunction("/createSocialPlaylist", createsocialplaylist.CreateSocialPlaylist)
 	funcframework.RegisterEventFunction("/updateAlgolia", updatealgolia.UpdateAlgolia)
 
-	// Local trigger endpoint for cloud event
-	funcframework.RegisterHTTPFunction("/localCloudTrigger", localcloudtrigger.LocalCloudTrigger)
+	// WIP: Local trigger endpoint for cloud event
+	// funcframework.RegisterHTTPFunction("/localCloudTrigger", localcloudtrigger.LocalCloudTrigger)
 
 	// Use PORT environment variable, or default to 8080.
 	port := "8080"
