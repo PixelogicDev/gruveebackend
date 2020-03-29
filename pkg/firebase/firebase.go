@@ -55,10 +55,22 @@ type FirestoreEvent struct {
 
 // FirestoreValue implements the values that come from a Firestore event
 type FirestoreValue struct {
-	CreateTime time.Time     `json:"createTime"`
-	Fields     FirestoreUser `json:"fields"`
-	Name       string        `json:"name"`
-	UpdateTime time.Time     `json:"updateTime"`
+	CreateTime time.Time          `json:"createTime"`
+	Fields     FirestoreEventUser `json:"fields"`
+	Name       string             `json:"name"`
+	UpdateTime time.Time          `json:"updateTime"`
+}
+
+// FirestoreEventUser implements the values that are recevied from a firestore trigger
+type FirestoreEventUser struct {
+	ID       stringValue `json:"id"`
+	Email    stringValue `json:"email"`
+	Username stringValue `json:"username"`
+}
+
+// stringValue implements the string value type for Firestore Events
+type stringValue struct {
+	StringValue string `json:"stringValue"`
 }
 
 // -- FIRESTORE TYPES -- //

@@ -57,10 +57,10 @@ func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
 
 	// Write objects to Algolia
 	res, err := index.SaveObject(algoliaUser{
-		ObjectID: event.Value.Fields.ID,
-		ID:       event.Value.Fields.ID,
-		Email:    event.Value.Fields.Email,
-		Username: event.Value.Fields.Username,
+		ObjectID: event.Value.Fields.ID.StringValue,
+		ID:       event.Value.Fields.ID.StringValue,
+		Email:    event.Value.Fields.Email.StringValue,
+		Username: event.Value.Fields.Username.StringValue,
 	})
 
 	log.Printf("[UpdateAlgolia] SaveObject Res: %v", res)

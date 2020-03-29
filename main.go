@@ -19,7 +19,6 @@ import (
 	"github.com/pixelogicdev/gruveebackend/cmd/spotifyauth"
 	"github.com/pixelogicdev/gruveebackend/cmd/tokengen"
 	"github.com/pixelogicdev/gruveebackend/cmd/updatealgolia"
-	"github.com/pixelogicdev/gruveebackend/internal/helpers/localcloudtrigger"
 )
 
 func init() {
