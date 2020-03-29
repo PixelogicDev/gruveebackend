@@ -12,12 +12,12 @@ import (
 
 // FirestoreUser respresents the data stored in Firestore for an user
 type FirestoreUser struct {
-	Email                   string                   `firestore:"email"`
-	ID                      string                   `firestore:"id"`
-	Playlists               []*firestore.DocumentRef `firestore:"playlists"`
-	PreferredSocialPlatform *firestore.DocumentRef   `firestore:"preferredSocialPlatform"`
-	SocialPlatforms         []*firestore.DocumentRef `firestore:"socialPlatforms"`
-	Username                string                   `firestore:"username"`
+	Email                   string                   `firestore:"email" json:"email"`
+	ID                      string                   `firestore:"id" json:"id"`
+	Playlists               []*firestore.DocumentRef `firestore:"playlists" json:"playlists"`
+	PreferredSocialPlatform *firestore.DocumentRef   `firestore:"preferredSocialPlatform" json:"preferredSocialPlatform"`
+	SocialPlatforms         []*firestore.DocumentRef `firestore:"socialPlatforms" json:"socialPlatforms"`
+	Username                string                   `firestore:"username" json:"username"`
 }
 
 // FirestoreSocialPlatform represents the data for a social platform stored in Firestore
