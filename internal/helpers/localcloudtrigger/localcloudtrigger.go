@@ -2,6 +2,8 @@ package localcloudtrigger
 
 import (
 	"context"
+	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/cloudevents/sdk-go"
@@ -9,54 +11,57 @@ import (
 )
 
 type localCloudTriggerRequest struct {
-	Data   firebase.FirestoreEvent `json:"data"`
-	Source string                  `json:"source"`
-	Type   string                  `json:"type"`
+	EventID string                  `json:"eventId"`
+	Data    firebase.FirestoreEvent `json:"data"`
+	Target  string                  `json:"target"`
+	Type    string                  `json:"type"`
 }
+
+var eventSource = "http://localhost:8080/localCloudTrigger"
 
 // LocalCloudTrigger uses the CloudEvents SDK to trigger a Firebase Function Trigger Event locally
 func LocalCloudTrigger(writer http.ResponseWriter, request *http.Request) {
 	// vezparsoftware - "R.I.P. Harambe" (03/28/20)
-	/*
-		Source: The Local Trigger path we want to call
-		Data: What we expect to send to our trigger
-	*/
+	var localCloudTriggerReq localCloudTriggerRequest
+	requestErr := json.NewDecoder(request.Body).Decode(&localCloudTriggerReq)
+	if requestErr != nil {
+		http.Error(writer, requestErr.Error(), http.StatusInternalServerError)
+		log.Printf("LocalCloudTrigger [localCloudTriggerReq Decoder]: %v", requestErr)
+		return
+	}
 
-	// var localCloudTriggerReq localCloudTriggerRequest
+	log.Println(localCloudTriggerReq.Data)
 
-	// requestErr := json.NewDecoder(request.Body).Decode(&localCloudTriggerReq)
-	// if requestErr != nil {
-	// 	http.Error(writer, requestErr.Error(), http.StatusInternalServerError)
-	// 	log.Printf("LocalCloudTrigger [localCloudTriggerReq Decoder]: %v", requestErr)
-	// 	return
-	// }
-
+	// Create new event
 	event := cloudevents.NewEvent()
-	event.SetID("Gruvee123")
-	event.SetType("providers/cloud.firestore/eventTypes/document.create")
-	event.SetSource("http://localhost:8080")
-	event.SetData(firebase.FirestoreEvent{})
+	event.SetID(localCloudTriggerReq.EventID)
+	event.SetType(localCloudTriggerReq.Type)
+	event.SetSource(eventSource)
+	event.SetData(localCloudTriggerReq.Data)
 
-	t, err := cloudevents.NewHTTPTransport(
-		cloudevents.WithTarget("http://localhost:8080/updateAlgolia"),
+	transport, transportErr := cloudevents.NewHTTPTransport(
+		cloudevents.WithTarget(localCloudTriggerReq.Target),
+		// TODO: Should try to verify which spec Firebase uses
 		cloudevents.WithEncoding(cloudevents.HTTPBinaryV02),
 	)
-	if err != nil {
-		panic("failed to create transport, " + err.Error())
+	if transportErr != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		panic("failed to create transport, " + transportErr.Error())
 	}
 
-	c, err := cloudevents.NewClient(t)
-	if err != nil {
-		panic("unable to create cloudevent client: " + err.Error())
-	}
-	if _, _, err := c.Send(context.Background(), event); err != nil {
-		panic("failed to send cloudevent: " + err.Error())
+	client, clientErr := cloudevents.NewClient(transport)
+	if clientErr != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		panic("unable to create cloudevent client: " + clientErr.Error())
 	}
 
-	// "providers/cloud.firestore/eventTypes/document.create"
-	// event.SetType(localCloudTriggerReq.Type)
-	// event.SetSource(localCloudTriggerReq.Source)
-	// event.SetData(localCloudTriggerReq.Data)
+	_, _, sendErr := client.Send(context.Background(), event)
+	if sendErr != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		panic("failed to send cloudevent: " + sendErr.Error())
+	}
+
+	writer.WriteHeader(http.StatusOK)
 }
 
 // curiousdrive - "Hakuna Matata"(03/28/20)
