@@ -13,7 +13,7 @@ import (
 
 // algoliaUser implements a partial amount of data from firestoreUser to use for indexing
 type algoliaUser struct {
-	ObjectID string `json:"objectId"`
+	ObjectID string `json:"objectID"`
 	ID       string `json:"id"`
 	Email    string `json:"email"`
 	Username string `json:"username"`
