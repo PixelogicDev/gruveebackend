@@ -174,6 +174,5 @@ func refreshToken(platform firebase.FirestoreSocialPlatform) (*string, error) {
 		return nil, nil
 	}
 
-	log.Println(platformRefreshToken)
 	return &platformRefreshToken.APIToken, nil
 }
