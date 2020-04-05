@@ -303,6 +303,14 @@ func createUser(spotifyResp social.SpotifyMeResponse,
 	socialPlatDocRef *firestore.DocumentRef) (*firebase.FirestoreUser, error) {
 	var createUserURI = hostname + "/createUser"
 
+	// Get profile image
+	var profileImage firebase.SpotifyImage
+	if len(spotifyResp.Images) > 0 {
+		profileImage = spotifyResp.Images[0]
+	} else {
+		profileImage = firebase.SpotifyImage{}
+	}
+
 	// Create firetoreUser Object
 	var firestoreUser = firebase.FirestoreUser{
 		Email:                   spotifyResp.Email,
@@ -310,6 +318,7 @@ func createUser(spotifyResp social.SpotifyMeResponse,
 		Playlists:               []*firestore.DocumentRef{},
 		PreferredSocialPlatform: socialPlatDocRef,
 		SocialPlatforms:         []*firestore.DocumentRef{socialPlatDocRef},
+		ProfileImage:            profileImage,
 		Username:                spotifyResp.DisplayName,
 	}
 
