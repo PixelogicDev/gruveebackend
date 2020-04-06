@@ -64,10 +64,10 @@ type FirestoreValue struct {
 
 // FirestoreEventUser implements the values that are recevied from a firestore trigger
 type FirestoreEventUser struct {
-	ID           stringValue                `json:"id"`
-	Email        stringValue                `json:"email"`
-	ProfileImage FirestoreEventProfileImage `json:"profileImage"`
-	Username     stringValue                `json:"username"`
+	ID           stringValue `json:"id"`
+	Email        stringValue `json:"email"`
+	ProfileImage interface{} `json:"profileImage"`
+	Username     stringValue `json:"username"`
 }
 
 // FirestoreEventProfileImage implements data needed for firestore image
