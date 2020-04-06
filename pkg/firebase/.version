@@ -1,3 +1,4 @@
+- v1.0.0-beta.9: Adding MapValue props for image
 - v1.0.0-beta.8: Changing ProfileImage to utilize interface to check values
 - v1.0.0-beta.7: Tweaking FirestoreEventUser to utilize FirestoreEventProfileImage
 - v1.0.0-beta.6: Adding IntegerValue & ProfileImage for Algolia

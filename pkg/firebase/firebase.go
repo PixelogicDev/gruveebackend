@@ -64,10 +64,10 @@ type FirestoreValue struct {
 
 // FirestoreEventUser implements the values that are recevied from a firestore trigger
 type FirestoreEventUser struct {
-	ID           stringValue `json:"id"`
-	Email        stringValue `json:"email"`
-	ProfileImage interface{} `json:"profileImage"`
-	Username     stringValue `json:"username"`
+	ID           stringValue          `json:"id"`
+	Email        stringValue          `json:"email"`
+	ProfileImage profileImageMapValue `json:"profileImage"`
+	Username     stringValue          `json:"username"`
 }
 
 // FirestoreEventProfileImage implements data needed for firestore image
@@ -79,11 +79,9 @@ type FirestoreEventProfileImage struct {
 
 // profileImageMapValue implements the profileImage nested object value type for Firestore Event
 type profileImageMapValue struct {
-	Fields struct {
-		Width  integerValue `json:"width,omitempty"`
-		Height integerValue `json:"height,omitempty"`
-		URL    stringValue  `json:"url,omitempty"`
-	} `json:"fields"`
+	MapValue struct {
+		Fields FirestoreEventProfileImage `json:"fields"`
+	} `json:"mapValue"`
 }
 
 type integerValue struct {

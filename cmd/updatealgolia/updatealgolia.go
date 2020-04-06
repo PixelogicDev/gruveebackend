@@ -61,7 +61,7 @@ func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
 		ObjectID:        event.Value.Fields.ID.StringValue,
 		ID:              event.Value.Fields.ID.StringValue,
 		Email:           event.Value.Fields.Email.StringValue,
-		ProfileImageURI: event.Value.Fields.ProfileImage.Fields.URL.StringValue,
+		ProfileImageURI: event.Value.Fields.ProfileImage.MapValue.Fields.URL.StringValue,
 		Username:        event.Value.Fields.Username.StringValue,
 	})
 
