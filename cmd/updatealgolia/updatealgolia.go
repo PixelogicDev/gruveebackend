@@ -13,11 +13,11 @@ import (
 
 // algoliaUser implements a partial amount of data from firestoreUser to use for indexing
 type algoliaUser struct {
-	ObjectID     string                `json:"objectId"`
-	ID           string                `json:"id"`
-	Email        string                `json:"email"`
-	ProfileImage firebase.SpotifyImage `json:"profileImage"`
-	Username     string                `json:"username"`
+	ObjectID        string `json:"objectId"`
+	ID              string `json:"id"`
+	Email           string `json:"email"`
+	ProfileImageURI string `json:"profileImage"`
+	Username        string `json:"username"`
 }
 
 // UpdateAlgolia sends new data to Algolia service for indexing
@@ -54,19 +54,15 @@ func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
 
 	// Print out our trigger data
 	log.Printf("Function triggered by change to: %v", meta.Resource)
-	log.Printf("New value: %v", event)
+	log.Printf("Event Trigger: %v", event)
 
 	// Write objects to Algolia
 	res, err := index.SaveObject(algoliaUser{
-		ObjectID: event.Value.Fields.ID.StringValue,
-		ID:       event.Value.Fields.ID.StringValue,
-		Email:    event.Value.Fields.Email.StringValue,
-		ProfileImage: firebase.SpotifyImage{
-			URL:    event.Value.Fields.ProfileImage.Fields.URL.StringValue,
-			Width:  event.Value.Fields.ProfileImage.Fields.Width.IntegerValue,
-			Height: event.Value.Fields.ProfileImage.Fields.Height.IntegerValue,
-		},
-		Username: event.Value.Fields.Username.StringValue,
+		ObjectID:        event.Value.Fields.ID.StringValue,
+		ID:              event.Value.Fields.ID.StringValue,
+		Email:           event.Value.Fields.Email.StringValue,
+		ProfileImageURI: event.Value.Fields.ProfileImage.Fields.URL.StringValue,
+		Username:        event.Value.Fields.Username.StringValue,
 	})
 
 	log.Printf("[UpdateAlgolia] SaveObject Res: %v", res)
