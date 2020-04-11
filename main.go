@@ -31,6 +31,7 @@ func init() {
 }
 
 // InukApp - "Swift > Go" (03/15/20)
+// Fr3fou - "i helped build this AYAYA, follow @fr3fou on twitter uwu" (04/07/20)
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	funcframework.RegisterHTTPFunction("/authorizeWithSpotify", spotifyauth.AuthorizeWithSpotify)

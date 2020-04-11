@@ -63,7 +63,7 @@ type TokenRefreshRequest struct {
 
 // RefreshTokensResponse contains a list of refreshed tokens for multiple social platforms
 type RefreshTokensResponse struct {
-	RefreshTokens map[string]RefreshToken `json:"refreshTokens"`
+	RefreshTokens map[string]firebase.APIToken `json:"refreshTokens"`
 }
 
 // RefreshToken contains the generic information for a refresh token for social platform
