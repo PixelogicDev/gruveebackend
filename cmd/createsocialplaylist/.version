@@ -1,2 +1,3 @@
+- v1.0.0-beta.3: Adding support for new APIToken response to client & reving social pkg
 - v1.0.0-beta.2: Reving firebase pkg and social pkg
 - v1.0.0-beta.1: Adding ability to create playlist on social platform

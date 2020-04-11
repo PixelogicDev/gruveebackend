@@ -20,6 +20,12 @@ type createSocialPlaylistRequest struct {
 	Playlist       firebase.FirestorePlaylist       `json:"playlist"`
 }
 
+// createSocialPlaylistResponse includes the refreshToken for the platform if there is one
+type createSocialPlaylistResponse struct {
+	PlatformName string            `json:"platformName"`
+	RefreshToken firebase.APIToken `json:"refreshToken"`
+}
+
 // spotifyPlaylistRequest includes the payload needed to create a Spotify Playlist
 type spotifyPlaylistRequest struct {
 	Name          string `json:"name"`
@@ -64,17 +70,34 @@ func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
 		platformEndpoint = "https://api.spotify.com/v1/users/" + socialPlaylistReq.SocialPlatform.ID + "/playlists"
 	}
 
+	// fr3fou - "i fixed this Kappa" (04/10/20)
 	// Check if API token needs refresh
-	apiToken, apiTokenErr := refreshToken(socialPlaylistReq.SocialPlatform)
-	if apiTokenErr != nil {
-		http.Error(writer, apiTokenErr.Error(), http.StatusBadRequest)
-		log.Printf("CreateSocialPlaylist [refreshToken]: %v", apiTokenErr)
+	socialRefreshTokens, socialRefreshTokenErr := refreshToken(socialPlaylistReq.SocialPlatform)
+	if socialRefreshTokenErr != nil {
+		http.Error(writer, socialRefreshTokenErr.Error(), http.StatusBadRequest)
+		log.Printf("CreateSocialPlaylist [refreshToken]: %v", socialRefreshTokenErr)
 		return
 	}
 
-	if apiToken != nil {
-		log.Println("Setting new APIToken on socialPlatform")
-		socialPlaylistReq.SocialPlatform.APIToken.Token = *apiToken
+	// Setup resonse if we have a token to return
+	var response *createSocialPlaylistResponse
+
+	if socialRefreshTokens != nil {
+		// Get token for specified platform
+		platformRefreshToken, doesExist := socialRefreshTokens.RefreshTokens[socialPlaylistReq.SocialPlatform.PlatformName]
+		if doesExist == true {
+			log.Println("Setting new APIToken on socialPlatform")
+			socialPlaylistReq.SocialPlatform.APIToken.Token = platformRefreshToken.Token
+
+			// Write new apiToken as response
+			response = &createSocialPlaylistResponse{
+				PlatformName: socialPlaylistReq.SocialPlatform.PlatformName,
+				RefreshToken: platformRefreshToken,
+			}
+		} else {
+			// Another token needed refresh, but not the one we were looking for
+			log.Printf("%s was not refreshed", socialPlaylistReq.SocialPlatform.PlatformName)
+		}
 	}
 
 	// Call API to create playlist with data
@@ -83,6 +106,12 @@ func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer, createReqErr.Error(), http.StatusBadRequest)
 		log.Printf("CreateSocialPlaylist [createPlaylist]: %v", createReqErr)
 		return
+	}
+
+	if response != nil {
+		json.NewEncoder(writer).Encode(response)
+	} else {
+		writer.WriteHeader(http.StatusNoContent)
 	}
 }
 
@@ -129,7 +158,7 @@ func createPlaylist(endpoint string, platform firebase.FirestoreSocialPlatform,
 	return nil
 }
 
-func refreshToken(platform firebase.FirestoreSocialPlatform) (*string, error) {
+func refreshToken(platform firebase.FirestoreSocialPlatform) (*social.RefreshTokensResponse, error) {
 	var refreshReq = social.TokenRefreshRequest{
 		UID: platform.PlatformName + ":" + platform.ID,
 	}
@@ -166,13 +195,5 @@ func refreshToken(platform firebase.FirestoreSocialPlatform) (*string, error) {
 		return nil, fmt.Errorf(refreshedTokensErr.Error())
 	}
 
-	// Get token for specified platform
-	platformRefreshToken, doesExist := refreshedTokens.RefreshTokens[platform.PlatformName]
-	if doesExist == false {
-		// Another token needed refresh, but not the one we were looking for
-		log.Printf("%s was not refreshed", platform.PlatformName)
-		return nil, nil
-	}
-
-	return &platformRefreshToken.APIToken, nil
+	return &refreshedTokens, nil
 }
