@@ -16,7 +16,7 @@ type FirestoreUser struct {
 	ID                      string                   `firestore:"id" json:"id"`
 	Playlists               []*firestore.DocumentRef `firestore:"playlists" json:"playlists"`
 	PreferredSocialPlatform *firestore.DocumentRef   `firestore:"preferredSocialPlatform" json:"preferredSocialPlatform"`
-	ProfileImage            SpotifyImage             `firestore:"profileImage" json:"profileImage"`
+	ProfileImage            *SpotifyImage            `firestore:"profileImage" json:"profileImage"`
 	SocialPlatforms         []*firestore.DocumentRef `firestore:"socialPlatforms" json:"socialPlatforms"`
 	Username                string                   `firestore:"username" json:"username"`
 }

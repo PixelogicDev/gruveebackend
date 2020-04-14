@@ -145,6 +145,8 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 
+		log.Println(firestoreUser)
+
 		// Finally, get custom JWT
 		var customToken, customTokenErr = getCustomToken(firestoreUser.ID)
 		if customTokenErr != nil {
@@ -311,31 +313,29 @@ func createUser(spotifyResp social.SpotifyMeResponse,
 		profileImage = firebase.SpotifyImage{}
 	}
 
-	// Create firetoreUser Object
-	var firestoreUser = firebase.FirestoreUser{
-		Email:                   spotifyResp.Email,
-		ID:                      "spotify:" + spotifyResp.ID,
-		Playlists:               []*firestore.DocumentRef{},
-		PreferredSocialPlatform: socialPlatDocRef,
-		SocialPlatforms:         []*firestore.DocumentRef{socialPlatDocRef},
-		ProfileImage:            profileImage,
-		Username:                spotifyResp.DisplayName,
+	// Create, CreateUser Request object
+	var createUserReq = social.CreateUserReq{
+		Email:              spotifyResp.Email,
+		ID:                 "spotify:" + spotifyResp.ID,
+		SocialPlatformPath: socialPlatDocRef.Path,
+		ProfileImage:       &profileImage,
+		Username:           spotifyResp.DisplayName,
 	}
 
 	// Create jsonBody
-	jsonPlatform, jsonErr := json.Marshal(firestoreUser)
+	jsonPlatform, jsonErr := json.Marshal(createUserReq)
 	if jsonErr != nil {
 		return nil, fmt.Errorf(jsonErr.Error())
 	}
 
 	// Create Request
-	createUserReq, createUserReqErr := http.NewRequest("POST", createUserURI, bytes.NewBuffer(jsonPlatform))
-	if createUserReqErr != nil {
-		return nil, fmt.Errorf(createUserReqErr.Error())
+	createUser, createUserErr := http.NewRequest("POST", createUserURI, bytes.NewBuffer(jsonPlatform))
+	if createUserErr != nil {
+		return nil, fmt.Errorf(createUserErr.Error())
 	}
 
-	createUserReq.Header.Add("Content-Type", "application/json")
-	createUserResp, httpErr := httpClient.Do(createUserReq)
+	createUser.Header.Add("Content-Type", "application/json")
+	createUserResp, httpErr := httpClient.Do(createUser)
 	if httpErr != nil {
 		return nil, fmt.Errorf(httpErr.Error())
 	}
@@ -345,6 +345,12 @@ func createUser(spotifyResp social.SpotifyMeResponse,
 		var body []byte
 		body, _ = ioutil.ReadAll(createUserResp.Body)
 		return nil, fmt.Errorf((string(body)))
+	}
+
+	var firestoreUser firebase.FirestoreUser
+	respDecodeErr := json.NewDecoder(createUserResp.Body).Decode(&firestoreUser)
+	if respDecodeErr != nil {
+		return nil, fmt.Errorf(respDecodeErr.Error())
 	}
 
 	return &firestoreUser, nil

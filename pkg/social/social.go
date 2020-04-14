@@ -1,6 +1,8 @@
 package social
 
-import "github.com/pixelogicdev/gruveebackend/pkg/firebase"
+import (
+	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
+)
 
 // -- SPOTIFY AUTH -- //
 
@@ -73,4 +75,15 @@ type RefreshToken struct {
 	TokenType    string `json:"token_type"`
 	Scope        string `json:"scope"`
 	ExpiresIn    int    `json:"expires_in"`
+}
+
+// -- CREATE USER -- //
+
+// CreateUserReq is the payload that includes the minimal amount of data to create a user
+type CreateUserReq struct {
+	Email              string                 `json:"email"`
+	ID                 string                 `json:"id"`
+	SocialPlatformPath string                 `json:"socialPlatformPath"`
+	ProfileImage       *firebase.SpotifyImage `json:"profileImage"`
+	Username           string                 `json:"username"`
 }

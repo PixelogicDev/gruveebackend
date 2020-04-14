@@ -8,6 +8,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
+	"github.com/pixelogicdev/gruveebackend/pkg/social"
 )
 
 var firestoreClient *firestore.Client
@@ -24,13 +25,32 @@ func init() {
 
 // CreateUser will write a new Firebase user to Firestore
 func CreateUser(writer http.ResponseWriter, request *http.Request) {
-	var firestoreUser firebase.FirestoreUser
+	var createUserReq social.CreateUserReq
 
-	jsonDecodeErr := json.NewDecoder(request.Body).Decode(&firestoreUser)
+	jsonDecodeErr := json.NewDecoder(request.Body).Decode(&createUserReq)
 	if jsonDecodeErr != nil {
 		http.Error(writer, jsonDecodeErr.Error(), http.StatusInternalServerError)
-		log.Printf("CreateUser [firestoreUser Decoder]: %v", jsonDecodeErr)
+		log.Printf("CreateUser [social.CreateUserReq Decoder]: %v", jsonDecodeErr)
 		return
+	}
+
+	// Get Document references for social platform
+	socialPlatDocRef := firestoreClient.Doc(createUserReq.SocialPlatformPath)
+	if socialPlatDocRef == nil {
+		http.Error(writer, jsonDecodeErr.Error(), http.StatusInternalServerError)
+		log.Printf("CreateUser [social.CreateUserReq Decoder]: %v", jsonDecodeErr)
+		return
+	}
+
+	// Create Firestore user
+	firestoreUser := firebase.FirestoreUser{
+		Email:                   createUserReq.Email,
+		ID:                      createUserReq.ID,
+		Playlists:               []*firestore.DocumentRef{},
+		PreferredSocialPlatform: socialPlatDocRef,
+		ProfileImage:            createUserReq.ProfileImage,
+		SocialPlatforms:         []*firestore.DocumentRef{socialPlatDocRef},
+		Username:                createUserReq.Username,
 	}
 
 	// Write FirestoreUser to Firestore
@@ -41,5 +61,8 @@ func CreateUser(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// Return Firestore User
 	writer.WriteHeader(http.StatusOK)
+	writer.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(writer).Encode(firestoreUser)
 }
