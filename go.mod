@@ -8,6 +8,7 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist v1.0.0-beta.3
 	github.com/pixelogicdev/gruveebackend/cmd/createuser v1.0.0-beta.1
+	github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia v0.0.0-00010101000000-000000000000
 	github.com/pixelogicdev/gruveebackend/cmd/socialplatform v1.0.0-beta.1
 	github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh v1.0.0-beta.3
 	github.com/pixelogicdev/gruveebackend/cmd/spotifyauth v1.0.0-beta.3
@@ -28,6 +29,8 @@ replace github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh => ./cmd/so
 replace github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist => ./cmd/createsocialplaylist
 
 replace github.com/pixelogicdev/gruveebackend/cmd/updatealgolia => ./cmd/updatealgolia
+
+replace github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia => ./cmd/getspotifymedia
 
 // WIP
 replace github.com/pixelogicdev/gruveebackend/internal/helpers/localcloudtrigger => ./internal/helpers/localcloudtrigger
