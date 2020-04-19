@@ -14,6 +14,8 @@ import (
 	"cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // -- Types -- //
@@ -98,20 +100,36 @@ func init() {
 
 // GetSpotifyMedia will take in Spotify media data and get the exact media from Spotify API
 func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
-	// Get Spotify access token
-	creds, credErr := getCreds()
-	if credErr != nil {
-		http.Error(writer, credErr.Error(), http.StatusInternalServerError)
-		log.Printf("GetSpotifyMedia [getCreds]: %v", credErr)
-		return
-	}
-
 	// Decode Request body to get track data
 	var spotifyMediaReq getSpotifyMediaReq
 	spotifyReqDecodeErr := json.NewDecoder(request.Body).Decode(&spotifyMediaReq)
 	if spotifyReqDecodeErr != nil {
 		http.Error(writer, spotifyReqDecodeErr.Error(), http.StatusInternalServerError)
 		log.Printf("GetSpotifyMedia [Request Decoder]: %v", spotifyReqDecodeErr)
+		return
+	}
+
+	// Check to see if media is already part of collection, if so, just return that
+	mediaData, mediaDataErr := getMediaFromFirestore(spotifyMediaReq.MediaID)
+	if mediaDataErr != nil {
+		http.Error(writer, mediaDataErr.Error(), http.StatusInternalServerError)
+		log.Printf("GetSpotifyMedia [getMediaFromFirestore]: %v", mediaDataErr)
+		return
+	}
+
+	if mediaData != nil {
+		log.Printf("Media already exists, returning")
+		writer.WriteHeader(http.StatusOK)
+		writer.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(writer).Encode(mediaData)
+		return
+	}
+
+	// Get Spotify access token
+	creds, credErr := getCreds()
+	if credErr != nil {
+		http.Error(writer, credErr.Error(), http.StatusInternalServerError)
+		log.Printf("GetSpotifyMedia [getCreds]: %v", credErr)
 		return
 	}
 
@@ -163,6 +181,29 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 		log.Printf("GetSpotifyMedia [MediaTypeSwitch]: %v media type does not exist", spotifyMediaReq.MediaType)
 		return
 	}
+}
+
+func getMediaFromFirestore(mediaID string) (*firebase.FirestoreMedia, error) {
+	// Use song id to see if it's in the collection, if it is, just return the data
+	mediaRef := firestoreClient.Doc("songs/" + mediaID)
+	if mediaRef == nil {
+		return nil, fmt.Errorf("Incorrect path formating when get media from collection")
+	}
+
+	// If uid does not exist return nil
+	mediaSnap, mediaSnapErr := mediaRef.Get(context.Background())
+	if status.Code(mediaSnapErr) == codes.NotFound {
+		log.Printf("Media with id %s was not found", mediaID)
+		return nil, nil
+	}
+
+	var firestoreMedia firebase.FirestoreMedia
+	dataToErr := mediaSnap.DataTo(&firestoreMedia)
+	if dataToErr != nil {
+		return nil, fmt.Errorf("%v", dataToErr)
+	}
+
+	return &firestoreMedia, nil
 }
 
 // getApiToken checks to see if we have an APIToken for client credential calls
