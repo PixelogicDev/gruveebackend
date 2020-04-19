@@ -11,6 +11,13 @@ type SpotifyAuthRequest struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
+// SpotifyClientCredsAuthResp includes the response for a client credentials flow from Spotify
+type SpotifyClientCredsAuthResp struct {
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+	ExpiresIn   int    `json:"expires_in"`
+}
+
 // SpotifyMeResponse represents the response coming back from the /me endpoint
 type SpotifyMeResponse struct {
 	DisplayName string                  `json:"display_name"`
