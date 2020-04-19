@@ -16,12 +16,6 @@ import (
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
 )
 
-/* type platformCredentials struct {
-	ID           string            `firebase:"id"`
-	APIToken     firebase.APIToken `firebase:"apiToken"`
-	RefreshToken string            `firebase:"refreshToken"`
-} */
-
 // -- Types -- //
 
 // getSpotifyMediaReq takes in the data needed to request the media data from Spotify
@@ -43,6 +37,7 @@ type spotifyTrackResp struct {
 	} `json:"external_urls"`
 }
 
+// spotifyPlaylistResp defines the data returned and needed from the Spotify Get Playlist API
 type spotifyPlaylistResp struct {
 	ID           string                  `json:"id"`
 	Name         string                  `json:"name"`
@@ -123,16 +118,16 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	switch spotifyMediaReq.MediaType {
 	case "track":
 		// Call track API
-		spotifyTrackData, spotifyTrackDataErr := getSpotifyTrack(spotifyMediaReq.MediaID, creds.AccessToken)
-		if spotifyTrackDataErr != nil {
-			http.Error(writer, spotifyTrackDataErr.Error(), http.StatusInternalServerError)
-			log.Printf("GetSpotifyMedia [GetSpotifyTrack Switch]: %v", spotifyTrackDataErr)
+		firestoreMediaData, firestoreMediaDataErr := getSpotifyTrack(spotifyMediaReq.MediaID, creds.AccessToken)
+		if firestoreMediaDataErr != nil {
+			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
+			log.Printf("GetSpotifyMedia [GetSpotifyTrack Switch]: %v", firestoreMediaDataErr)
 			return
 		}
 
 		writer.WriteHeader(http.StatusOK)
 		writer.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(writer).Encode(spotifyTrackData)
+		json.NewEncoder(writer).Encode(firestoreMediaData)
 		return
 	case "playlist":
 		// Call playlist API
@@ -227,7 +222,7 @@ func getCreds() (*social.SpotifyClientCredsAuthResp, error) {
 }
 
 // getSpotifyTrack calls Spotify GET track API and converts to Golang Type
-func getSpotifyTrack(trackID string, accessToken string) (*spotifyTrackResp, error) {
+func getSpotifyTrack(trackID string, accessToken string) (*firebase.FirestoreMedia, error) {
 	// Generate URI
 	spotifyGetURI := spotifyGetTrackURI + "/" + trackID
 
@@ -265,10 +260,31 @@ func getSpotifyTrack(trackID string, accessToken string) (*spotifyTrackResp, err
 		return nil, fmt.Errorf("GetSpotifyMedia [Spotify Response Decoder]: %v", respDecodeErr)
 	}
 
-	return &spotifyTrackData, nil
+	// If multiple artists append to a string
+	var creators string
+	for index, artist := range spotifyTrackData.Artists {
+		if index == 0 {
+			creators = artist.Name
+		} else {
+			creators = creators + ", " + artist.Name
+		}
+	}
+
+	// Setup FirestoreMeida object
+	firestoreMedia := firebase.FirestoreMedia{
+		ID:           spotifyTrackData.ID,
+		Name:         spotifyTrackData.Name,
+		Album:        spotifyTrackData.Album.Name,
+		Type:         spotifyTrackData.Type,
+		Creator:      creators,
+		Images:       spotifyTrackData.Album.Images,
+		ExternalURLs: map[string]string{"spotify": spotifyTrackData.ExternalURLs.Spotify},
+	}
+
+	return &firestoreMedia, nil
 }
 
-func getSpotifyPlaylist(playlistID string, accessToken string) (*spotifyPlaylistResp, error) {
+func getSpotifyPlaylist(playlistID string, accessToken string) (*firebase.FirestoreMedia, error) {
 	// Generate URI
 	spotifyGetURI := spotifyGetPlaylistURI + "/" + playlistID
 
@@ -306,10 +322,10 @@ func getSpotifyPlaylist(playlistID string, accessToken string) (*spotifyPlaylist
 		return nil, fmt.Errorf("GetSpotifyMedia [Spotify Response Decoder]: %v", respDecodeErr)
 	}
 
-	return &playlistData, nil
+	return nil, nil
 }
 
-func getSpotifyAlbum(albumID string, accessToken string) (*spotifyAlbum, error) {
+func getSpotifyAlbum(albumID string, accessToken string) (*firebase.FirestoreMedia, error) {
 	// Generate URI
 	spotifyGetURI := spotifyGetAlbumURI + "/" + albumID
 
@@ -347,7 +363,7 @@ func getSpotifyAlbum(albumID string, accessToken string) (*spotifyAlbum, error) 
 		return nil, fmt.Errorf("GetSpotifyMedia [Spotify Response Decoder]: %v", respDecodeErr)
 	}
 
-	return &albumData, nil
+	return nil, nil
 }
 
 // refreshToken will check for an expired token and call Spotify refresh if needed
