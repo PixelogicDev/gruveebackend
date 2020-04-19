@@ -39,10 +39,13 @@ type spotifyTrackResp struct {
 
 // spotifyPlaylistResp defines the data returned and needed from the Spotify Get Playlist API
 type spotifyPlaylistResp struct {
-	ID           string                  `json:"id"`
-	Name         string                  `json:"name"`
-	Type         string                  `json:"type"`
-	Images       []firebase.SpotifyImage `json:"images"`
+	ID     string                  `json:"id"`
+	Name   string                  `json:"name"`
+	Type   string                  `json:"type"`
+	Images []firebase.SpotifyImage `json:"images"`
+	Owner  struct {
+		DisplayName string `json:"display_name"`
+	} `json:"owner"`
 	ExternalURLs struct {
 		Spotify string `json:"spotify"`
 	} `json:"external_urls"`
@@ -118,7 +121,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	switch spotifyMediaReq.MediaType {
 	case "track":
 		// Call track API
-		firestoreMediaData, firestoreMediaDataErr := getSpotifyTrack(spotifyMediaReq.MediaID, creds.AccessToken)
+		firestoreMediaTrackData, firestoreMediaDataErr := getSpotifyTrack(spotifyMediaReq.MediaID, creds.AccessToken)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
 			log.Printf("GetSpotifyMedia [GetSpotifyTrack Switch]: %v", firestoreMediaDataErr)
@@ -127,33 +130,33 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 
 		writer.WriteHeader(http.StatusOK)
 		writer.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(writer).Encode(firestoreMediaData)
+		json.NewEncoder(writer).Encode(firestoreMediaTrackData)
 		return
 	case "playlist":
 		// Call playlist API
-		spotifyPlaylistData, spotifyPlaylistDataErr := getSpotifyPlaylist(spotifyMediaReq.MediaID, creds.AccessToken)
-		if spotifyPlaylistDataErr != nil {
-			http.Error(writer, spotifyPlaylistDataErr.Error(), http.StatusInternalServerError)
-			log.Printf("GetSpotifyMedia [GetSpotifyPlaylist Switch]: %v", spotifyPlaylistDataErr)
+		firestoreMediaPlaylistData, firestoreMediaDataErr := getSpotifyPlaylist(spotifyMediaReq.MediaID, creds.AccessToken)
+		if firestoreMediaDataErr != nil {
+			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
+			log.Printf("GetSpotifyMedia [GetSpotifyPlaylist Switch]: %v", firestoreMediaDataErr)
 			return
 		}
 
 		writer.WriteHeader(http.StatusOK)
 		writer.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(writer).Encode(spotifyPlaylistData)
+		json.NewEncoder(writer).Encode(firestoreMediaPlaylistData)
 		return
 	case "album":
 		// Call album API
-		spotifyAlbumData, spotifyAlbumDataErr := getSpotifyAlbum(spotifyMediaReq.MediaID, creds.AccessToken)
-		if spotifyAlbumDataErr != nil {
-			http.Error(writer, spotifyAlbumDataErr.Error(), http.StatusInternalServerError)
-			log.Printf("GetSpotifyMedia [GetSpotifyPlaylist Switch]: %v", spotifyAlbumDataErr)
+		firestoreMediaAlbumData, firestoreMediaDataErr := getSpotifyAlbum(spotifyMediaReq.MediaID, creds.AccessToken)
+		if firestoreMediaDataErr != nil {
+			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
+			log.Printf("GetSpotifyMedia [GetSpotifyPlaylist Switch]: %v", firestoreMediaDataErr)
 			return
 		}
 
 		writer.WriteHeader(http.StatusOK)
 		writer.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(writer).Encode(spotifyAlbumData)
+		json.NewEncoder(writer).Encode(firestoreMediaAlbumData)
 		return
 	default:
 		http.Error(writer, spotifyMediaReq.MediaType+" media type does not exist", http.StatusInternalServerError)
@@ -322,7 +325,18 @@ func getSpotifyPlaylist(playlistID string, accessToken string) (*firebase.Firest
 		return nil, fmt.Errorf("GetSpotifyMedia [Spotify Response Decoder]: %v", respDecodeErr)
 	}
 
-	return nil, nil
+	// Setup FirestoreMeida object
+	firestoreMedia := firebase.FirestoreMedia{
+		ID:           playlistData.ID,
+		Name:         playlistData.Name,
+		Album:        "Playlist",
+		Type:         playlistData.Type,
+		Creator:      playlistData.Owner.DisplayName,
+		Images:       playlistData.Images,
+		ExternalURLs: map[string]string{"spotify": playlistData.ExternalURLs.Spotify},
+	}
+
+	return &firestoreMedia, nil
 }
 
 func getSpotifyAlbum(albumID string, accessToken string) (*firebase.FirestoreMedia, error) {
@@ -363,7 +377,28 @@ func getSpotifyAlbum(albumID string, accessToken string) (*firebase.FirestoreMed
 		return nil, fmt.Errorf("GetSpotifyMedia [Spotify Response Decoder]: %v", respDecodeErr)
 	}
 
-	return nil, nil
+	// If multiple artists append to a string
+	var creators string
+	for index, artist := range albumData.Artists {
+		if index == 0 {
+			creators = artist.Name
+		} else {
+			creators = creators + ", " + artist.Name
+		}
+	}
+
+	// Setup FirestoreMeida object
+	firestoreMedia := firebase.FirestoreMedia{
+		ID:           albumData.ID,
+		Name:         albumData.Name,
+		Album:        albumData.Name,
+		Type:         albumData.Type,
+		Creator:      creators,
+		Images:       albumData.Images,
+		ExternalURLs: map[string]string{"spotify": albumData.ExternalURLs.Spotify},
+	}
+
+	return &firestoreMedia, nil
 }
 
 // refreshToken will check for an expired token and call Spotify refresh if needed
