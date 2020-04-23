@@ -1,5 +1,6 @@
-gcloud functions deploy createSocialPlatform \ 
-    --entry-point CreateSocialPlatform \ 
-    --runtime go113 \ 
+gcloud functions deploy createSocialPlatform \
+    --entry-point CreateSocialPlatform \
+    --env-vars-file ../../internal/config.yaml \
+    --runtime go113 \
+    --allow-unauthenticated \
     --trigger-http
-    --env-vars-file ../..internal/config.yaml \

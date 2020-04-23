@@ -11,7 +11,7 @@ require (
 	github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia v1.0.0-beta.1
 	github.com/pixelogicdev/gruveebackend/cmd/socialplatform v1.0.0-beta.1
 	github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh v1.0.0-beta.3
-	github.com/pixelogicdev/gruveebackend/cmd/spotifyauth v1.0.0-beta.3
+	github.com/pixelogicdev/gruveebackend/cmd/spotifyauth v1.0.0-beta.4
 	github.com/pixelogicdev/gruveebackend/cmd/tokengen v1.0.0-beta.2
 	github.com/pixelogicdev/gruveebackend/cmd/updatealgolia v1.0.0-beta.7
 )
