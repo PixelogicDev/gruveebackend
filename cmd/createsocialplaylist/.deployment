@@ -1,5 +1,6 @@
-gcloud functions deploy createSocialPlaylist \ 
-    --entry-point CreateSocialPlaylist \ 
-    --runtime go113 \ 
+gcloud functions deploy createSocialPlaylist \
+    --entry-point CreateSocialPlaylist \
+    --env-vars-file ../../internal/config.yaml \
+    --runtime go113 \
+    --allow-unauthenticated \
     --trigger-http
-    --env-vars-file ../..internal/config.yaml \
