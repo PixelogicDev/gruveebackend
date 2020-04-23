@@ -44,6 +44,11 @@ github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+o
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
+github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.2/go.mod h1:wSG3iKVMpEXBNaFJNV3fPBOElt1RKBzt9kOO3LyDlnQ=
+github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.10 h1:Qx8xZuVp0CbF5iIPVP82Vx8QdAn3XOIqDruGOhMUu98=
+github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.10/go.mod h1:wSG3iKVMpEXBNaFJNV3fPBOElt1RKBzt9kOO3LyDlnQ=
+github.com/pixelogicdev/gruveebackend/pkg/social v1.0.0-beta.3 h1:05B4PhYUZnfzRv4BelfSV22/abX+45Fh0AKKuhjy8K4=
+github.com/pixelogicdev/gruveebackend/pkg/social v1.0.0-beta.3/go.mod h1:CkDDB0Y2qx5/JxBPYrxDO69msP7EGu57Tm5W8sByfhI=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0 h1:C9hSCOW830chIVkdja34wa6Ky+IzWllkUinR+BtRZd4=

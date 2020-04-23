@@ -1,0 +1,5 @@
+gcloud functions deploy authorizeWithSpotify \ 
+    --entry-point AuthorizeWithSpotify \ 
+    --runtime go113 \ 
+    --trigger-http
+    --env-vars-file ../..internal/config.yaml \

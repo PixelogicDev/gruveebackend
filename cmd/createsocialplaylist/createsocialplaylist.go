@@ -17,7 +17,7 @@ import (
 // createSocialPlaylistRequest includes the socialPlatform and playlist that will be added
 type createSocialPlaylistRequest struct {
 	SocialPlatform firebase.FirestoreSocialPlatform `json:"socialPlatform"`
-	Playlist       firebase.FirestorePlaylist       `json:"playlist"`
+	PlaylistName   string                           `json:"playlistName"`
 }
 
 // createSocialPlaylistResponse includes the refreshToken for the platform if there is one
@@ -101,7 +101,7 @@ func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Call API to create playlist with data
-	createReqErr := createPlaylist(platformEndpoint, socialPlaylistReq.SocialPlatform, socialPlaylistReq.Playlist)
+	createReqErr := createPlaylist(platformEndpoint, socialPlaylistReq.SocialPlatform, socialPlaylistReq.PlaylistName)
 	if createReqErr != nil {
 		http.Error(writer, createReqErr.Error(), http.StatusBadRequest)
 		log.Printf("CreateSocialPlaylist [createPlaylist]: %v", createReqErr)
@@ -117,9 +117,9 @@ func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
 
 // createPlaylist takes the social platform and playlist information and creates a playlist on the user's preferred platform
 func createPlaylist(endpoint string, platform firebase.FirestoreSocialPlatform,
-	playlist firebase.FirestorePlaylist) error {
+	playlistName string) error {
 	var spotifyPlaylistRequest = spotifyPlaylistRequest{
-		Name:          "Grüvee: " + playlist.Name,
+		Name:          "Grüvee: " + playlistName,
 		Public:        true,
 		Collaborative: false,
 		Description:   "Created with love from Grüvee ❤️",

@@ -1,0 +1,5 @@
+gcloud functions deploy getSpotifyMedia \ 
+    --entry-point GetSpotifyMedia \ 
+    --runtime go113 \ 
+    --trigger-http
+    --env-vars-file ../..internal/config.yaml \

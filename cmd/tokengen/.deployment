@@ -1,0 +1,5 @@
+gcloud functions deploy generateCustomToken \ 
+    --entry-point GenerateCustomToken \ 
+    --runtime go113 \ 
+    --trigger-http
+    --env-vars-file ../..internal/config.yaml \

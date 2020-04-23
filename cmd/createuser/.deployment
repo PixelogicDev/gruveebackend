@@ -1,0 +1,5 @@
+gcloud functions deploy createUser \ 
+    --entry-point CreateUser \ 
+    --runtime go113 \ 
+    --trigger-http
+    --env-vars-file ../..internal/config.yaml \

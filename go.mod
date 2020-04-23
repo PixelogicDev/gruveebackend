@@ -6,7 +6,7 @@ require (
 	github.com/GoogleCloudPlatform/functions-framework-go v1.0.0
 	github.com/cloudevents/sdk-go v1.1.2 // indirect
 	github.com/joho/godotenv v1.3.0
-	github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist v1.0.0-beta.3
+	github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist v1.0.0-beta.4
 	github.com/pixelogicdev/gruveebackend/cmd/createuser v1.0.0-beta.1
 	github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia v1.0.0-beta.1
 	github.com/pixelogicdev/gruveebackend/cmd/socialplatform v1.0.0-beta.1

@@ -1,0 +1,5 @@
+gcloud functions deploy createSocialPlaylist \ 
+    --entry-point CreateSocialPlaylist \ 
+    --runtime go113 \ 
+    --trigger-http
+    --env-vars-file ../..internal/config.yaml \
