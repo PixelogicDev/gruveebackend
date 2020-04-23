@@ -1,3 +1,4 @@
+- v1.0.0-beta.11: Changing PlaylistsSongs type && FirestorePlaylist type
 - v1.0.0-beta.10: Adding FirestoreMedia
 - v1.0.0-beta.9: Adding MapValue props for image
 - v1.0.0-beta.8: Changing ProfileImage to utilize interface to check values
