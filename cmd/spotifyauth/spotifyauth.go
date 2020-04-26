@@ -433,7 +433,7 @@ func createSocialPlatform(spotifyResp social.SpotifyMeResponse,
 
 // getCustomRoken calles our GenerateToken Firebase Function to create & return custom JWT
 func getCustomToken(uid string) (*social.GenerateTokenResponse, error) {
-	var generateTokenURI = hostname + "/generateToken"
+	var generateTokenURI = hostname + "/generateCustomToken"
 	var tokenRequest = social.GenerateTokenRequest{
 		UID: uid,
 	}

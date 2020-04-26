@@ -34,15 +34,33 @@ type FirestoreSocialPlatform struct {
 	Username           string       `firestore:"username" json:"username"`
 }
 
+// FirestoreMedia represents the "song" item stored in the songs collection. We use media because techincally this doens't have to be just a song
+type FirestoreMedia struct {
+	ID      string `firestore:"id" json:"id"`
+	Name    string `firestore:"name" json:"name"`
+	Album   string `firestore:"album,omitempty" json:"album,omitempty"`
+	Type    string `firestore:"type" json:"type"`
+	Creator string `firestore:"creator" json:"creator"`
+	// TODO: SpotifyImage should probably to a more generic name in phast 1 or 2
+	Images       []SpotifyImage    `firestore:"images" json:"images"`
+	ExternalURLs map[string]string `firestore:"externalUrls" json:"externalUrls"`
+}
+
 // FirestorePlaylist represents the data for a playlist store in Firestore
 type FirestorePlaylist struct {
-	ID        string      `firestore:"id" json:"id"`
-	Name      string      `firestore:"name" json:"name"`
-	CreatedBy string      `firestore:"createdBy" json:"createdBy"`
-	Members   []string    `firestore:"members" json:"members"`
-	Songs     []string    `firestore:"songs" json:"songs"`
-	Comments  interface{} `firestore:"comments" json:"comments"` // This will actually need be an object with key:value pair of songId:[Comments]
-	CoverArt  string      `firestore:"coverArt" json:"coverArt"`
+	ID        string                   `firestore:"id" json:"id"`
+	Name      string                   `firestore:"name" json:"name"`
+	CreatedBy *firestore.DocumentRef   `firestore:"createdBy" json:"createdBy"`
+	Members   []*firestore.DocumentRef `firestore:"members" json:"members"`
+	Songs     PlaylistSongs            `firestore:"songs" json:"songs"`
+	Comments  interface{}              `firestore:"comments" json:"comments"` // This will actually need be an object with key:value pair of songId:[Comments]
+	CoverArt  string                   `firestore:"coverArt" json:"coverArt"`
+}
+
+// PlaylistSongs represents the songs object in a playlist which includes an AddedBy object and AllSongs DocRef Array
+type PlaylistSongs struct {
+	AddedBy  map[string][]string      `firestore:"addedBy" json:"addedBy"`
+	AllSongs []*firestore.DocumentRef `firestore:"allSongs" json:"allSongs"`
 }
 
 // FirestoreEvent implements the Firestore event from a trigger function
@@ -84,6 +102,7 @@ type profileImageMapValue struct {
 	} `json:"mapValue"`
 }
 
+// stringintegerValue implements the integer value type for Firestore Events
 type integerValue struct {
 	IntegerValue int `json:"integerValue"`
 }

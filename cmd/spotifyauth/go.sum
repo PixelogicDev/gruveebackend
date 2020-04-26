@@ -103,6 +103,8 @@ github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.2 h1:ehtKElVKIhJ5
 github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.2/go.mod h1:wSG3iKVMpEXBNaFJNV3fPBOElt1RKBzt9kOO3LyDlnQ=
 github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.3 h1:NqKfXJfhBxtEohrAyd4fcEG7piFrsD2UL877nNHgJG0=
 github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.3/go.mod h1:wSG3iKVMpEXBNaFJNV3fPBOElt1RKBzt9kOO3LyDlnQ=
+github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.11 h1:xL9JIJUTXpHGL1PnZIplRhGFBJGozmfB90LKT/6Cm3A=
+github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.11/go.mod h1:wSG3iKVMpEXBNaFJNV3fPBOElt1RKBzt9kOO3LyDlnQ=
 github.com/pixelogicdev/gruveebackend/pkg/social v1.0.0-beta.1 h1:YShEr0Dmj8t0mo5w2cPZr7XW5/Urek5AlKHBMm3KM7s=
 github.com/pixelogicdev/gruveebackend/pkg/social v1.0.0-beta.1/go.mod h1:CkDDB0Y2qx5/JxBPYrxDO69msP7EGu57Tm5W8sByfhI=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=

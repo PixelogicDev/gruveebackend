@@ -1,2 +1,3 @@
+- v1.0.0-beta.3: Adding SpotifyClientCredsAuthResp
 - v1.0.0-beta.2: Replacing RefreshTokensResponse type with firebase.APIToken
 - v1.0.0-beta.1: Initializing package with social types

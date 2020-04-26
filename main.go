@@ -14,6 +14,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist"
 	"github.com/pixelogicdev/gruveebackend/cmd/createuser"
+	"github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia"
 	"github.com/pixelogicdev/gruveebackend/cmd/socialplatform"
 	"github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh"
 	"github.com/pixelogicdev/gruveebackend/cmd/spotifyauth"
@@ -34,6 +35,8 @@ func init() {
 // Fr3fou - "i helped build this AYAYA, follow @fr3fou on twitter uwu" (04/07/20)
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	// General Endpoints
 	funcframework.RegisterHTTPFunction("/authorizeWithSpotify", spotifyauth.AuthorizeWithSpotify)
 	funcframework.RegisterHTTPFunction("/generateToken", tokengen.GenerateCustomToken)
 	funcframework.RegisterHTTPFunction("/createSocialPlatform", socialplatform.CreateSocialPlatform)
@@ -41,6 +44,9 @@ func main() {
 	funcframework.RegisterHTTPFunction("/socialTokenRefresh", socialtokenrefresh.SocialTokenRefresh)
 	funcframework.RegisterHTTPFunction("/createSocialPlaylist", createsocialplaylist.CreateSocialPlaylist)
 	funcframework.RegisterEventFunction("/updateAlgolia", updatealgolia.UpdateAlgolia)
+
+	// Get Media Endpoints
+	funcframework.RegisterHTTPFunction("/getSpotifyMedia", getspotifymedia.GetSpotifyMedia)
 
 	// WIP: Local trigger endpoint for cloud event
 	// funcframework.RegisterHTTPFunction("/localCloudTrigger", localcloudtrigger.LocalCloudTrigger)

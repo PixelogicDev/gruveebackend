@@ -1,0 +1,5 @@
+gcloud functions deploy UpdateAlgolia \
+    --runtime go113 \
+    --trigger-event providers/cloud.firestore/eventTypes/document.create \
+    --trigger-resource "projects/gruvee-3b7c4/databases/(default)/documents/users/{pushId}" \
+    --env-vars-file ../../internal/config.yaml

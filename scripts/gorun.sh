@@ -20,6 +20,7 @@ then
     socialTokenRefreshReplace="github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh=../cmd/socialtokenrefresh"
     createSocialPlaylistReplace="github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist=../cmd/createsocialplaylist"
     algoliaReplace="github.com/pixelogicdev/gruveebackend/cmd/updatealgolia=../cmd/updatealgolia"
+    getSpotifyMedia="github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia=../cmd/getspotifymedia"
     firebaseReplace="github.com/pixelogicdev/gruveebackend/pkg/firebase=../../pkg/firebase"
     socialReplace="github.com/pixelogicdev/gruveebackend/pkg/social=../../pkg/social"
 
@@ -44,6 +45,7 @@ then
             go mod edit -replace $createSocialPlaylistReplace
             go mod edit -replace $socialReplace
             go mod edit -replace $algoliaReplace
+            go mod edit -replace $getSpotifyMedia
         fi
 
         if [ "$d" = "socialplatform/" ]
@@ -56,6 +58,7 @@ then
             go mod edit -replace $createSocialPlaylistReplace
             go mod edit -replace $socialReplace
             go mod edit -replace $algoliaReplace
+            go mod edit -replace $getSpotifyMedia
         fi
 
         if [ "$d" = "spotifyauth/" ]
@@ -68,6 +71,7 @@ then
             go mod edit -replace $createSocialPlaylistReplace
             go mod edit -replace $socialReplace
             go mod edit -replace $algoliaReplace
+            go mod edit -replace $getSpotifyMedia
         fi
     
         if [ "$d" = "tokengen/" ] 
@@ -80,6 +84,7 @@ then
             go mod edit -replace $createSocialPlaylistReplace
             go mod edit -replace $socialReplace
             go mod edit -replace $algoliaReplace
+            go mod edit -replace $getSpotifyMedia
         fi
 
         if [ "$d" = "socialtokenrefresh/" ] 
@@ -92,6 +97,7 @@ then
             go mod edit -replace $createSocialPlaylistReplace
             go mod edit -replace $socialReplace
             go mod edit -replace $algoliaReplace
+            go mod edit -replace $getSpotifyMedia
         fi
 
         if [ "$d" = "createsocialplaylist/" ] 
@@ -104,6 +110,7 @@ then
             go mod edit -replace $socialTokenRefreshReplace
             go mod edit -replace $socialReplace
             go mod edit -replace $algoliaReplace
+            go mod edit -replace $getSpotifyMedia
         fi
 
         if [ "$d" = "updatealgolia/" ] 
@@ -116,6 +123,20 @@ then
             go mod edit -replace $socialTokenRefreshReplace
             go mod edit -replace $socialReplace
             go mod edit -replace $createSocialPlaylistReplace
+            go mod edit -replace $getSpotifyMedia
+        fi
+
+        if [ "$d" = "getspotifymedia/" ] 
+        then
+            go mod edit -replace $socialPlatformReplace
+            go mod edit -replace $spotifyAuthReplace 
+            go mod edit -replace $createUserReplace
+            go mod edit -replace $firebaseReplace
+            go mod edit -replace $tokengenReplace
+            go mod edit -replace $socialTokenRefreshReplace
+            go mod edit -replace $socialReplace
+            go mod edit -replace $createSocialPlaylistReplace
+            go mod edit -replace $algoliaReplace
         fi
     
         # Move back up a directory
