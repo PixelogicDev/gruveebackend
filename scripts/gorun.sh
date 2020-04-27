@@ -10,7 +10,7 @@ echo "Starting Go Run Script..."
 if [[ -f "main.go" ]]
 then
     # Variables
-    googleCredsPath="./internal/adminSdkSecret.json"
+    googleCredsPath="./internal/adminSdkSecret-Dev.json"
 
     # These are the replace paths. When adding new functions, make sure to appedn to this list
     spotifyAuthReplace="github.com/pixelogicdev/gruveebackend/cmd/spotifyauth=../cmd/spotifyauth"

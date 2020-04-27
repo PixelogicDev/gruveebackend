@@ -15,7 +15,7 @@ import (
 	"net/http"
 
 	"firebase.google.com/go"
-	auth "firebase.google.com/go/auth"
+	"firebase.google.com/go/auth"
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
 )
 

@@ -49,9 +49,9 @@ func init() {
 func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
 	// Initialize paths
 	if os.Getenv("ENVIRONMENT") == "DEV" {
-		hostname = "http://localhost:8080"
+		hostname = os.Getenv("HOSTNAME_DEV")
 	} else if os.Getenv("ENVIRONMENT") == "PROD" {
-		hostname = "https://us-central1-gruvee-3b7c4.cloudfunctions.net"
+		hostname = os.Getenv("HOSTNAME_PROD")
 	}
 
 	var socialPlaylistReq createSocialPlaylistRequest

@@ -1,5 +1,6 @@
 # Config
 **/adminSdkSecret.json
+**/adminSdkSecret-Dev.json
 
 # Vendor Folder
 **/vendor

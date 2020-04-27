@@ -100,6 +100,14 @@ func init() {
 
 // GetSpotifyMedia will take in Spotify media data and get the exact media from Spotify API
 func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
+	// Initialize
+	initWithEnvErr := initWithEnv()
+	if initWithEnvErr != nil {
+		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
+		log.Printf("GetSpotifyMedia [initWithEnv]: %v", initWithEnvErr)
+		return
+	}
+
 	// Decode Request body to get track data
 	var spotifyMediaReq getSpotifyMediaReq
 	spotifyReqDecodeErr := json.NewDecoder(request.Body).Decode(&spotifyMediaReq)
@@ -181,6 +189,30 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 		log.Printf("GetSpotifyMedia [MediaTypeSwitch]: %v media type does not exist", spotifyMediaReq.MediaType)
 		return
 	}
+}
+
+// Helpers
+
+// initWithEnv takes our yaml env variables and maps them properly.
+// Unfortunately, we had to do this is main because in init we weren't able to access env variables
+func initWithEnv() error {
+	// Get paths
+	var currentProject string
+
+	if os.Getenv("ENVIRONMENT") == "DEV" {
+		currentProject = os.Getenv("FIREBASE_PROJECTID_DEV")
+	} else if os.Getenv("ENVIRONMENT") == "PROD" {
+		currentProject = os.Getenv("FIREBASE_PROJECTID_PROD")
+	}
+
+	// Initialize Firestore
+	client, err := firestore.NewClient(context.Background(), currentProject)
+	if err != nil {
+		return fmt.Errorf("CreateUser [Init Firestore]: %v", err)
+	}
+
+	firestoreClient = client
+	return nil
 }
 
 func getMediaFromFirestore(mediaID string) (*firebase.FirestoreMedia, error) {

@@ -1,3 +1,4 @@
+// itshaydendev - "Firebase is bad but I use it anyway because I'm some kind of masochist" (04/26/20)
 package main
 
 // creativenobu - "compiled but feels interpreted (02/26/20)
@@ -38,7 +39,7 @@ func main() {
 
 	// General Endpoints
 	funcframework.RegisterHTTPFunction("/authorizeWithSpotify", spotifyauth.AuthorizeWithSpotify)
-	funcframework.RegisterHTTPFunction("/generateToken", tokengen.GenerateCustomToken)
+	funcframework.RegisterHTTPFunction("/generateCustomToken", tokengen.GenerateCustomToken)
 	funcframework.RegisterHTTPFunction("/createSocialPlatform", socialplatform.CreateSocialPlatform)
 	funcframework.RegisterHTTPFunction("/createUser", createuser.CreateUser)
 	funcframework.RegisterHTTPFunction("/socialTokenRefresh", socialtokenrefresh.SocialTokenRefresh)

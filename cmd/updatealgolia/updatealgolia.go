@@ -37,7 +37,13 @@ func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
 		return fmt.Errorf("Algolia Secret ID was empty in yaml file")
 	}
 
-	algoliaIndexName := os.Getenv("ALGOLIA_INDEX_NAME")
+	var algoliaIndexName string
+	if os.Getenv("ENVIRONMENT") == "DEV" {
+		algoliaIndexName = os.Getenv("ALGOLIA_INDEX_NAME_DEV")
+	} else if os.Getenv("ENVIRONMENT") == "PROD" {
+		algoliaIndexName = os.Getenv("ALGOLIA_INDEX_NAME_PROD")
+	}
+
 	if algoliaIndexName == "" {
 		log.Println("Algolia Index Name was empty in yaml file")
 		return fmt.Errorf("Algolia Index Name was empty in yaml file")

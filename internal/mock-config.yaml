@@ -1,0 +1,11 @@
+# COMMON #
+ENVIRONMENT: DEV
+SPOTIFY_CLIENTID: <AddRegisteredSpotifyClientID>
+SPOTIFY_SECRET: <AddRegisteredSpotifySecret>
+ALGOLIA_APP_ID: <AddRegisteredAlgoliaAppID>
+ALGOLIA_SECRET_ID: <AddRegisteredAlgoliaSecretID>
+
+# DEV #
+HOSTNAME_DEV: http://localhost:8080
+FIREBASE_PROJECTID_DEV: <AddRegisteredFirebaseProjectID>
+ALGOLIA_INDEX_NAME_DEV: <AddCreatedAlgoliaIndexName>
