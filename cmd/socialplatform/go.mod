@@ -27,3 +27,5 @@ replace github.com/pixelogicdev/gruveebackend/pkg/social => ../../pkg/social
 replace github.com/pixelogicdev/gruveebackend/cmd/updatealgolia => ../cmd/updatealgolia
 
 replace github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia => ../cmd/getspotifymedia
+
+replace github.com/pixelogicdev/gruveebackend/cmd/appleauth => ../cmd/appleauth

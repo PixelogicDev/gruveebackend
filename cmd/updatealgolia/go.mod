@@ -34,3 +34,5 @@ replace github.com/pixelogicdev/gruveebackend/pkg/social => ../../pkg/social
 replace github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist => ../cmd/createsocialplaylist
 
 replace github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia => ../cmd/getspotifymedia
+
+replace github.com/pixelogicdev/gruveebackend/cmd/appleauth => ../cmd/appleauth

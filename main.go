@@ -13,6 +13,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 	"github.com/joho/godotenv"
+	"github.com/pixelogicdev/gruveebackend/cmd/appleauth"
 	"github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist"
 	"github.com/pixelogicdev/gruveebackend/cmd/createuser"
 	"github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia"
@@ -38,6 +39,7 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	// General Endpoints
+	funcframework.RegisterHTTPFunction("/authorizeWithApple", appleauth.AuthorizeWithApple)
 	funcframework.RegisterHTTPFunction("/authorizeWithSpotify", spotifyauth.AuthorizeWithSpotify)
 	funcframework.RegisterHTTPFunction("/generateCustomToken", tokengen.GenerateCustomToken)
 	funcframework.RegisterHTTPFunction("/createSocialPlatform", socialplatform.CreateSocialPlatform)

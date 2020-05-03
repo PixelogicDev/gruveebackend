@@ -7,3 +7,6 @@
 
 # Enviornment Files
 config.yaml
+
+# Apple .p8 file
+cmd/appleauth/*.p8

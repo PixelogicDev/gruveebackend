@@ -46,6 +46,13 @@ type FirestoreMedia struct {
 	ExternalURLs map[string]string `firestore:"externalUrls" json:"externalUrls"`
 }
 
+// FirestoreAppleDevJWT rerpresents the JWT object that is needed for calling Apple Music API stuff
+type FirestoreAppleDevJWT struct {
+	ExpiresAt int64  `json:"expiresAt"`
+	IssuedAt  int64  `json:"issuedAt"`
+	Token     string `json:"token"`
+}
+
 // FirestorePlaylist represents the data for a playlist store in Firestore
 type FirestorePlaylist struct {
 	ID        string                   `firestore:"id" json:"id"`
