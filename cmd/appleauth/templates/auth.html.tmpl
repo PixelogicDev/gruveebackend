@@ -8,15 +8,12 @@
   </head>
   <body>
     <h1>Hello</h1>
-    <button onClick="authorize">Sign In With Apple Music</button>
+    <button onClick="authorize()">Sign In With Apple Music</button>
     <script>
       function authorize() {
         let music = MusicKit.getInstance();
-
-        // You can wrap any method to ensure authorization before calling
         music.authorize().then(function(musicUserToken) {
-          console.log("WE HERE NOW.");
-          // console.log(musicUserToken)
+          window.location = "gruvee://apple_auth?"+musicUserToken;
         }).catch(function(error) {
           console.log(error);
         });
