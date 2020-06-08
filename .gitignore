@@ -9,4 +9,4 @@
 config.yaml
 
 # Apple .p8 file
-cmd/appleauth/*.p8
+cmd/createappledevtoken/*.p8

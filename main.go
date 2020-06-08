@@ -14,6 +14,7 @@ import (
 	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 	"github.com/joho/godotenv"
 	"github.com/pixelogicdev/gruveebackend/cmd/appleauth"
+	"github.com/pixelogicdev/gruveebackend/cmd/createappledevtoken"
 	"github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist"
 	"github.com/pixelogicdev/gruveebackend/cmd/createuser"
 	"github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia"
@@ -46,6 +47,7 @@ func main() {
 	funcframework.RegisterHTTPFunction("/createUser", createuser.CreateUser)
 	funcframework.RegisterHTTPFunction("/socialTokenRefresh", socialtokenrefresh.SocialTokenRefresh)
 	funcframework.RegisterHTTPFunction("/createSocialPlaylist", createsocialplaylist.CreateSocialPlaylist)
+	funcframework.RegisterHTTPFunction("/createAppleDevToken", createappledevtoken.CreateAppleDevToken)
 	funcframework.RegisterEventFunction("/updateAlgolia", updatealgolia.UpdateAlgolia)
 
 	// Get Media Endpoints

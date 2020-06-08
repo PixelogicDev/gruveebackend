@@ -54,6 +54,7 @@ func CreateUser(writer http.ResponseWriter, request *http.Request) {
 		PreferredSocialPlatform: socialPlatDocRef,
 		ProfileImage:            createUserReq.ProfileImage,
 		SocialPlatforms:         []*firestore.DocumentRef{socialPlatDocRef},
+		DisplayName:             createUserReq.DisplayName,
 		Username:                createUserReq.Username,
 	}
 

@@ -92,5 +92,6 @@ type CreateUserReq struct {
 	ID                 string                 `json:"id"`
 	SocialPlatformPath string                 `json:"socialPlatformPath"`
 	ProfileImage       *firebase.SpotifyImage `json:"profileImage"`
+	DisplayName        string                 `json:"displayName"`
 	Username           string                 `json:"username"`
 }

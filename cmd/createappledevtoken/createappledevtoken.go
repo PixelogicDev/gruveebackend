@@ -1,4 +1,4 @@
-package appleauth
+package createappledevtoken
 
 import (
 	"context"
@@ -15,35 +15,18 @@ import (
 	"cloud.google.com/go/firestore"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
-	"github.com/unrolled/render"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-// zebcode - "Zebcode Rules 🦸‍♂️" (04/29/20)
-type appleDevTokenResp struct {
-	Token string
-}
-
+// DR_DinoMight - "Alec loves the song "Nelly's - Hot In Here" (05/05/20)
 var firestoreClient *firestore.Client
 var appleDevToken firebase.FirestoreAppleDevJWT
-var httpClient *http.Client
-var currentP8Path string
-var hostname string
+var p8FilePath string
+var currentProject string
 
-func init() {
-	httpClient = &http.Client{}
-	log.Println("AuthorizeWithApple initialized.")
-}
-
-// AuthorizeWithApple will render a HTML page to get the AppleMusic credentials for user
-func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
-	if os.Getenv("APPLE_TEAM_ID") == "" {
-		http.Error(writer, "[AuthorizeWithApple] APPLE_TEAM_ID does not exist!", http.StatusInternalServerError)
-		log.Println("[AuthorizeWithApple] APPLE_TEAM_ID does not exist!")
-		return
-	}
-
+// CreateAppleDevToken will render a HTML page to get the AppleMusic credentials for user
+func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
 	// Initialize
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
@@ -52,73 +35,58 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Grab token from DB && check expiration
-	// Create Request
-	createAppleDevURI := hostname + "/createAppleDevToken"
-	log.Println(createAppleDevURI)
-	appleDevTokenReq, appleDevTokenReqErr := http.NewRequest("GET", createAppleDevURI, nil)
-	if appleDevTokenReqErr != nil {
-		http.Error(writer, appleDevTokenReqErr.Error(), http.StatusInternalServerError)
-		log.Println(appleDevTokenReqErr.Error())
+	// Check for developer token in firebase
+	devToken, devTokenErr := fetchToken()
+	if devTokenErr != nil {
+		http.Error(writer, devTokenErr.Error(), http.StatusInternalServerError)
+		log.Printf("[CreateAppleDevToken] [getAppleDevToken]: %v", devTokenErr)
 		return
 	}
 
-	appleDevTokenResp, appleDevTokenRespErr := httpClient.Do(appleDevTokenReq)
-	if appleDevTokenRespErr != nil {
-		http.Error(writer, appleDevTokenRespErr.Error(), http.StatusInternalServerError)
-		log.Println(appleDevTokenRespErr.Error())
-		return
-	}
+	if devToken != nil {
+		appleDevToken = *devToken
+		log.Println("[CreateAppleDevToken] Token found in DB. Checking for expiration")
 
-	// Decode Token
-	var appleDevToken firebase.FirestoreAppleDevJWT
+		// If token expired, refresh, else continue
+		if isTokenExpired(devToken) {
+			if os.Getenv("APPLE_TEAM_ID") == "" {
+				http.Error(writer, "[CreateAppleDevToken] APPLE_TEAM_ID does not exist!", http.StatusInternalServerError)
+				log.Println("[CreateAppleDevToken] APPLE_TEAM_ID does not exist!")
+				return
+			}
 
-	appleDevTokenDecodeErr := json.NewDecoder(appleDevTokenResp.Body).Decode(&appleDevToken)
-	if appleDevTokenDecodeErr != nil {
-		http.Error(writer, appleDevTokenDecodeErr.Error(), http.StatusInternalServerError)
-		log.Printf("AuthorizeWithSpotify [spotifyAuthRequest Decoder]: %v", appleDevTokenDecodeErr)
-		return
-	}
+			if os.Getenv("APPLE_KID") == "" {
+				http.Error(writer, "[CreateAppleDevToken] APPLE_KID does not exist!", http.StatusInternalServerError)
+				log.Println("[CreateAppleDevToken] APPLE_KID does not exist!")
+				return
+			}
 
-	/* foundAppleDevToken, foundAppleDevTokenErr := getAppleDevToken()
-	if foundAppleDevTokenErr != nil {
-		http.Error(writer, foundAppleDevTokenErr.Error(), http.StatusInternalServerError)
-		log.Printf("[AuthorizeWithApple] [getAppleDevToken]: %v", foundAppleDevTokenErr)
-		return
-	}
+			token, tokenErr := generateJWT()
+			if tokenErr != nil {
+				http.Error(writer, tokenErr.Error(), http.StatusInternalServerError)
+				log.Printf("[CreateAppleDevToken]: %v", tokenErr)
+				return
+			}
 
-	// Check for developer token - Let's call our firebase function
-	if foundAppleDevToken != nil {
-		log.Println("[AuthorizeWithApple] Token already found. Sending back.")
-
-		// TODO: We should check if it's expired and if so, create a new one
-
-		appleDevToken = *foundAppleDevToken
-	}
-
-	if foundAppleDevToken == nil && foundAppleDevTokenErr == nil {
-		log.Println("[AuthorizeWithApple] No AppleDevToken found in DB")
-		createdAppleDevtoken, createdAppleDevtokenErr := createAppleDevToken()
-		if createdAppleDevtokenErr != nil {
-			http.Error(writer, createdAppleDevtokenErr.Error(), http.StatusInternalServerError)
-			log.Printf("[AuthorizeWithApple] [createAppleDevToken]: %v", createdAppleDevtokenErr)
-			return
+			appleDevToken = *token
 		}
 
-		appleDevToken = *createdAppleDevtoken
-	} */
-
-	// Render template
-	render := render.New(render.Options{
-		Directory: "cmd/appleauth/templates",
-	})
-
-	renderErr := render.HTML(writer, http.StatusOK, "auth", appleDevToken)
-	if renderErr != nil {
-		http.Error(writer, renderErr.Error(), http.StatusInternalServerError)
-		log.Printf("[AuthorizeWithApple] [render]: %v", renderErr)
+		writer.WriteHeader(http.StatusOK)
+		writer.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(writer).Encode(appleDevToken)
 		return
 	}
+
+	token, tokenErr := generateJWT()
+	if tokenErr != nil {
+		http.Error(writer, tokenErr.Error(), http.StatusInternalServerError)
+		log.Printf("CreateAppleDevToken]: %v", tokenErr)
+		return
+	}
+
+	writer.WriteHeader(http.StatusOK)
+	writer.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(writer).Encode(token)
 }
 
 // Helpers
@@ -130,30 +98,28 @@ func initWithEnv() error {
 
 	if os.Getenv("ENVIRONMENT") == "DEV" {
 		currentProject = os.Getenv("FIREBASE_PROJECTID_DEV")
-		currentP8Path = os.Getenv("APPLE_P8_PATH_DEV")
-		hostname = os.Getenv("HOSTNAME_DEV")
+		p8FilePath = os.Getenv("APPLE_P8_PATH_DEV")
 	} else if os.Getenv("ENVIRONMENT") == "PROD" {
 		currentProject = os.Getenv("FIREBASE_PROJECTID_PROD")
-		currentP8Path = os.Getenv("APPLE_P8_PATH_PROD")
-		hostname = os.Getenv("HOSTNAME_PROD")
+		p8FilePath = os.Getenv("APPLE_P8_PATH_PROD")
 	}
 
 	// Initialize Firestore
 	client, err := firestore.NewClient(context.Background(), currentProject)
 	if err != nil {
-		return fmt.Errorf("SocialTokenRefresh [Init Firestore]: %v", err)
+		return fmt.Errorf("CreateAppleDevToken [Init Firestore]: %v", err)
 	}
 
 	firestoreClient = client
 	return nil
 }
 
-// getAppleDevToken will check our DB for appleDevJWT and return it if there
-func getAppleDevToken() (*firebase.FirestoreAppleDevJWT, error) {
+// fetchToken will grab the Apple Developer Token from DB
+func fetchToken() (*firebase.FirestoreAppleDevJWT, error) {
 	// Go to Firebase and see if appleDevToken exists
 	snapshot, snapshotErr := firestoreClient.Collection("internal_tokens").Doc("appleDevToken").Get(context.Background())
 	if status.Code(snapshotErr) == codes.NotFound {
-		log.Println("[AppleAuth] AppleDevToken not found in DB.")
+		log.Println("[CreateAppleDevToken] AppleDevToken not found in DB. Need to create.")
 		return nil, nil
 	}
 
@@ -170,14 +136,31 @@ func getAppleDevToken() (*firebase.FirestoreAppleDevJWT, error) {
 	return &appleDevToken, nil
 }
 
-// createAppleDevToken creates our actual JWT needed to make API requests
-func createAppleDevToken() (*firebase.FirestoreAppleDevJWT, error) {
+// isTokenExpired will check to see if the Apple Developer Token is expired
+func isTokenExpired(token *firebase.FirestoreAppleDevJWT) bool {
+	// Get current time
+	var currentTime = time.Now()
+
+	fmt.Printf("Issued At: %d seconds\n", token.IssuedAt)
+	fmt.Printf("Expires At: %d seconds\n", token.ExpiresAt)
+
+	if currentTime.After(time.Unix(token.ExpiresAt, 0)) {
+		log.Println("Dev Token is expired. Generating a new one")
+
+		return true
+	}
+
+	return false
+}
+
+// generateJWT will create a new Apple Developer Token and store in DB
+func generateJWT() (*firebase.FirestoreAppleDevJWT, error) {
 	// Env Props
 	appleTeamKey := os.Getenv("APPLE_TEAM_ID")
 	appleKID := os.Getenv("APPLE_KID")
 
 	// Read .p8 file
-	signKeyByte, signKeyByteErr := ioutil.ReadFile(currentP8Path)
+	signKeyByte, signKeyByteErr := ioutil.ReadFile(p8FilePath)
 	if signKeyByteErr != nil {
 		return nil, fmt.Errorf("Could not read .p8 file: %v", signKeyByteErr)
 	}
@@ -191,7 +174,8 @@ func createAppleDevToken() (*firebase.FirestoreAppleDevJWT, error) {
 	claims := jwt.StandardClaims{
 		Issuer:    appleTeamKey,
 		ExpiresAt: int64(expiresAt.Unix()),
-		IssuedAt:  int64(issuedAt.Unix()),
+		// SagNurSchwitzer - "WHO WILL FIX ME NOW" (05/06/20)
+		IssuedAt: int64(issuedAt.Unix()),
 	}
 
 	// Generate and sign JWT

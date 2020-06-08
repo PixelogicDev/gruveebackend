@@ -29,3 +29,5 @@ replace github.com/pixelogicdev/gruveebackend/cmd/updatealgolia => ../cmd/update
 replace github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia => ../cmd/getspotifymedia
 
 replace github.com/pixelogicdev/gruveebackend/cmd/appleauth => ../cmd/appleauth
+
+replace github.com/pixelogicdev/gruveebackend/cmd/createappledevtoken => ../cmd/createappledevtoken

@@ -1,12 +1,12 @@
-module github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia
+module github.com/pixelogicdev/gruveebackend/cmd/createappledevtoken
 
 go 1.13
 
 require (
-	cloud.google.com/go/firestore v1.1.1
-	github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.10
-	github.com/pixelogicdev/gruveebackend/pkg/social v1.0.0-beta.3
-	google.golang.org/grpc v1.21.1
+	cloud.google.com/go/firestore v1.2.0
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.11
+	google.golang.org/grpc v1.28.0
 )
 
 replace github.com/pixelogicdev/gruveebackend/cmd/socialplatform => ../cmd/socialplatform
@@ -27,6 +27,6 @@ replace github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist => ../cmd
 
 replace github.com/pixelogicdev/gruveebackend/cmd/updatealgolia => ../cmd/updatealgolia
 
-replace github.com/pixelogicdev/gruveebackend/cmd/appleauth => ../cmd/appleauth
+replace github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia => ../cmd/getspotifymedia
 
-replace github.com/pixelogicdev/gruveebackend/cmd/createappledevtoken => ../cmd/createappledevtoken
+replace github.com/pixelogicdev/gruveebackend/cmd/appleauth => ../cmd/appleauth
