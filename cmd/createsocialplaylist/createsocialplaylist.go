@@ -210,7 +210,7 @@ func createPlaylist(endpoint string, platform firebase.FirestoreSocialPlatform,
 			}
 
 			// The first error is the most important so for now let's just grab that
-			return fmt.Errorf("Status Code %v: "+appleMusicReqErr.Errors[0].Detail, appleMusicReqErr.Errors[0].Code)
+			return fmt.Errorf("Status Code %v: "+appleMusicReqErr.Errors[0].Detail, appleMusicReqErr.Errors[0].Status)
 		}
 	}
 
