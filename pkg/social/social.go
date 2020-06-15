@@ -40,6 +40,20 @@ type spotifyRequestErrorDetails struct {
 	Message string `json:"message"`
 }
 
+// AppleMusicRequestError represents the Apple Music Error Object
+type AppleMusicRequestError struct {
+	Errors []appleMusicError `json:"errors"`
+}
+
+// appleMusicError represents the Apple Music Error object data
+type appleMusicError struct {
+	Code   string `json:"code"`
+	Detail string `json:"detail"`
+	ID     string `json:"id"`
+	Status string `json:"status"`
+	Title  string `json:"title"`
+}
+
 // AuthorizeWithSpotifyResponse represents the data to send back to the client for a user
 type AuthorizeWithSpotifyResponse struct {
 	Email                   string                             `json:"email"`
