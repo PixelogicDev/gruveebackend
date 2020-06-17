@@ -93,6 +93,7 @@ type FirestoreEventUser struct {
 	ID           stringValue          `json:"id"`
 	Email        stringValue          `json:"email"`
 	ProfileImage profileImageMapValue `json:"profileImage"`
+	DisplayName  stringValue          `json:"displayName"`
 	Username     stringValue          `json:"username"`
 }
 

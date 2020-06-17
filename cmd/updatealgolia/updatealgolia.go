@@ -17,6 +17,7 @@ type algoliaUser struct {
 	ID              string `json:"id"`
 	Email           string `json:"email"`
 	ProfileImageURI string `json:"profileImage"`
+	DisplayName     string `json:"displayName"`
 	Username        string `json:"username"`
 }
 
@@ -68,6 +69,7 @@ func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
 		ID:              event.Value.Fields.ID.StringValue,
 		Email:           event.Value.Fields.Email.StringValue,
 		ProfileImageURI: event.Value.Fields.ProfileImage.MapValue.Fields.URL.StringValue,
+		DisplayName:     event.Value.Fields.DisplayName.StringValue,
 		Username:        event.Value.Fields.Username.StringValue,
 	})
 
