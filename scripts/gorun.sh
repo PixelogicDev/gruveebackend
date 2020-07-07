@@ -10,9 +10,10 @@ echo "Starting Go Run Script..."
 if [[ -f "main.go" ]]
 then
     # Variables
-    googleCredsPath="./internal/adminSdkSecret.json"
+    googleCredsPath="./internal/adminSdkSecret-Dev.json"
 
     # These are the replace paths. When adding new functions, make sure to appedn to this list
+    appleAuthReplace="github.com/pixelogicdev/gruveebackend/cmd/appleauth=../cmd/appleauth"
     spotifyAuthReplace="github.com/pixelogicdev/gruveebackend/cmd/spotifyauth=../cmd/spotifyauth"
     tokengenReplace="github.com/pixelogicdev/gruveebackend/cmd/tokengen=../cmd/tokengen"
     socialPlatformReplace="github.com/pixelogicdev/gruveebackend/cmd/socialplatform=../cmd/socialplatform"
@@ -21,6 +22,7 @@ then
     createSocialPlaylistReplace="github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist=../cmd/createsocialplaylist"
     algoliaReplace="github.com/pixelogicdev/gruveebackend/cmd/updatealgolia=../cmd/updatealgolia"
     getSpotifyMedia="github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia=../cmd/getspotifymedia"
+    createAppleDevToken="github.com/pixelogicdev/gruveebackend/cmd/createappledevtoken=../cmd/createappledevtoken"
     firebaseReplace="github.com/pixelogicdev/gruveebackend/pkg/firebase=../../pkg/firebase"
     socialReplace="github.com/pixelogicdev/gruveebackend/pkg/social=../../pkg/social"
 
@@ -46,6 +48,8 @@ then
             go mod edit -replace $socialReplace
             go mod edit -replace $algoliaReplace
             go mod edit -replace $getSpotifyMedia
+            go mod edit -replace $appleAuthReplace
+            go mod edit -replace $createAppleDevToken
         fi
 
         if [ "$d" = "socialplatform/" ]
@@ -59,6 +63,8 @@ then
             go mod edit -replace $socialReplace
             go mod edit -replace $algoliaReplace
             go mod edit -replace $getSpotifyMedia
+            go mod edit -replace $appleAuthReplace
+            go mod edit -replace $createAppleDevToken
         fi
 
         if [ "$d" = "spotifyauth/" ]
@@ -72,6 +78,8 @@ then
             go mod edit -replace $socialReplace
             go mod edit -replace $algoliaReplace
             go mod edit -replace $getSpotifyMedia
+            go mod edit -replace $appleAuthReplace
+            go mod edit -replace $createAppleDevToken
         fi
     
         if [ "$d" = "tokengen/" ] 
@@ -85,6 +93,8 @@ then
             go mod edit -replace $socialReplace
             go mod edit -replace $algoliaReplace
             go mod edit -replace $getSpotifyMedia
+            go mod edit -replace $appleAuthReplace
+            go mod edit -replace $createAppleDevToken
         fi
 
         if [ "$d" = "socialtokenrefresh/" ] 
@@ -98,6 +108,8 @@ then
             go mod edit -replace $socialReplace
             go mod edit -replace $algoliaReplace
             go mod edit -replace $getSpotifyMedia
+            go mod edit -replace $appleAuthReplace
+            go mod edit -replace $createAppleDevToken
         fi
 
         if [ "$d" = "createsocialplaylist/" ] 
@@ -111,6 +123,8 @@ then
             go mod edit -replace $socialReplace
             go mod edit -replace $algoliaReplace
             go mod edit -replace $getSpotifyMedia
+            go mod edit -replace $appleAuthReplace
+            go mod edit -replace $createAppleDevToken
         fi
 
         if [ "$d" = "updatealgolia/" ] 
@@ -124,6 +138,8 @@ then
             go mod edit -replace $socialReplace
             go mod edit -replace $createSocialPlaylistReplace
             go mod edit -replace $getSpotifyMedia
+            go mod edit -replace $appleAuthReplace
+            go mod edit -replace $createAppleDevToken
         fi
 
         if [ "$d" = "getspotifymedia/" ] 
@@ -137,6 +153,38 @@ then
             go mod edit -replace $socialReplace
             go mod edit -replace $createSocialPlaylistReplace
             go mod edit -replace $algoliaReplace
+            go mod edit -replace $appleAuthReplace
+            go mod edit -replace $createAppleDevToken
+        fi
+
+        if [ "$d" = "appleauth/" ] 
+        then
+            go mod edit -replace $socialPlatformReplace
+            go mod edit -replace $spotifyAuthReplace 
+            go mod edit -replace $createUserReplace
+            go mod edit -replace $firebaseReplace
+            go mod edit -replace $tokengenReplace
+            go mod edit -replace $socialTokenRefreshReplace
+            go mod edit -replace $socialReplace
+            go mod edit -replace $createSocialPlaylistReplace
+            go mod edit -replace $algoliaReplace
+            go mod edit -replace $getSpotifyMedia
+            go mod edit -replace $createAppleDevToken
+        fi
+
+        if [ "$d" = "createappledevtoken/" ] 
+        then
+            go mod edit -replace $socialPlatformReplace
+            go mod edit -replace $spotifyAuthReplace 
+            go mod edit -replace $createUserReplace
+            go mod edit -replace $firebaseReplace
+            go mod edit -replace $tokengenReplace
+            go mod edit -replace $socialTokenRefreshReplace
+            go mod edit -replace $socialReplace
+            go mod edit -replace $createSocialPlaylistReplace
+            go mod edit -replace $algoliaReplace
+            go mod edit -replace $getSpotifyMedia
+            go mod edit -replace $appleAuthReplace
         fi
     
         # Move back up a directory

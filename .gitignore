@@ -1,8 +1,12 @@
 # Config
 **/adminSdkSecret.json
+**/adminSdkSecret-Dev.json
 
 # Vendor Folder
 **/vendor
 
 # Enviornment Files
 config.yaml
+
+# Apple .p8 file
+cmd/createappledevtoken/*.p8

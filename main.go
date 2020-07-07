@@ -1,3 +1,4 @@
+// itshaydendev - "Firebase is bad but I use it anyway because I'm some kind of masochist" (04/26/20)
 package main
 
 // creativenobu - "compiled but feels interpreted (02/26/20)
@@ -12,6 +13,8 @@ import (
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 	"github.com/joho/godotenv"
+	"github.com/pixelogicdev/gruveebackend/cmd/appleauth"
+	"github.com/pixelogicdev/gruveebackend/cmd/createappledevtoken"
 	"github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist"
 	"github.com/pixelogicdev/gruveebackend/cmd/createuser"
 	"github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia"
@@ -37,12 +40,14 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	// General Endpoints
+	funcframework.RegisterHTTPFunction("/authorizeWithApple", appleauth.AuthorizeWithApple)
 	funcframework.RegisterHTTPFunction("/authorizeWithSpotify", spotifyauth.AuthorizeWithSpotify)
-	funcframework.RegisterHTTPFunction("/generateToken", tokengen.GenerateCustomToken)
+	funcframework.RegisterHTTPFunction("/generateCustomToken", tokengen.GenerateCustomToken)
 	funcframework.RegisterHTTPFunction("/createSocialPlatform", socialplatform.CreateSocialPlatform)
 	funcframework.RegisterHTTPFunction("/createUser", createuser.CreateUser)
 	funcframework.RegisterHTTPFunction("/socialTokenRefresh", socialtokenrefresh.SocialTokenRefresh)
 	funcframework.RegisterHTTPFunction("/createSocialPlaylist", createsocialplaylist.CreateSocialPlaylist)
+	funcframework.RegisterHTTPFunction("/createAppleDevToken", createappledevtoken.CreateAppleDevToken)
 	funcframework.RegisterEventFunction("/updateAlgolia", updatealgolia.UpdateAlgolia)
 
 	// Get Media Endpoints

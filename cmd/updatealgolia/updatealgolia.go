@@ -17,6 +17,7 @@ type algoliaUser struct {
 	ID              string `json:"id"`
 	Email           string `json:"email"`
 	ProfileImageURI string `json:"profileImage"`
+	DisplayName     string `json:"displayName"`
 	Username        string `json:"username"`
 }
 
@@ -37,7 +38,13 @@ func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
 		return fmt.Errorf("Algolia Secret ID was empty in yaml file")
 	}
 
-	algoliaIndexName := os.Getenv("ALGOLIA_INDEX_NAME")
+	var algoliaIndexName string
+	if os.Getenv("ENVIRONMENT") == "DEV" {
+		algoliaIndexName = os.Getenv("ALGOLIA_INDEX_NAME_DEV")
+	} else if os.Getenv("ENVIRONMENT") == "PROD" {
+		algoliaIndexName = os.Getenv("ALGOLIA_INDEX_NAME_PROD")
+	}
+
 	if algoliaIndexName == "" {
 		log.Println("Algolia Index Name was empty in yaml file")
 		return fmt.Errorf("Algolia Index Name was empty in yaml file")
@@ -62,6 +69,7 @@ func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
 		ID:              event.Value.Fields.ID.StringValue,
 		Email:           event.Value.Fields.Email.StringValue,
 		ProfileImageURI: event.Value.Fields.ProfileImage.MapValue.Fields.URL.StringValue,
+		DisplayName:     event.Value.Fields.DisplayName.StringValue,
 		Username:        event.Value.Fields.Username.StringValue,
 	})
 

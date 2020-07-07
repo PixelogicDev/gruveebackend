@@ -22,14 +22,6 @@ var firestoreClient *firestore.Client
 var spotifyRefreshTokenURI = "https://accounts.spotify.com/api/token"
 
 func init() {
-	// Get Firestore Client
-	client, err := firestore.NewClient(context.Background(), "gruvee-3b7c4")
-	if err != nil {
-		log.Printf("SocialTokenRefresh [Init Firestore]: %v", err)
-		return
-	}
-	firestoreClient = client
-
 	// Set httpClient
 	httpClient = &http.Client{}
 
@@ -50,6 +42,14 @@ func SocialTokenRefresh(writer http.ResponseWriter, request *http.Request) {
 	// Check to see if we have env variables
 	if os.Getenv("SPOTIFY_CLIENTID") == "" || os.Getenv("SPOTIFY_SECRET") == "" {
 		log.Fatalln("SocialTokenRefresh [Check Env Props]: PROPS NOT HERE.")
+		return
+	}
+
+	// Initialize
+	initWithEnvErr := initWithEnv()
+	if initWithEnvErr != nil {
+		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
+		log.Printf("SocialTokenRefresh [initWithEnv]: %v", initWithEnvErr)
 		return
 	}
 
@@ -87,6 +87,28 @@ func SocialTokenRefresh(writer http.ResponseWriter, request *http.Request) {
 }
 
 // Helpers
+// initWithEnv takes our yaml env variables and maps them properly.
+// Unfortunately, we had to do this is main because in init we weren't able to access env variables
+func initWithEnv() error {
+	// Get paths
+	var currentProject string
+
+	if os.Getenv("ENVIRONMENT") == "DEV" {
+		currentProject = os.Getenv("FIREBASE_PROJECTID_DEV")
+	} else if os.Getenv("ENVIRONMENT") == "PROD" {
+		currentProject = os.Getenv("FIREBASE_PROJECTID_PROD")
+	}
+
+	// Initialize Firestore
+	client, err := firestore.NewClient(context.Background(), currentProject)
+	if err != nil {
+		return fmt.Errorf("SocialTokenRefresh [Init Firestore]: %v", err)
+	}
+
+	firestoreClient = client
+	return nil
+}
+
 func getUserPlatformsToRefresh(uid string) (*[]firebase.FirestoreSocialPlatform, error) {
 	// Go to Firebase and get document references for all social platforms
 	snapshot, snapshotErr := firestoreClient.Collection("users").Doc(uid).Get(context.Background())

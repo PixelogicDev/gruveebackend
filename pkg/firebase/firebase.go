@@ -16,8 +16,9 @@ type FirestoreUser struct {
 	ID                      string                   `firestore:"id" json:"id"`
 	Playlists               []*firestore.DocumentRef `firestore:"playlists" json:"playlists"`
 	PreferredSocialPlatform *firestore.DocumentRef   `firestore:"preferredSocialPlatform" json:"preferredSocialPlatform"`
-	ProfileImage            SpotifyImage             `firestore:"profileImage" json:"profileImage"`
+	ProfileImage            *SpotifyImage            `firestore:"profileImage" json:"profileImage"`
 	SocialPlatforms         []*firestore.DocumentRef `firestore:"socialPlatforms" json:"socialPlatforms"`
+	DisplayName             string                   `firestore:"displayName" json:"displayName"`
 	Username                string                   `firestore:"username" json:"username"`
 }
 
@@ -44,6 +45,13 @@ type FirestoreMedia struct {
 	// TODO: SpotifyImage should probably to a more generic name in phast 1 or 2
 	Images       []SpotifyImage    `firestore:"images" json:"images"`
 	ExternalURLs map[string]string `firestore:"externalUrls" json:"externalUrls"`
+}
+
+// FirestoreAppleDevJWT rerpresents the JWT object that is needed for calling Apple Music API stuff
+type FirestoreAppleDevJWT struct {
+	ExpiresAt int64  `json:"expiresAt"`
+	IssuedAt  int64  `json:"issuedAt"`
+	Token     string `json:"token"`
 }
 
 // FirestorePlaylist represents the data for a playlist store in Firestore
@@ -85,6 +93,7 @@ type FirestoreEventUser struct {
 	ID           stringValue          `json:"id"`
 	Email        stringValue          `json:"email"`
 	ProfileImage profileImageMapValue `json:"profileImage"`
+	DisplayName  stringValue          `json:"displayName"`
 	Username     stringValue          `json:"username"`
 }
 

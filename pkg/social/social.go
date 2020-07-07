@@ -1,6 +1,8 @@
 package social
 
-import "github.com/pixelogicdev/gruveebackend/pkg/firebase"
+import (
+	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
+)
 
 // -- SPOTIFY AUTH -- //
 
@@ -36,6 +38,20 @@ type SpotifyRequestError struct {
 type spotifyRequestErrorDetails struct {
 	Status  int    `json:"status"`
 	Message string `json:"message"`
+}
+
+// AppleMusicRequestError represents the Apple Music Error Object
+type AppleMusicRequestError struct {
+	Errors []appleMusicError `json:"errors"`
+}
+
+// appleMusicError represents the Apple Music Error object data
+type appleMusicError struct {
+	Code   string `json:"code"`
+	Detail string `json:"detail"`
+	ID     string `json:"id"`
+	Status string `json:"status"`
+	Title  string `json:"title"`
 }
 
 // AuthorizeWithSpotifyResponse represents the data to send back to the client for a user
@@ -80,4 +96,16 @@ type RefreshToken struct {
 	TokenType    string `json:"token_type"`
 	Scope        string `json:"scope"`
 	ExpiresIn    int    `json:"expires_in"`
+}
+
+// -- CREATE USER -- //
+
+// CreateUserReq is the payload that includes the minimal amount of data to create a user
+type CreateUserReq struct {
+	Email              string                 `json:"email"`
+	ID                 string                 `json:"id"`
+	SocialPlatformPath string                 `json:"socialPlatformPath"`
+	ProfileImage       *firebase.SpotifyImage `json:"profileImage"`
+	DisplayName        string                 `json:"displayName"`
+	Username           string                 `json:"username"`
 }

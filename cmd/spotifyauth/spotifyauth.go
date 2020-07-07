@@ -24,27 +24,19 @@ import (
 	"os"
 	"time"
 
-	firestore "cloud.google.com/go/firestore"
+	"cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
+var spotifyMeURI = "https://api.spotify.com/v1/me"
 var httpClient *http.Client
 var firestoreClient *firestore.Client
-var spotifyMeURI string
 var hostname string
 
 func init() {
-	// Initialize Firestore
-	client, err := firestore.NewClient(context.Background(), "gruvee-3b7c4")
-	if err != nil {
-		log.Printf("AuthorizeWithSpotify [Init Firestore]: %v", err)
-		return
-	}
-	firestoreClient = client
-
 	// Initialize client
 	httpClient = &http.Client{}
 	log.Println("AuthorizeWithSpotify initialized")
@@ -52,12 +44,12 @@ func init() {
 
 // AuthorizeWithSpotify will verify Spotify creds are valid and return any associated Firebase user or create a new Firebase user
 func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
-	// Initialize paths
-	spotifyMeURI = "https://api.spotify.com/v1/me"
-	if os.Getenv("ENVIRONMENT") == "DEV" {
-		hostname = "http://localhost:8080"
-	} else if os.Getenv("ENVIRONMENT") == "PROD" {
-		hostname = "https://us-central1-gruvee-3b7c4.cloudfunctions.net"
+	// Initialize
+	initWithEnvErr := initWithEnv()
+	if initWithEnvErr != nil {
+		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
+		log.Printf("AuthorizeWithSpotify [initWithEnv]: %v", initWithEnvErr)
+		return
 	}
 
 	var spotifyAuthRequest social.SpotifyAuthRequest
@@ -133,7 +125,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		socialPlatDocRef, socialPlatData, socialPlatErr := createSocialPlatform(spotifyMeResponse, spotifyAuthRequest)
 		if socialPlatErr != nil {
 			http.Error(writer, socialPlatErr.Error(), http.StatusBadRequest)
-			log.Printf("AuthorizeWithSpotify: [createSocialPlatform] %v", userErr)
+			log.Printf("AuthorizeWithSpotify: [createSocialPlatform] %v", socialPlatErr)
 			return
 		}
 
@@ -149,7 +141,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		var customToken, customTokenErr = getCustomToken(firestoreUser.ID)
 		if customTokenErr != nil {
 			http.Error(writer, customTokenErr.Error(), http.StatusBadRequest)
-			log.Printf("AuthorizeWithSpotify [customToken]: %v", userErr)
+			log.Printf("AuthorizeWithSpotify [customToken]: %v", customTokenErr)
 			return
 		}
 
@@ -176,7 +168,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		var customToken, customTokenErr = getCustomToken(authorizeWithSpotifyResp.ID)
 		if customTokenErr != nil {
 			http.Error(writer, customTokenErr.Error(), http.StatusBadRequest)
-			log.Printf("AuthorizeWithSpotify [customToken]: %v", userErr)
+			log.Printf("AuthorizeWithSpotify [customToken]: %v", customTokenErr)
 			return
 		}
 		authorizeWithSpotifyResp.JWT = customToken.Token
@@ -187,6 +179,33 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	return
+}
+
+// initWithEnv takes our yaml env variables and maps them properly.
+// Unfortunately, we had to do this is main because in init we weren't able to access env variables
+func initWithEnv() error {
+	// Get paths
+	var currentProject string
+
+	if os.Getenv("ENVIRONMENT") == "DEV" {
+		currentProject = os.Getenv("FIREBASE_PROJECTID_DEV")
+		hostname = os.Getenv("HOSTNAME_DEV")
+	} else if os.Getenv("ENVIRONMENT") == "PROD" {
+		currentProject = os.Getenv("FIREBASE_PROJECTID_PROD")
+		hostname = os.Getenv("HOSTNAME_PROD")
+	}
+
+	// Initialize Firestore
+	client, err := firestore.NewClient(context.Background(), currentProject)
+	if err != nil {
+		return fmt.Errorf("AuthorizeWithSpotify [Init Firestore]: %v", err)
+	}
+
+	log.Println(currentProject)
+	log.Println(hostname)
+
+	firestoreClient = client
+	return nil
 }
 
 // sillyonly - "So 140 char? is this twitter or a coding stream!" (03/02/20)
@@ -311,31 +330,31 @@ func createUser(spotifyResp social.SpotifyMeResponse,
 		profileImage = firebase.SpotifyImage{}
 	}
 
-	// Create firetoreUser Object
-	var firestoreUser = firebase.FirestoreUser{
-		Email:                   spotifyResp.Email,
-		ID:                      "spotify:" + spotifyResp.ID,
-		Playlists:               []*firestore.DocumentRef{},
-		PreferredSocialPlatform: socialPlatDocRef,
-		SocialPlatforms:         []*firestore.DocumentRef{socialPlatDocRef},
-		ProfileImage:            profileImage,
-		Username:                spotifyResp.DisplayName,
+	log.Println(socialPlatDocRef)
+
+	// Create, CreateUser Request object
+	var createUserReq = social.CreateUserReq{
+		Email:              spotifyResp.Email,
+		ID:                 "spotify:" + spotifyResp.ID,
+		SocialPlatformPath: "social_platforms/" + socialPlatDocRef.ID,
+		ProfileImage:       &profileImage,
+		Username:           spotifyResp.DisplayName,
 	}
 
 	// Create jsonBody
-	jsonPlatform, jsonErr := json.Marshal(firestoreUser)
+	jsonPlatform, jsonErr := json.Marshal(createUserReq)
 	if jsonErr != nil {
 		return nil, fmt.Errorf(jsonErr.Error())
 	}
 
 	// Create Request
-	createUserReq, createUserReqErr := http.NewRequest("POST", createUserURI, bytes.NewBuffer(jsonPlatform))
-	if createUserReqErr != nil {
-		return nil, fmt.Errorf(createUserReqErr.Error())
+	createUser, createUserErr := http.NewRequest("POST", createUserURI, bytes.NewBuffer(jsonPlatform))
+	if createUserErr != nil {
+		return nil, fmt.Errorf(createUserErr.Error())
 	}
 
-	createUserReq.Header.Add("Content-Type", "application/json")
-	createUserResp, httpErr := httpClient.Do(createUserReq)
+	createUser.Header.Add("Content-Type", "application/json")
+	createUserResp, httpErr := httpClient.Do(createUser)
 	if httpErr != nil {
 		return nil, fmt.Errorf(httpErr.Error())
 	}
@@ -345,6 +364,12 @@ func createUser(spotifyResp social.SpotifyMeResponse,
 		var body []byte
 		body, _ = ioutil.ReadAll(createUserResp.Body)
 		return nil, fmt.Errorf((string(body)))
+	}
+
+	var firestoreUser firebase.FirestoreUser
+	respDecodeErr := json.NewDecoder(createUserResp.Body).Decode(&firestoreUser)
+	if respDecodeErr != nil {
+		return nil, fmt.Errorf(respDecodeErr.Error())
 	}
 
 	return &firestoreUser, nil

@@ -1,0 +1,63 @@
+{{ define "auth" }}
+<html>
+  <head>
+    <title>Apple Music Auth</title>
+    <meta name="apple-music-developer-token" content={{.Token}}>
+    <meta name="apple-music-app-name" content="Grüvee">
+    <meta name="apple-music-app-build" content="1978.4.1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      .auth-button {
+        background-color: black;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 16;
+        color: white;
+        height: 44px;
+        width: 70%;
+      }
+
+      .container {
+        background-color: #2E282A;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center; 
+      }
+
+      .logo-ball {
+        background-color: #E5DADA;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+      }
+
+      .logo-container {
+        display: flex;
+        justify-content: space-between;
+        padding-bottom: 20px;
+        width: 85px;
+      }
+    </style>
+  </head>
+  <body class="container">
+    <div class="logo-container">
+      <div class="logo-ball"></div>
+      <div class="logo-ball"></div>
+    </div>
+    <button class="auth-button" onClick="authorize()">Sign in with Apple Music</button>
+    <script>
+      function authorize() {
+        let music = MusicKit.getInstance();
+        music.authorize().then(function(musicUserToken) {
+          window.location = "gruvee://apple_auth?"+musicUserToken;
+        }).catch(function(error) {
+          console.log(error);
+        });
+      }
+    </script>
+    <script src="https://js-cdn.music.apple.com/musickit/v1/musickit.js"></script>
+  </body>
+</html>
+{{ end }}
