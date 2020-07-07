@@ -80,34 +80,6 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	/* foundAppleDevToken, foundAppleDevTokenErr := getAppleDevToken()
-	if foundAppleDevTokenErr != nil {
-		http.Error(writer, foundAppleDevTokenErr.Error(), http.StatusInternalServerError)
-		log.Printf("[AuthorizeWithApple] [getAppleDevToken]: %v", foundAppleDevTokenErr)
-		return
-	}
-
-	// Check for developer token - Let's call our firebase function
-	if foundAppleDevToken != nil {
-		log.Println("[AuthorizeWithApple] Token already found. Sending back.")
-
-		// TODO: We should check if it's expired and if so, create a new one
-
-		appleDevToken = *foundAppleDevToken
-	}
-
-	if foundAppleDevToken == nil && foundAppleDevTokenErr == nil {
-		log.Println("[AuthorizeWithApple] No AppleDevToken found in DB")
-		createdAppleDevtoken, createdAppleDevtokenErr := createAppleDevToken()
-		if createdAppleDevtokenErr != nil {
-			http.Error(writer, createdAppleDevtokenErr.Error(), http.StatusInternalServerError)
-			log.Printf("[AuthorizeWithApple] [createAppleDevToken]: %v", createdAppleDevtokenErr)
-			return
-		}
-
-		appleDevToken = *createdAppleDevtoken
-	} */
-
 	// Render template
 	render := render.New(render.Options{
 		Directory: "cmd/appleauth/templates",
