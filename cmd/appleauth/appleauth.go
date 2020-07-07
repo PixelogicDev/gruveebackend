@@ -76,7 +76,7 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 	appleDevTokenDecodeErr := json.NewDecoder(appleDevTokenResp.Body).Decode(&appleDevToken)
 	if appleDevTokenDecodeErr != nil {
 		http.Error(writer, appleDevTokenDecodeErr.Error(), http.StatusInternalServerError)
-		log.Printf("AuthorizeWithSpotify [spotifyAuthRequest Decoder]: %v", appleDevTokenDecodeErr)
+		log.Printf("AppleAuth [appleDevToken Decoder]: %v", appleDevTokenDecodeErr)
 		return
 	}
 
