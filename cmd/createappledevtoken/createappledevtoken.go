@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	firebaseApp "firebase.google.com/go/v4"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
 	"google.golang.org/grpc/codes"
@@ -20,10 +21,9 @@ import (
 )
 
 // DR_DinoMight - "Alec loves the song "Nelly's - Hot In Here" (05/05/20)
+var currentProject string
 var firestoreClient *firestore.Client
 var appleDevToken firebase.FirestoreAppleDevJWT
-var p8FilePath string
-var currentProject string
 
 // CreateAppleDevToken will render a HTML page to get the AppleMusic credentials for user
 func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
@@ -43,6 +43,7 @@ func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// If we have the token check to see if it needs to be refreshed
 	if devToken != nil {
 		appleDevToken = *devToken
 		log.Println("[CreateAppleDevToken] Token found in DB. Checking for expiration")
@@ -77,6 +78,7 @@ func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// If we do not have the token, we need to generate a new one
 	token, tokenErr := generateJWT()
 	if tokenErr != nil {
 		http.Error(writer, tokenErr.Error(), http.StatusInternalServerError)
@@ -93,15 +95,10 @@ func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
 // initWithEnv takes our yaml env variables and maps them properly.
 // Unfortunately, we had to do this is main because in init we weren't able to access env variables
 func initWithEnv() error {
-	// Get paths
-	var currentProject string
-
 	if os.Getenv("ENVIRONMENT") == "DEV" {
 		currentProject = os.Getenv("FIREBASE_PROJECTID_DEV")
-		p8FilePath = os.Getenv("APPLE_P8_PATH_DEV")
 	} else if os.Getenv("ENVIRONMENT") == "PROD" {
 		currentProject = os.Getenv("FIREBASE_PROJECTID_PROD")
-		p8FilePath = os.Getenv("APPLE_P8_PATH_PROD")
 	}
 
 	// Initialize Firestore
@@ -109,8 +106,8 @@ func initWithEnv() error {
 	if err != nil {
 		return fmt.Errorf("CreateAppleDevToken [Init Firestore]: %v", err)
 	}
-
 	firestoreClient = client
+
 	return nil
 }
 
@@ -159,8 +156,8 @@ func generateJWT() (*firebase.FirestoreAppleDevJWT, error) {
 	appleTeamKey := os.Getenv("APPLE_TEAM_ID")
 	appleKID := os.Getenv("APPLE_KID")
 
-	// Read .p8 file
-	signKeyByte, signKeyByteErr := ioutil.ReadFile(p8FilePath)
+	// Download .p8 file
+	signKeyByte, signKeyByteErr := downloadApplePrivateKey()
 	if signKeyByteErr != nil {
 		return nil, fmt.Errorf("Could not read .p8 file: %v", signKeyByteErr)
 	}
@@ -213,6 +210,50 @@ func generateJWT() (*firebase.FirestoreAppleDevJWT, error) {
 	}
 
 	return &appleDevToken, nil
+}
+
+// downloadApplePrivateKey will create an instance of Firebase Storage and download the .p8 file
+// needed for minting an Apple Developer Token
+func downloadApplePrivateKey() ([]byte, error) {
+	log.Println("Starting to download ApplePrivateKey...")
+
+	// Initialize Firebase App
+	app, newAppErr := firebaseApp.NewApp(context.Background(), nil)
+	if newAppErr != nil {
+		return nil, fmt.Errorf("CreateAppleDevToken [downloadApplePrivateKey]: %v", newAppErr)
+	}
+	log.Println("Firebase App initialized.")
+
+	// Get Storage
+	storage, storageClientErr := app.Storage(context.Background())
+	if storageClientErr != nil {
+		return nil, fmt.Errorf("CreateAppleDevToken [downloadApplePrivateKey]: %v", storageClientErr)
+	}
+	log.Println("Storage Client initialized.")
+
+	// Get bucket
+	bucket, defaultBucketErr := storage.Bucket(currentProject + ".appspot.com")
+	if defaultBucketErr != nil {
+		return nil, fmt.Errorf("CreateAppleDevToken [downloadApplePrivateKey]: %v", defaultBucketErr)
+	}
+	log.Println("Bucket set.")
+
+	// Get file
+	ctx := context.Background()
+	blob, blobErr := bucket.Object("apple_private_key.p8").NewReader(ctx)
+	if blobErr != nil {
+		return nil, fmt.Errorf("CreateAppleDevToken [downloadApplePrivateKey]: %v", blobErr)
+	}
+	log.Println("Downloaded apple_private_key.p8")
+
+	// Read data from file
+	data, dataErr := ioutil.ReadAll(blob)
+	if dataErr != nil {
+		return nil, fmt.Errorf("CreateAppleDevToken [downloadApplePrivateKey]: %v", dataErr)
+	}
+	log.Println("Download complete.")
+
+	return data, nil
 }
 
 // writeAppleDevToken writes the newly created JWT to our database
