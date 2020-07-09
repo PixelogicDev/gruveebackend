@@ -1,6 +1,10 @@
 <h1 align="center">Grüvee-Backend</h1>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+<<<<<<< dce5e593219618b2ce758974af982c1f20dd9c44
 [![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
+>>>>>>> docs: update README.md [skip ci]
+=======
+[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
 >>>>>>> docs: update README.md [skip ci]
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 <p align="center">
