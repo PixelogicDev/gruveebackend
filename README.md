@@ -1,4 +1,7 @@
 <h1 align="center">Grüvee-Backend</h1>
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 <p align="center">
   <strong>Let's get Grüvee with a new social, collaborative playlist for iPhone and Android</strong>
 </p>
@@ -96,3 +99,22 @@ To understand how certain aspects of this project work please see the [FAQ Docum
 # 🤘 Contributing Changes
 
 See [CONTRIBUTING.md](README-Support/CONTRIBUTING.md)
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/adilanchian"><img src="https://avatars0.githubusercontent.com/u/13204620?v=4" width="100px;" alt=""/><br /><sub><b>Alec Dilanchian</b></sub></a><br /><a href="https://github.com/PixelogicDev/gruveebackend/commits?author=adilanchian" title="Code">💻</a> <a href="#maintenance-adilanchian" title="Maintenance">🚧</a> <a href="https://github.com/PixelogicDev/gruveebackend/commits?author=adilanchian" title="Documentation">📖</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
