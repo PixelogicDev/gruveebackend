@@ -1,6 +1,7 @@
 <h1 align="center">Grüvee-Backend</h1>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
+>>>>>>> docs: update README.md [skip ci]
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 <p align="center">
   <strong>Let's get Grüvee with a new social, collaborative playlist for iPhone and Android</strong>
@@ -44,7 +45,7 @@ If you are interested in becoming a member of the team check out the **[Pixelogi
 
 | Stack    | Tech                                                                                       |                                                                |
 | -------- | :----------------------------------------------------------------------------------------- | :------------------------------------------------------------- |
-| IDE      | [Visual Studio Code](https://code.visualstudio.com/)                                       | You can use your preferred IDE but this is the one we like 🙃  |
+| IDE      | [Visual Studio Code](https://code.visualstudio.com/)                                       | You can use your preferred IDE but this is the one we like 🙃   |
 | Backend  | [Firebase (Repo)](https://github.com/PixelogicDev/Gruvee-Backend)                          | Serverless Functions in Firebase using GoLang                  |
 | Frontend | [React Native 0.60](<[LinkToReactNative0.60](https://www.npmjs.com/package/react-native)>) | Utilising Javascript to develop this cross platform mobile app |
 
