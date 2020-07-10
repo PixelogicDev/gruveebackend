@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
-	firebaseApp "firebase.google.com/go/v4"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
 	"google.golang.org/grpc/codes"
@@ -24,6 +23,7 @@ import (
 var currentProject string
 var firestoreClient *firestore.Client
 var appleDevToken firebase.FirestoreAppleDevJWT
+var applePrivateKeyPath string
 
 // CreateAppleDevToken will render a HTML page to get the AppleMusic credentials for user
 func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
@@ -97,8 +97,10 @@ func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
 func initWithEnv() error {
 	if os.Getenv("ENVIRONMENT") == "DEV" {
 		currentProject = os.Getenv("FIREBASE_PROJECTID_DEV")
+		applePrivateKeyPath = os.Getenv("APPLE_PRIVATE_KEY_PATH_DEV")
 	} else if os.Getenv("ENVIRONMENT") == "PROD" {
 		currentProject = os.Getenv("FIREBASE_PROJECTID_PROD")
+		applePrivateKeyPath = os.Getenv("APPLE_PRIVATE_KEY_PATH_PROD")
 	}
 
 	// Initialize Firestore
@@ -106,8 +108,8 @@ func initWithEnv() error {
 	if err != nil {
 		return fmt.Errorf("CreateAppleDevToken [Init Firestore]: %v", err)
 	}
-	firestoreClient = client
 
+	firestoreClient = client
 	return nil
 }
 
@@ -157,7 +159,7 @@ func generateJWT() (*firebase.FirestoreAppleDevJWT, error) {
 	appleKID := os.Getenv("APPLE_KID")
 
 	// Download .p8 file
-	signKeyByte, signKeyByteErr := downloadApplePrivateKey()
+	signKeyByte, signKeyByteErr := ioutil.ReadFile(applePrivateKeyPath)
 	if signKeyByteErr != nil {
 		return nil, fmt.Errorf("Could not read .p8 file: %v", signKeyByteErr)
 	}
@@ -210,50 +212,6 @@ func generateJWT() (*firebase.FirestoreAppleDevJWT, error) {
 	}
 
 	return &appleDevToken, nil
-}
-
-// downloadApplePrivateKey will create an instance of Firebase Storage and download the .p8 file
-// needed for minting an Apple Developer Token
-func downloadApplePrivateKey() ([]byte, error) {
-	log.Println("Starting to download ApplePrivateKey...")
-
-	// Initialize Firebase App
-	app, newAppErr := firebaseApp.NewApp(context.Background(), nil)
-	if newAppErr != nil {
-		return nil, fmt.Errorf("CreateAppleDevToken [downloadApplePrivateKey]: %v", newAppErr)
-	}
-	log.Println("Firebase App initialized.")
-
-	// Get Storage
-	storage, storageClientErr := app.Storage(context.Background())
-	if storageClientErr != nil {
-		return nil, fmt.Errorf("CreateAppleDevToken [downloadApplePrivateKey]: %v", storageClientErr)
-	}
-	log.Println("Storage Client initialized.")
-
-	// Get bucket
-	bucket, defaultBucketErr := storage.Bucket(currentProject + ".appspot.com")
-	if defaultBucketErr != nil {
-		return nil, fmt.Errorf("CreateAppleDevToken [downloadApplePrivateKey]: %v", defaultBucketErr)
-	}
-	log.Println("Bucket set.")
-
-	// Get file
-	ctx := context.Background()
-	blob, blobErr := bucket.Object("apple_private_key.p8").NewReader(ctx)
-	if blobErr != nil {
-		return nil, fmt.Errorf("CreateAppleDevToken [downloadApplePrivateKey]: %v", blobErr)
-	}
-	log.Println("Downloaded apple_private_key.p8")
-
-	// Read data from file
-	data, dataErr := ioutil.ReadAll(blob)
-	if dataErr != nil {
-		return nil, fmt.Errorf("CreateAppleDevToken [downloadApplePrivateKey]: %v", dataErr)
-	}
-	log.Println("Download complete.")
-
-	return data, nil
 }
 
 // writeAppleDevToken writes the newly created JWT to our database

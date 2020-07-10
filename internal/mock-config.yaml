@@ -9,3 +9,5 @@ ALGOLIA_SECRET_ID: <AddRegisteredAlgoliaSecretID>
 HOSTNAME_DEV: http://localhost:8080
 FIREBASE_PROJECTID_DEV: <AddRegisteredFirebaseProjectID>
 ALGOLIA_INDEX_NAME_DEV: <AddCreatedAlgoliaIndexName>
+APPLE_AUTH_TEMPLATE_PATH_DEV: cmd/appleauth/templates
+APPLE_PRIVATE_KEY_PATH_DEV: cmd/createappledevtoken/apple_private_key.p8
