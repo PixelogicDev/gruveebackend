@@ -1,2 +1,3 @@
+- v1.0.0-beta.3: Tweaking template rendering with new .env variables
 - v1.0.0-beta.2: Fixing AuthWithSpotify log
 - v1.0.0-beta.1: Initializing new AppleAuth function
