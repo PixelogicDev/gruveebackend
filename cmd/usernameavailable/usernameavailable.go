@@ -9,7 +9,10 @@ import (
 	"os"
 
 	"cloud.google.com/go/firestore"
+<<<<<<< da3878c925ca6ef481f9b424c30ccaafe56a0d2e
 	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
+=======
+>>>>>>> Adding new usernameavailable function
 )
 
 // usernameAvailableReq includes the username to query the user collection
