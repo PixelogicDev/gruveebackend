@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/pixelogicdev/gruveebackend/pkg/errlog"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
 	"google.golang.org/grpc/codes"
@@ -34,6 +35,7 @@ import (
 var spotifyMeURI = "https://api.spotify.com/v1/me"
 var httpClient *http.Client
 var firestoreClient *firestore.Client
+var errClient errlog.Client
 var hostname string
 
 func init() {
@@ -58,12 +60,14 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 	if authResponseErr != nil {
 		http.Error(writer, authResponseErr.Error(), http.StatusInternalServerError)
 		log.Printf("AuthorizeWithSpotify [spotifyAuthRequest Decoder]: %v", authResponseErr)
+		errClient.LogErrReq(authResponseErr, request)
 		return
 	}
 
 	if len(spotifyAuthRequest.APIToken) == 0 {
 		http.Error(writer, "AuthorizeWithSpotify: ApiToken was empty.", http.StatusBadRequest)
 		log.Println("AuthorizeWithSpotify: ApiToken was empty.")
+		errClient.LogErrReq(fmt.Errorf("AuthorizeWithSpotify: ApiToken was empty"), request)
 		return
 	}
 
@@ -71,6 +75,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 	if spotifyMeReqErr != nil {
 		http.Error(writer, spotifyMeReqErr.Error(), http.StatusInternalServerError)
 		log.Printf("AuthorizeWithSpotify [http.NewRequest]: %v", spotifyMeReqErr)
+		errClient.LogErrReq(spotifyMeReqErr, spotifyMeReq)
 		return
 	}
 
@@ -80,6 +85,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 	if httpErr != nil {
 		http.Error(writer, httpErr.Error(), http.StatusBadRequest)
 		log.Printf("AuthorizeWithSpotify [client.Do]: %v", httpErr)
+		errClient.LogErrReq(httpErr, request)
 		return
 	}
 
@@ -92,11 +98,13 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			log.Printf("AuthorizeWithSpotify [Spotify Request Decoder]: %v", err)
+			errClient.LogErrReq(err, request)
 			return
 		}
 
 		http.Error(writer, spotifyErrorObj.Error.Message, spotifyErrorObj.Error.Status)
 		log.Printf("AuthorizeWithSpotify [Spotify Request Decoder]: %v", spotifyErrorObj.Error.Message)
+		errClient.LogErrReq(fmt.Errorf(spotifyErrorObj.Error.Message), request)
 		return
 	}
 
@@ -108,6 +116,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 	if respDecodeErr != nil {
 		http.Error(writer, respDecodeErr.Error(), http.StatusBadRequest)
 		log.Printf("AuthorizeWithSpotify [Spotify Request Decoder]: %v", respDecodeErr)
+		errClient.LogErrReq(respDecodeErr, request)
 		return
 	}
 
@@ -116,6 +125,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 	if userErr != nil {
 		http.Error(writer, userErr.Error(), http.StatusBadRequest)
 		log.Printf("AuthorizeWithSpotify: %v", userErr)
+		errClient.LogErrReq(userErr, request)
 		return
 	}
 
@@ -126,6 +136,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		if socialPlatErr != nil {
 			http.Error(writer, socialPlatErr.Error(), http.StatusBadRequest)
 			log.Printf("AuthorizeWithSpotify: [createSocialPlatform] %v", socialPlatErr)
+			errClient.LogErrReq(socialPlatErr, request)
 			return
 		}
 
@@ -134,6 +145,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		if firestoreUserErr != nil {
 			http.Error(writer, firestoreUserErr.Error(), http.StatusBadRequest)
 			log.Printf("AuthorizeWithSpotify [createUser]: %v", firestoreUserErr)
+			errClient.LogErrReq(firestoreUserErr, request)
 			return
 		}
 
@@ -142,6 +154,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		if customTokenErr != nil {
 			http.Error(writer, customTokenErr.Error(), http.StatusBadRequest)
 			log.Printf("AuthorizeWithSpotify [customToken]: %v", customTokenErr)
+			errClient.LogErrReq(customTokenErr, request)
 			return
 		}
 
@@ -169,6 +182,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		if customTokenErr != nil {
 			http.Error(writer, customTokenErr.Error(), http.StatusBadRequest)
 			log.Printf("AuthorizeWithSpotify [customToken]: %v", customTokenErr)
+			errClient.LogErrReq(customTokenErr, request)
 			return
 		}
 		authorizeWithSpotifyResp.JWT = customToken.Token
@@ -195,15 +209,23 @@ func initWithEnv() error {
 		hostname = os.Getenv("HOSTNAME_PROD")
 	}
 
+	// Initializes the Cloud Error Client
+	errorclient, err := errlog.InitErrClientWithEnv(currentProject, os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"), "AuthorizeWithSpotify")
+	if err != nil {
+		log.Printf("CreateUser [Init Error Client]: %v", err)
+	}
+
 	// Initialize Firestore
 	client, err := firestore.NewClient(context.Background(), currentProject)
 	if err != nil {
+		errorclient.LogErr(err)
 		return fmt.Errorf("AuthorizeWithSpotify [Init Firestore]: %v", err)
 	}
 
 	log.Println(currentProject)
 	log.Println(hostname)
 
+	errClient = errorclient
 	firestoreClient = client
 	return nil
 }

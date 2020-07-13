@@ -12,6 +12,7 @@ import (
 	"os"
 
 	"cloud.google.com/go/firestore"
+	"github.com/pixelogicdev/gruveebackend/pkg/errlog"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
 	"google.golang.org/grpc/codes"
@@ -47,6 +48,7 @@ type spotifyPlaylistRequest struct {
 }
 
 var firestoreClient *firestore.Client
+var errClient errlog.Client
 var httpClient *http.Client
 var hostname string
 
@@ -75,6 +77,7 @@ func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
 	if jsonDecodeErr != nil {
 		http.Error(writer, jsonDecodeErr.Error(), http.StatusInternalServerError)
 		log.Printf("CreateSocialPlaylist [socialPlaylistReq Decoder]: %v", jsonDecodeErr)
+		errClient.LogErrReq(jsonDecodeErr, request)
 		return
 	}
 
@@ -93,6 +96,7 @@ func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
 		if socialRefreshTokenErr != nil {
 			http.Error(writer, socialRefreshTokenErr.Error(), http.StatusBadRequest)
 			log.Printf("CreateSocialPlaylist [refreshToken]: %v", socialRefreshTokenErr)
+			errClient.LogErrReq(socialRefreshTokenErr, request)
 			return
 		}
 	} else if socialPlaylistReq.SocialPlatform.PlatformName == "apple" {
@@ -128,6 +132,7 @@ func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
 	if createReqErr != nil {
 		http.Error(writer, createReqErr.Error(), http.StatusBadRequest)
 		log.Printf("CreateSocialPlaylist [createPlaylist]: %v", createReqErr.Error())
+		errClient.LogErrReq(createReqErr, request)
 		return
 	}
 
@@ -153,13 +158,21 @@ func initWithEnv() error {
 		hostname = os.Getenv("HOSTNAME_PROD")
 	}
 
+	// Initializes the Cloud Error Client
+	errorclient, err := errlog.InitErrClientWithEnv(currentProject, os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"), "CreateSocialPlaylist")
+	if err != nil {
+		log.Printf("CreateSocialPlaylist [Init Error Client]: %v", err)
+	}
+
 	// Initialize Firestore
 	client, err := firestore.NewClient(context.Background(), currentProject)
 	if err != nil {
-		return fmt.Errorf("SocialTokenRefresh [Init Firestore]: %v", err)
+		errorclient.LogErr(err)
+		return fmt.Errorf("CreateSocialPlaylist [Init Firestore]: %v", err)
 	}
 
 	// DR_DinoMight - "Note to self! Welcome, Dr_DinoMight, Otherwise he'll spit his dummy out!" (06.15.20)
+	errClient = errorclient
 	firestoreClient = client
 	return nil
 }

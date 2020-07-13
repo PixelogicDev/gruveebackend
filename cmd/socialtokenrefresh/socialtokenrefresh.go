@@ -13,12 +13,14 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/pixelogicdev/gruveebackend/pkg/errlog"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
 )
 
 var httpClient *http.Client
 var firestoreClient *firestore.Client
+var errClient errlog.Client
 var spotifyRefreshTokenURI = "https://accounts.spotify.com/api/token"
 
 func init() {
@@ -61,6 +63,7 @@ func SocialTokenRefresh(writer http.ResponseWriter, request *http.Request) {
 	if socialTokenErr != nil {
 		http.Error(writer, socialTokenErr.Error(), http.StatusInternalServerError)
 		log.Printf("SocialTokenRefresh [socialTokenReq Decoder]: %v", socialTokenErr)
+		errClient.LogErrReq(socialTokenErr, request)
 		return
 	}
 
@@ -69,6 +72,7 @@ func SocialTokenRefresh(writer http.ResponseWriter, request *http.Request) {
 	if platformErr != nil {
 		http.Error(writer, platformErr.Error(), http.StatusInternalServerError)
 		log.Printf("SocialTokenRefresh [getUserPlatforms]: %v", platformErr)
+		errClient.LogErrReq(socialTokenErr, request)
 		return
 	}
 
@@ -99,12 +103,20 @@ func initWithEnv() error {
 		currentProject = os.Getenv("FIREBASE_PROJECTID_PROD")
 	}
 
+	// Initializes the Cloud Error Client
+	errorclient, err := errlog.InitErrClientWithEnv(currentProject, os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"), "SocialTokenRefresh")
+	if err != nil {
+		log.Printf("SocialTokenRefresh [Init Error Client]: %v", err)
+	}
+
 	// Initialize Firestore
 	client, err := firestore.NewClient(context.Background(), currentProject)
 	if err != nil {
+		errorclient.LogErr(err)
 		return fmt.Errorf("SocialTokenRefresh [Init Firestore]: %v", err)
 	}
 
+	errClient = errorclient
 	firestoreClient = client
 	return nil
 }

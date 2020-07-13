@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"cloud.google.com/go/firestore"
+	"github.com/pixelogicdev/gruveebackend/pkg/errlog"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
 	"google.golang.org/grpc/codes"
@@ -77,6 +78,7 @@ type spotifyArtist struct {
 
 var httpClient *http.Client
 var firestoreClient *firestore.Client
+var errClient errlog.Client
 var spotifyAccessTokenURI = "https://accounts.spotify.com/api/token"
 
 // Get Media Endpoints
@@ -114,6 +116,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	if spotifyReqDecodeErr != nil {
 		http.Error(writer, spotifyReqDecodeErr.Error(), http.StatusInternalServerError)
 		log.Printf("GetSpotifyMedia [Request Decoder]: %v", spotifyReqDecodeErr)
+		errClient.LogErrReq(spotifyReqDecodeErr, request)
 		return
 	}
 
@@ -205,12 +208,20 @@ func initWithEnv() error {
 		currentProject = os.Getenv("FIREBASE_PROJECTID_PROD")
 	}
 
+	// Initializes the Cloud Error Client
+	errorclient, err := errlog.InitErrClientWithEnv(currentProject, os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"), "GetSpotifyMedia")
+	if err != nil {
+		log.Printf("GetSpotifyMedia [Init Error Client]: %v", err)
+	}
+
 	// Initialize Firestore
 	client, err := firestore.NewClient(context.Background(), currentProject)
 	if err != nil {
-		return fmt.Errorf("CreateUser [Init Firestore]: %v", err)
+		errorclient.LogErr(err)
+		return fmt.Errorf("GetSpotifyMedia [Init Firestore]: %v", err)
 	}
 
+	errClient = errorclient
 	firestoreClient = client
 	return nil
 }

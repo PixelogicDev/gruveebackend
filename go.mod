@@ -20,6 +20,7 @@ require (
 	github.com/pixelogicdev/gruveebackend/cmd/updatealgolia v1.0.0-beta.8
 	github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.12
 	github.com/pixelogicdev/gruveebackend/pkg/social v1.0.0-beta.5
+	github.com/pixelogicdev/gruveebackend/pkg/errlog v1.0.0-beta.1
 	google.golang.org/grpc v1.30.0
 )
 
@@ -49,3 +50,5 @@ replace github.com/pixelogicdev/gruveebackend/internal/helpers/localcloudtrigger
 replace github.com/pixelogicdev/gruveebackend/pkg/firebase => ./pkg/firebase
 
 replace github.com/pixelogicdev/gruveebackend/pkg/social => ./pkg/social
+
+replace github.com/pixelogicdev/gruveebackend/pkg/errlog => ./pkg/errlog

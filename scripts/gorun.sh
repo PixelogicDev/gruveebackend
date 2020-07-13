@@ -25,6 +25,7 @@ then
     createAppleDevToken="github.com/pixelogicdev/gruveebackend/cmd/createappledevtoken=../cmd/createappledevtoken"
     firebaseReplace="github.com/pixelogicdev/gruveebackend/pkg/firebase=../../pkg/firebase"
     socialReplace="github.com/pixelogicdev/gruveebackend/pkg/social=../../pkg/social"
+    errlogReplace="github.com/pixelogicdev/gruveebackend/pkg/errlog=../../pkg/errlog"
 
     # add googleCreds to terminal instance
     export GOOGLE_APPLICATION_CREDENTIALS=$googleCredsPath
@@ -50,6 +51,7 @@ then
             go mod edit -replace $getSpotifyMedia
             go mod edit -replace $appleAuthReplace
             go mod edit -replace $createAppleDevToken
+            go mod edit -replace $errlogReplace
         fi
 
         if [ "$d" = "socialplatform/" ]
@@ -65,6 +67,7 @@ then
             go mod edit -replace $getSpotifyMedia
             go mod edit -replace $appleAuthReplace
             go mod edit -replace $createAppleDevToken
+            go mod edit -replace $errlogReplace
         fi
 
         if [ "$d" = "spotifyauth/" ]
@@ -80,6 +83,7 @@ then
             go mod edit -replace $getSpotifyMedia
             go mod edit -replace $appleAuthReplace
             go mod edit -replace $createAppleDevToken
+            go mod edit -replace $errlogReplace
         fi
     
         if [ "$d" = "tokengen/" ] 
@@ -95,6 +99,7 @@ then
             go mod edit -replace $getSpotifyMedia
             go mod edit -replace $appleAuthReplace
             go mod edit -replace $createAppleDevToken
+            go mod edit -replace $errlogReplace
         fi
 
         if [ "$d" = "socialtokenrefresh/" ] 
@@ -110,6 +115,7 @@ then
             go mod edit -replace $getSpotifyMedia
             go mod edit -replace $appleAuthReplace
             go mod edit -replace $createAppleDevToken
+            go mod edit -replace $errlogReplace
         fi
 
         if [ "$d" = "createsocialplaylist/" ] 
@@ -125,6 +131,7 @@ then
             go mod edit -replace $getSpotifyMedia
             go mod edit -replace $appleAuthReplace
             go mod edit -replace $createAppleDevToken
+            go mod edit -replace $errlogReplace
         fi
 
         if [ "$d" = "updatealgolia/" ] 
@@ -140,6 +147,7 @@ then
             go mod edit -replace $getSpotifyMedia
             go mod edit -replace $appleAuthReplace
             go mod edit -replace $createAppleDevToken
+            go mod edit -replace $errlogReplace
         fi
 
         if [ "$d" = "getspotifymedia/" ] 
@@ -155,6 +163,7 @@ then
             go mod edit -replace $algoliaReplace
             go mod edit -replace $appleAuthReplace
             go mod edit -replace $createAppleDevToken
+            go mod edit -replace $errlogReplace
         fi
 
         if [ "$d" = "appleauth/" ] 
@@ -170,6 +179,7 @@ then
             go mod edit -replace $algoliaReplace
             go mod edit -replace $getSpotifyMedia
             go mod edit -replace $createAppleDevToken
+            go mod edit -replace $errlogReplace
         fi
 
         if [ "$d" = "createappledevtoken/" ] 
@@ -185,6 +195,7 @@ then
             go mod edit -replace $algoliaReplace
             go mod edit -replace $getSpotifyMedia
             go mod edit -replace $appleAuthReplace
+            go mod edit -replace $errlogReplace
         fi
     
         # Move back up a directory

@@ -9,11 +9,13 @@ import (
 	"os"
 
 	"cloud.google.com/go/firestore"
+	"github.com/pixelogicdev/gruveebackend/pkg/errlog"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
 )
 
 var firestoreClient *firestore.Client
+var errClient errlog.Client
 
 func init() {
 	log.Println("CreateUser Initialized")
@@ -35,6 +37,7 @@ func CreateUser(writer http.ResponseWriter, request *http.Request) {
 	if jsonDecodeErr != nil {
 		http.Error(writer, jsonDecodeErr.Error(), http.StatusInternalServerError)
 		log.Printf("CreateUser [social.CreateUserReq Decoder]: %v", jsonDecodeErr)
+		errClient.LogErrReq(jsonDecodeErr, request)
 		return
 	}
 
@@ -43,6 +46,7 @@ func CreateUser(writer http.ResponseWriter, request *http.Request) {
 	if socialPlatDocRef == nil {
 		http.Error(writer, jsonDecodeErr.Error(), http.StatusInternalServerError)
 		log.Printf("CreateUser [social.CreateUserReq Decoder]: %v", jsonDecodeErr)
+		errClient.LogErrReq(jsonDecodeErr, request)
 		return
 	}
 
@@ -63,6 +67,7 @@ func CreateUser(writer http.ResponseWriter, request *http.Request) {
 	if writeErr != nil {
 		http.Error(writer, writeErr.Error(), http.StatusInternalServerError)
 		log.Printf("CreateUser [fireStore Set]: %v", writeErr)
+		errClient.LogErrReq(writeErr, request)
 		return
 	}
 
@@ -86,12 +91,20 @@ func initWithEnv() error {
 		currentProject = os.Getenv("FIREBASE_PROJECTID_PROD")
 	}
 
+	// Initializes the Cloud Error Client
+	errorclient, err := errlog.InitErrClientWithEnv(currentProject, os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"), "CreateUser")
+	if err != nil {
+		log.Printf("CreateUser [Init Error Client]: %v", err)
+	}
+
 	// Initialize Firestore
 	client, err := firestore.NewClient(context.Background(), currentProject)
 	if err != nil {
+		errorclient.LogErr(err)
 		return fmt.Errorf("CreateUser [Init Firestore]: %v", err)
 	}
 
+	errClient = errorclient
 	firestoreClient = client
 	return nil
 }

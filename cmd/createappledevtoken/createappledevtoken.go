@@ -14,6 +14,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/pixelogicdev/gruveebackend/pkg/errlog"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -22,6 +23,7 @@ import (
 // DR_DinoMight - "Alec loves the song "Nelly's - Hot In Here" (05/05/20)
 var currentProject string
 var firestoreClient *firestore.Client
+var errClient errlog.Client
 var appleDevToken firebase.FirestoreAppleDevJWT
 var applePrivateKeyPath string
 
@@ -40,6 +42,7 @@ func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
 	if devTokenErr != nil {
 		http.Error(writer, devTokenErr.Error(), http.StatusInternalServerError)
 		log.Printf("[CreateAppleDevToken] [getAppleDevToken]: %v", devTokenErr)
+		errClient.LogErrReq(devTokenErr, request)
 		return
 	}
 
@@ -53,12 +56,14 @@ func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
 			if os.Getenv("APPLE_TEAM_ID") == "" {
 				http.Error(writer, "[CreateAppleDevToken] APPLE_TEAM_ID does not exist!", http.StatusInternalServerError)
 				log.Println("[CreateAppleDevToken] APPLE_TEAM_ID does not exist!")
+				errClient.LogErrReq(fmt.Errorf("APPLE_TEAM_ID does not exist"), request)
 				return
 			}
 
 			if os.Getenv("APPLE_KID") == "" {
 				http.Error(writer, "[CreateAppleDevToken] APPLE_KID does not exist!", http.StatusInternalServerError)
 				log.Println("[CreateAppleDevToken] APPLE_KID does not exist!")
+				errClient.LogErrReq(fmt.Errorf("APPLE_KID does not exist"), request)
 				return
 			}
 
@@ -66,6 +71,7 @@ func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
 			if tokenErr != nil {
 				http.Error(writer, tokenErr.Error(), http.StatusInternalServerError)
 				log.Printf("[CreateAppleDevToken]: %v", tokenErr)
+				errClient.LogErrReq(tokenErr, request)
 				return
 			}
 
@@ -83,6 +89,7 @@ func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
 	if tokenErr != nil {
 		http.Error(writer, tokenErr.Error(), http.StatusInternalServerError)
 		log.Printf("CreateAppleDevToken]: %v", tokenErr)
+		errClient.LogErrReq(tokenErr, request)
 		return
 	}
 
@@ -103,12 +110,20 @@ func initWithEnv() error {
 		applePrivateKeyPath = os.Getenv("APPLE_PRIVATE_KEY_PATH_PROD")
 	}
 
+	// Initializes the Cloud Error Client
+	errorclient, err := errlog.InitErrClientWithEnv(currentProject, os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"), "CreateAppleDevToken")
+	if err != nil {
+		log.Printf("CreateAppleDevToken [Init Error Client]: %v", err)
+	}
+
 	// Initialize Firestore
 	client, err := firestore.NewClient(context.Background(), currentProject)
 	if err != nil {
+		errorclient.LogErr(err)
 		return fmt.Errorf("CreateAppleDevToken [Init Firestore]: %v", err)
 	}
 
+	errClient = errorclient
 	firestoreClient = client
 	return nil
 }

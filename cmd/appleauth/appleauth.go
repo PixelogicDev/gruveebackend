@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"cloud.google.com/go/firestore"
+	"github.com/pixelogicdev/gruveebackend/pkg/errlog"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
 	"github.com/unrolled/render"
 )
@@ -19,6 +20,7 @@ type appleDevTokenResp struct {
 }
 
 var firestoreClient *firestore.Client
+var errClient errlog.Client
 var appleDevToken firebase.FirestoreAppleDevJWT
 var httpClient *http.Client
 var hostname string
@@ -45,6 +47,7 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 	if appleDevTokenReqErr != nil {
 		http.Error(writer, appleDevTokenReqErr.Error(), http.StatusInternalServerError)
 		log.Println(appleDevTokenReqErr.Error())
+		errClient.LogErrReq(appleDevTokenReqErr, appleDevTokenReq)
 		return
 	}
 
@@ -52,6 +55,7 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 	if appleDevTokenRespErr != nil {
 		http.Error(writer, appleDevTokenRespErr.Error(), http.StatusInternalServerError)
 		log.Println(appleDevTokenRespErr.Error())
+		errClient.LogErrReq(appleDevTokenRespErr, request)
 		return
 	}
 
@@ -61,6 +65,7 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 	if appleDevTokenDecodeErr != nil {
 		http.Error(writer, appleDevTokenDecodeErr.Error(), http.StatusInternalServerError)
 		log.Printf("AppleAuth [appleDevToken Decoder]: %v", appleDevTokenDecodeErr)
+		errClient.LogErrReq(appleDevTokenDecodeErr, request)
 		return
 	}
 
@@ -72,6 +77,7 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 	if renderErr != nil {
 		http.Error(writer, renderErr.Error(), http.StatusInternalServerError)
 		log.Printf("[AuthorizeWithApple] [render]: %v", renderErr)
+		errClient.LogErrReq(renderErr, request)
 		return
 	}
 }
@@ -80,10 +86,6 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 // initWithEnv takes our yaml env variables and maps them properly.
 // Unfortunately, we had to do this is main because in init we weren't able to access env variables
 func initWithEnv() error {
-	if os.Getenv("APPLE_TEAM_ID") == "" {
-		return fmt.Errorf("authorizeWithApple - APPLE_TEAM_ID does not exist")
-	}
-
 	// Get paths
 	var currentProject string
 	if os.Getenv("ENVIRONMENT") == "DEV" {
@@ -96,9 +98,21 @@ func initWithEnv() error {
 		templatePath = os.Getenv("APPLE_AUTH_TEMPLATE_PATH_PROD")
 	}
 
+	// Initializes the Cloud Error Client
+	errorclient, err := errlog.InitErrClientWithEnv(currentProject, os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"), "AuthorizeWithApple")
+	if err != nil {
+		log.Printf("AuthorizeWithApple [Init Error Client]: %v", err)
+	}
+
+	if os.Getenv("APPLE_TEAM_ID") == "" {
+		errorclient.LogErr(fmt.Errorf("APPLE_TEAM_ID does not exist"))
+		return fmt.Errorf("authorizeWithApple - APPLE_TEAM_ID does not exist")
+	}
+
 	// Initialize Firestore
 	client, err := firestore.NewClient(context.Background(), currentProject)
 	if err != nil {
+		errorclient.LogErr(err)
 		return fmt.Errorf("AuthorizeWithApple [Init Firestore]: %v", err)
 	}
 

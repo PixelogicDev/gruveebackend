@@ -10,10 +10,12 @@ import (
 	"os"
 
 	"cloud.google.com/go/firestore"
+	"github.com/pixelogicdev/gruveebackend/pkg/errlog"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
 )
 
 var firestoreClient *firestore.Client
+var errClient errlog.Client
 
 // JackGamesFTW - "TriHard 7" (03/18/20)
 func init() {
@@ -36,6 +38,7 @@ func CreateSocialPlatform(writer http.ResponseWriter, request *http.Request) {
 	if socialPlatformErr != nil {
 		http.Error(writer, socialPlatformErr.Error(), http.StatusInternalServerError)
 		log.Printf("CreateSocialPlatform [socialPlatform Decoder]: %v", socialPlatformErr)
+		errClient.LogErrReq(socialPlatformErr, request)
 		return
 	}
 
@@ -44,6 +47,7 @@ func CreateSocialPlatform(writer http.ResponseWriter, request *http.Request) {
 	if writeErr != nil {
 		http.Error(writer, writeErr.Error(), http.StatusInternalServerError)
 		log.Printf("CreateSocialPlatform [fireStore Set]: %v", writeErr)
+		errClient.LogErrReq(writeErr, request)
 		return
 	}
 
@@ -64,12 +68,20 @@ func initWithEnv() error {
 		currentProject = os.Getenv("FIREBASE_PROJECTID_PROD")
 	}
 
+	// Initializes the Cloud Error Client
+	errorclient, err := errlog.InitErrClientWithEnv(currentProject, os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"), "CreateSocialPlatform")
+	if err != nil {
+		log.Printf("CreateSocialPatform [Init Error Client]: %v", err)
+	}
+
 	// Initialize Firestore
 	client, err := firestore.NewClient(context.Background(), currentProject)
 	if err != nil {
-		return fmt.Errorf("SocialTokenRefresh [Init Firestore]: %v", err)
+		errorclient.LogErr(err)
+		return fmt.Errorf("CreateSocialPlatform [Init Firestore]: %v", err)
 	}
 
+	errClient = errorclient
 	firestoreClient = client
 	return nil
 }

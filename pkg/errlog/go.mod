@@ -1,4 +1,4 @@
-module github.com/leviharrison/gruveebackend/pkg/errlog
+module github.com/pixelogicdev/gruveebackend/pkg/errlog
 
 go 1.13
 
@@ -9,7 +9,7 @@ require (
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208 // indirect
 	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
 	golang.org/x/text v0.3.3 // indirect
-	google.golang.org/api v0.29.0 // indirect
+	google.golang.org/api v0.29.0
 	google.golang.org/genproto v0.0.0-20200711021454-869866162049 // indirect
 	google.golang.org/grpc v1.30.0 // indirect
 )
