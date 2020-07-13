@@ -17,6 +17,7 @@ import (
 	"github.com/pixelogicdev/gruveebackend/cmd/createappledevtoken"
 	"github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist"
 	"github.com/pixelogicdev/gruveebackend/cmd/createuser"
+	"github.com/pixelogicdev/gruveebackend/cmd/doesuserdocexist"
 	"github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia"
 	"github.com/pixelogicdev/gruveebackend/cmd/socialplatform"
 	"github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh"
@@ -48,6 +49,7 @@ func main() {
 	funcframework.RegisterHTTPFunction("/socialTokenRefresh", socialtokenrefresh.SocialTokenRefresh)
 	funcframework.RegisterHTTPFunction("/createSocialPlaylist", createsocialplaylist.CreateSocialPlaylist)
 	funcframework.RegisterHTTPFunction("/createAppleDevToken", createappledevtoken.CreateAppleDevToken)
+	funcframework.RegisterHTTPFunction("/doesUserDocExist", doesuserdocexist.DoesUserDocExist)
 	funcframework.RegisterEventFunction("/updateAlgolia", updatealgolia.UpdateAlgolia)
 
 	// Get Media Endpoints
