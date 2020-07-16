@@ -1,4 +1,4 @@
-module github.com/pixelogicdev/leviharrison/pkg/sawmill
+module github.com/leviharrison/gruveebackend/pkg/sawmill
 
 go 1.13
 
