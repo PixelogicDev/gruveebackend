@@ -1,0 +1,26 @@
+name: appleauth function push master
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'cmd/appleauth/**'
+
+jobs:
+  tag:
+    name: Tag Master
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Get Version
+        run: |
+          cd cmd/appleauth
+          VNAME=$(head -n 1 .version)
+          VERSION=$(echo $VLINE | awk -F':' '{print $1}' | egrep -o "v.*")
+          VERSION=$(if [[ "$VLINE" =~ (v[^:]*): ]] ; then echo ${BASH_REMATCH[1]}; else exit 99; fi)
+          if [ -z $VERSION ]; then exit 99; fi
+
