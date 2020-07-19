@@ -24,7 +24,9 @@ jobs:
           echo ******
           # parse version out of .version file
           VNAME=$(head -n 1 .version)
+          echo $VNAME
           VERSION=$(echo $VLINE | awk -F':' '{print $1}' | egrep -o "v.*")
+          echo $VERSION
           # VERSION=$(if [[ "$VLINE" =~ (v[^:]*): ]] ; then echo ${BASH_REMATCH[1]}; else exit 99; fi)
           if [ -z $VERSION ]; then exit 99; fi
           
