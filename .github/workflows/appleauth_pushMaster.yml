@@ -1,0 +1,56 @@
+name: appleauth function push master
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'cmd/appleauth/**'
+
+jobs:
+  tag:
+    name: Tag Master
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Get Version
+        run: |
+          echo "shell is $SHELL"
+          cd cmd/appleauth
+          pwd
+          echo "***!**"
+          # parse version out of .version file
+          VLINE=$(head -n 1 .version)
+          echo "Line retrieved from .version: $VLINE"
+          VERSION=$(echo "$VLINE" | awk -F':' '{print $1}' | egrep -o "v.*")
+          echo "The found version is $VERSION"
+          if [ -z $VERSION ]; then exit 99; fi
+          echo "::set-env name=NEWVER::$VERSION"
+      - name: Dump vars
+        run: |
+          echo "NEWVER: $NEWVER"
+          echo "github ref: $GITHUB_REF"
+          echo "sha $GITHUB_SHA"
+      - name: Tag Commit
+        run: |
+          NEW_TAG="refs/tags/cmd/appleauth/$NEWVER"
+          echo "creating tag $NEW_TAG on sha: $GITHUB_SHA"
+          STATUS_CODE=$(curl -o ./response.txt -w "%{http_code}" -X POST --url https://api.github.com/repos/brettski/gruveebackend/git/refs \
+          -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+          -H 'content-type: application/json' \
+          -d "{ \"ref\": \"$NEW_TAG\", \"sha\": \"$GITHUB_SHA\" }")
+          if [ "$?" != "0" ]; then echo "error running curl"; exit 19; fi
+          if [ "$STATUS_CODE" == "422" ]; then echo "Status 422, probably duplicate tag!!"; exit 422; fi
+          if [ "$STATUS_CODE" != "201" ]; then echo "non-201 Create, status: $STATUS_CODE"; exit 201; fi
+          echo "response of request:"
+          cat ./response.txt
+      - name: Deploy to GCP
+        run: |
+          echo $CONFIG_YAML > ./internal/config.yaml
+          echo "cat file:"
+          cat ./internal/config.yaml
+        env:
+          CONFIG_YAML: ${{ secrets.PROD_CONFIG_YAML }}
