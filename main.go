@@ -15,6 +15,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/pixelogicdev/gruveebackend/cmd/appleauth"
 	"github.com/pixelogicdev/gruveebackend/cmd/createappledevtoken"
+	"github.com/pixelogicdev/gruveebackend/cmd/createprovideruser"
 	"github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist"
 	"github.com/pixelogicdev/gruveebackend/cmd/createuser"
 	"github.com/pixelogicdev/gruveebackend/cmd/doesuserdocexist"
@@ -52,6 +53,7 @@ func main() {
 	funcframework.RegisterHTTPFunction("/createAppleDevToken", createappledevtoken.CreateAppleDevToken)
 	funcframework.RegisterHTTPFunction("/doesUserDocExist", doesuserdocexist.DoesUserDocExist)
 	funcframework.RegisterHTTPFunction("/usernameAvailable", usernameavailable.UsernameAvailable)
+	funcframework.RegisterHTTPFunction("/createProviderUser", createprovideruser.CreateProviderUser)
 	funcframework.RegisterEventFunction("/updateAlgolia", updatealgolia.UpdateAlgolia)
 
 	// Get Media Endpoints
