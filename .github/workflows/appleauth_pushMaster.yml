@@ -18,19 +18,26 @@ jobs:
           fetch-depth: 0
       - name: Get Version
         run: |
+          echo "shell is $SHELL"
           cd cmd/appleauth
           pwd
           ls -lasi
-          echo ******
+          echo "******"
           # parse version out of .version file
           VNAME=$(head -n 1 .version)
-          echo $VNAME
+          echo "Line retrieved from .version: $VNAME"
+          echo "do we have egrep?"
+          egrep --version
+          echo "do we have grep?"
+          grep --version
           VERSION=$(echo $VLINE | awk -F':' '{print $1}' | egrep -o "v.*")
-          echo $VERSION
           # VERSION=$(if [[ "$VLINE" =~ (v[^:]*): ]] ; then echo ${BASH_REMATCH[1]}; else exit 99; fi)
+          echo "The found version is $VERSION"
           if [ -z $VERSION ]; then exit 99; fi
           
           # Create tag on commit
+          echo "curl version"
+          curl --version
           #curl -s -X POST https://api.github.com/repos/PixelogicDev/gruveebackend/git/refs \
           curl -s -X POST https://api.github.com/repos/brettski/gruveebackend/git/refs \
           -H "Authorization: token $GITHUB_TOKEN" \
