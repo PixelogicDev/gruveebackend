@@ -28,8 +28,9 @@ jobs:
           echo "Line retrieved from .version: $VNAME"
           echo "do we have egrep?"
           egrep --version
-          echo "do we have grep?"
-          grep --version
+
+          echo "do we have awk?"
+          awk --version
           VERSION=$(echo $VLINE | awk -F':' '{print $1}' | egrep -o "v.*")
           # VERSION=$(if [[ "$VLINE" =~ (v[^:]*): ]] ; then echo ${BASH_REMATCH[1]}; else exit 99; fi)
           echo "The found version is $VERSION"
