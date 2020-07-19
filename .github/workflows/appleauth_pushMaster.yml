@@ -19,6 +19,9 @@ jobs:
       - name: Get Version
         run: |
           cd cmd/appleauth
+          pwd
+          ls -lasi
+          echo ******
           # parse version out of .version file
           VNAME=$(head -n 1 .version)
           VERSION=$(echo $VLINE | awk -F':' '{print $1}' | egrep -o "v.*")
