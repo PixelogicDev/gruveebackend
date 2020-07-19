@@ -1,3 +1,4 @@
+- v1.0.0-beta.5: I keep forgetting to make changes in function :)
 - v1.0.0-beta.4: Testing ci with GH Actions
 - v1.0.0-beta.3: Tweaking template rendering with new .env variables
 - v1.0.0-beta.2: Fixing AuthWithSpotify log
