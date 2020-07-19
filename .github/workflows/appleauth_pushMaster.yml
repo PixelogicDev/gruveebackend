@@ -28,7 +28,6 @@ jobs:
           echo "Line retrieved from .version: $VNAME"
           echo "do we have egrep?"
           egrep --version
-
           echo "do we have awk?"
           awk --version
           VERSION=$(echo $VLINE | awk -F':' '{print $1}' | egrep -o "v.*")
