@@ -12,6 +12,9 @@ jobs:
     name: Tag Master
     runs-on: ubuntu-latest
     steps:
+      - name: Set Function Vars
+        run: |
+          echo "::set-env name=FUNC_PATH::cmd/appleauth"
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -19,7 +22,7 @@ jobs:
       - name: Get Version
         run: |
           echo "shell is $SHELL"
-          cd cmd/appleauth
+          cd $FUNC_PATH
           pwd
           echo "***!**"
           # parse version out of .version file
@@ -31,12 +34,13 @@ jobs:
           echo "::set-env name=NEWVER::$VERSION"
       - name: Dump vars
         run: |
+          echo "FUNC_PATH: $FUNC_PATH"
           echo "NEWVER: $NEWVER"
           echo "github ref: $GITHUB_REF"
           echo "sha $GITHUB_SHA"
       - name: Tag Commit
         run: |
-          NEW_TAG="refs/tags/cmd/appleauth/$NEWVER"
+          NEW_TAG="refs/tags/$FUNC_PATH/$NEWVER"
           echo "creating tag $NEW_TAG on sha: $GITHUB_SHA"
           STATUS_CODE=$(curl -o ./response.txt -w "%{http_code}" -X POST --url https://api.github.com/repos/brettski/gruveebackend/git/refs \
           -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
@@ -47,10 +51,24 @@ jobs:
           if [ "$STATUS_CODE" != "201" ]; then echo "non-201 Create, status: $STATUS_CODE"; exit 201; fi
           echo "response of request:"
           cat ./response.txt
-      - name: Deploy to GCP
+      - name: Deploy prep
         run: |
           echo $CONFIG_YAML > ./internal/config.yaml
           echo "cat file:"
           cat ./internal/config.yaml
         env:
           CONFIG_YAML: ${{ secrets.PROD_CONFIG_YAML }}
+      - name: Setup gcloud Actions
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          verion: '290.0.1'
+          service_account_key: ${{ secrets.PROD_GCLOUD_AUTH }}
+      - name: Run GCP Deploy Function
+        run: |
+          cd $FUNC_PATH
+          pwd
+          sh ./.deployment
+        env:
+          CLOUDSDK_CORE_PROJECT: ${{ secrets.PROD_GCP_PROJECT_ID }}
+
+        
