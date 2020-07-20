@@ -10,6 +10,7 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/pixelogicdev/gruveebackend/cmd/appleauth v1.0.0-beta.3
 	github.com/pixelogicdev/gruveebackend/cmd/createappledevtoken v1.0.0-beta.3
+	github.com/pixelogicdev/gruveebackend/cmd/createprovideruser v1.0.0-beta.1
 	github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist v1.0.0-beta.6
 	github.com/pixelogicdev/gruveebackend/cmd/createuser v1.0.0-beta.2
 	github.com/pixelogicdev/gruveebackend/cmd/doesuserdocexist v1.0.0-beta.1
@@ -49,9 +50,11 @@ replace github.com/pixelogicdev/gruveebackend/cmd/doesuserdocexist => ./cmd/does
 
 replace github.com/pixelogicdev/gruveebackend/cmd/usernameavailable => ./cmd/usernameavailable
 
-// WIP
-replace github.com/pixelogicdev/gruveebackend/internal/helpers/localcloudtrigger => ./internal/helpers/localcloudtrigger
+replace github.com/pixelogicdev/gruveebackend/cmd/createprovideruser => ./cmd/createprovideruser
 
 replace github.com/pixelogicdev/gruveebackend/pkg/firebase => ./pkg/firebase
 
 replace github.com/pixelogicdev/gruveebackend/pkg/social => ./pkg/social
+
+// WIP
+replace github.com/pixelogicdev/gruveebackend/internal/helpers/localcloudtrigger => ./internal/helpers/localcloudtrigger
