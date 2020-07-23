@@ -1,6 +1,4 @@
-package sawmill
-
-// If you're wondering why this package is named sawmill, I do too: https://clips.twitch.tv/PlacidOutstandingPelicanCharlieBitMe
+package sawmill // If you're wondering why this package is named sawmill, I do too: https://clips.twitch.tv/PlacidOutstandingPelicanCharlieBitMe
 
 import (
 	"context"
@@ -14,26 +12,27 @@ import (
 
 // Logger holds the newly generated error logging client, so that it can be used for our own, more simple custom logging functions instead of the ones the Google provides
 type Logger struct {
-	Logger *logging.Logger // The Logger
-
-	InitError bool // If their was an error with the initialization, it won't log to the cloud
-
-	ServiceName string // The service that logging was created for
+	// The Logger
+	GoogleLogger *logging.Logger
+	// If their was an error with the initialization, it won't log to the cloud
+	InitError bool
+	// The service that logging was created for
+	ServiceName string
 }
 
 // InitClient creates a logging client
-func InitClient(projectID string, credentials string, environment string, serviceName string) (Logger, error) {
+func InitClient(projectID string, credentialsJSON string, environment string, serviceName string) (Logger, error) {
 	// Checks if were in the development environment, because if we are Cloud Logging is not needed
 	if environment == "DEV" {
 		return Logger{nil, false, serviceName}, nil
 	}
 
 	// The client takes the credentials in a byte array, so we do that conversion here
-	credentialsByte := []byte(credentials)
+	credentialsByte := []byte(credentialsJSON)
 	ctx := context.Background()
 
 	// Initializes an Google logging client
-	loggingClient, err := logging.NewClient(ctx, projectID, option.WithCredentialsJSON(credentialsByte))
+	loggingClient, err := logging.NewClient(ctx, projectID, option.WithCredentialsJSON(credentialsByte)) // WithCredentialsJSON takes a raw JSON string in a byte array
 
 	if err != nil {
 		// If there is an error with initialization, it returns a Client object containing an empty ErrorClient, so nothing will get logged to the cloud, only the console
@@ -56,7 +55,7 @@ var emptyEntry logging.Entry
 // LogErr logs an error
 func (c Logger) LogErr(err error, operation string, req *http.Request) {
 	// Logs the error to the terminal
-	log.Printf(c.ServiceName + " [" + operation + "]:", err)
+	log.Printf("%s ["+operation+"]: %v ", c.ServiceName, err)
 
 	// Checks if there was an error with the initialization of the Cloud Logging Client
 	if c.InitError {
@@ -74,7 +73,7 @@ func (c Logger) LogErr(err error, operation string, req *http.Request) {
 	}
 
 	// Reports the error
-	c.Logger.Log(logging.Entry{
+	c.GoogleLogger.Log(logging.Entry{
 		Payload: err.Error(),
 		Operation: &logpb.LogEntryOperation{
 			Id: operation,
@@ -83,5 +82,5 @@ func (c Logger) LogErr(err error, operation string, req *http.Request) {
 	})
 
 	// Sends the log to the cloud
-	c.Logger.Flush()
+	c.GoogleLogger.Flush()
 }
