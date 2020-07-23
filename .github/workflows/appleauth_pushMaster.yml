@@ -24,7 +24,6 @@ jobs:
           echo "shell is $SHELL"
           cd $FUNC_PATH
           pwd
-          echo "***!**"
           # parse version out of .version file
           VLINE=$(head -n 1 .version)
           echo "Line retrieved from .version: $VLINE"
@@ -53,20 +52,24 @@ jobs:
           cat ./response.txt
       - name: Deploy prep
         run: |
-          echo $CONFIG_YAML > ./internal/config.yaml
-          echo "cat file:"
+          pwd
+          echo -n $CONFIG_YAML_64 | base64 -d > ./internal/config.yaml
+          echo "config.yaml character count: $(wc -c < ./internal/config.yaml)"
+          echo "cat me:"
           cat ./internal/config.yaml
         env:
           CONFIG_YAML: ${{ secrets.PROD_CONFIG_YAML }}
+          CONFIG_YAML_64: ${{ secrets.PROD_CONFIG_YAML_64 }}
       - name: Setup gcloud Actions
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
-          verion: '290.0.1'
           service_account_key: ${{ secrets.PROD_GCLOUD_AUTH }}
+          project_id: ${{ secrets.PROD_GCP_PROJECT_ID }}
       - name: Run GCP Deploy Function
         run: |
           cd $FUNC_PATH
           pwd
+          ls -lasi ../../internal
           sh ./.deployment
         env:
           CLOUDSDK_CORE_PROJECT: ${{ secrets.PROD_GCP_PROJECT_ID }}
