@@ -1,11 +1,11 @@
-name: appleauth function push master
+name: socialtokenrefresh function push master
 
 on:
   push:
     branches:
       - master
     paths:
-      - 'cmd/appleauth/**'
+      - 'cmd/socialtokenrefresh/**'
 
 jobs:
   tag:
@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Set Function Vars
         run: |
-          echo "::set-env name=FUNC_PATH::cmd/appleauth"
+          echo "::set-env name=FUNC_PATH::cmd/socialtokenrefresh"
       - name: Checkout
         uses: actions/checkout@v2
         with:

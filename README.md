@@ -1,3 +1,4 @@
+<!-- markdownlint-disable -->
 <h1 align="center">Grüvee-Backend</h1>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
@@ -29,8 +30,10 @@
   <span> · </span>
   <a href="README-Support/CONTRIBUTING.md#-current-contributors">Current Contributors</a>
 </h3>
+<!-- markdownlint-enable -->
+<!-- markdownlint-disable MD013 MD041 -->
 
-Grüvee is an open source social, collabortive playlist made by the [PixelogicDev Twitch Community](https://twitch.tv/pixelogicdev). This project was entirely made live, on Twitch while receiving help from chat and contributing to Pull Requests here!
+Grüvee is an open source social, collaborative playlist made by the [PixelogicDev Twitch Community](https://twitch.tv/pixelogicdev). This project was entirely made live, on Twitch while receiving help from chat and contributing to Pull Requests here!
 
 This is currently the Backend portion of the platform. We are currently building a Mobile client that can be found [here](https://github.com/PixelogicDev/Gruvee-Mobile)!
 
@@ -57,12 +60,12 @@ If you are interested in becoming a member of the team check out the **[Pixelogi
 We found [this guide](https://www.digitalocean.com/community/tutorials/understanding-the-gopath) pretty helpful in understanding the Golang file structure and how it should be setup. We have tweaked this file structure to fit our Firebase Function setup.
 
 1. Make sure to [install Golang](https://golang.org/dl/) we are using v1.13
-2. Find your `GOPATH`. ALWAYS located in this path (`$HOME/go`) unless put otherwise
-   1. Example GOPATH: `Users/YourComputerName/go`
-   2. Example GOPATH/BIN:`Users/YourComputerName/go/bin`
-3. Add GOPATH env variable
+1. Find your `GOPATH`. ALWAYS located in this path (`$HOME/go`) unless put otherwise
+    1. Example GOPATH: `Users/YourComputerName/go`
+    1. Example GOPATH/BIN:`Users/YourComputerName/go/bin`
+1. Add GOPATH env variable
 
-```
+```shell
 export GOPATH="$HOME/go"
 export GOBIN="$HOME/go/bin"
 export PATH=$PATH:$GOBIN:$GOPATH
@@ -70,16 +73,16 @@ export PATH=$PATH:$GOBIN:$GOPATH
 
 ### Golang and VSCode Extensions
 
-We have found some awesome workflows and tools to get us up and running with Golang. This repo includes a [`.vscode/settings.json`](.vscode/settings.json) & [`.vscode/extensions.json`](.vscode/extensions.json) which will allow you to automatically download the recommended extenstions and keeps your repo styling in sync with all the contributors. If you find more extenstions please join the [PixelogicDev Discord](https://discordapp.com/invite/8NFtvp5) and share with us so we can add it to the project!
+We have found some awesome workflows and tools to get us up and running with Golang. This repo includes a [`.vscode/settings.json`](.vscode/settings.json) & [`.vscode/extensions.json`](.vscode/extensions.json) which will allow you to automatically download the recommended extensions and keeps your repo styling in sync with all the contributors. If you find more extensions please join the [PixelogicDev Discord](https://discordapp.com/invite/8NFtvp5) and share with us so we can add it to the project!
 
 ### Grüvee Backend File Path
 
 Make sure `gruveebackend` is in your GOPATH (This helps a lot. We promise.)
 
-1.  Clone repo from Github
-2.  Open up `GOPATH/src/github.com/`
-3.  Create folder called `pixelogicdev`
-4.  `cd pixelogicdev` and move/clone `gruveebackend` into this folder
+1. Clone repo from Github
+1. Open up `GOPATH/src/github.com/`
+1. Create folder called `pixelogicdev`
+1. `cd pixelogicdev` and move/clone `gruveebackend` into this folder
 
 ### Running Functions Locally
 
@@ -87,10 +90,43 @@ When you want to run all the functions locally, all you need to do is run `scrip
 
 This script does the following:
 
-```
+```text
 Adds all the replace lines in all the go mod files
 Builds and runs the `main.go` file in the root
 ```
+
+## Auto Tagging and Deploy with Github Actions
+
+GitHub [Actions](https://docs.github.com/en/actions) is used for tagging functions when updated and pushing them to gcp. This is an automated process which has the following requirements:
+
+- Any change made in a function's folder structure (e.g. `/cmd/appleauth/**`) must be accompanied with a new version (maintained in `.version` file).
+  - If a change is made to a function and the same tag is used again, the deploy will fail!
+- All code destined for `master` should/must go through a pull request (pr). No pushes should go directly to master, let's keep good habits!
+- GitHub Actions yaml files are kept at `.github/workflows/`
+- There is **one** Actions yaml file per **function** per **trigger**. This allows multiple functions to be updated in a push and each will be tagged and deployed as needed.
+  - There is currently only a 'push to master' trigger file. Other useful triggers are on PR, which can run linting,tests, and even pushed to staging, vetting the code being staged for production deployment.
+- The tag written is taken from the first line of the `.version` file. The function used splits on the colon, uses the first half using everything from the `v` forward.
+
+The Actions configuration requires four [secrets](https://github.com/PixelogicDev/gruveebackend/settings/secrets) to be configured in GitHub repo:
+
+- **PROD_CONFIG_YAML** The configuration file used by GCP for the function's variables
+- **PROD_CONFIG_YAML_64** A base64 encoded version of `PROD_CONFIG_YAML`
+- **PROD_CLOUD_AUTH** GCP service account which can deploy to the GCP project's function. `JSON` format with no carriage returns or line feeds
+- **PROD_GCP_PROJECT_ID** The GCP project id being deployed to
+
+You may be wondering why there are both the yaml config file and the yaml config file base64 encoded. The base64 version is used to write the file used by the deploy process. The regular yaml version is used to redact all the values from the log. It's a work-around to ensure values aren't leaked in the logs. IT IS VERY IMPORTANT TO UPDATE BOTH OF THESE FILES WHENEVER THERE IS A CONFIGURATION CHANGE!
+
+### Setting up a new function for tagging and deploy on push to master
+
+Each function has it's own GitHub Actions file under `.github/workflows`. At the time of writing all of these files are triggered on **push master**. The steps for creating a file for a function is _very_ easy. There are only **three** lines to update (1, 8, 17).
+
+1. Copy `template_pushMaster.yml` file from the workflows template directory, `.github/workflow_templates/`, into the workflows directory, `.github/workflows`.
+1. Rename the file copied with the function's name. E.g. function `tokengen` would be renamed: `tokengen_pushMaster.yml`
+1. There are three lines to update in the file with the function's name: 1, 8, & 17
+    - **line 1**: Replace [function name] with the function's name (e.g. `tokengen`)
+    - **line 8**: Replace [function name] with the function's name (e.g. `tokengen`)
+    - **line 17**: Replace [function name] with the function's name (e.g. `tokengen`)
+1. That is all, GitHub Actions is now configured for the function. (after the files are pushed to master that is 😃)
 
 # ❓ FAQ
 
