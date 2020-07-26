@@ -1,5 +1,6 @@
-package sawmill // If you're wondering why this package is named sawmill, I do too: https://clips.twitch.tv/PlacidOutstandingPelicanCharlieBitMe
+package sawmill
 
+// If you're wondering why this package is named sawmill, I do too: https://clips.twitch.tv/PlacidOutstandingPelicanCharlieBitMe
 import (
 	"context"
 	"log"
@@ -22,11 +23,6 @@ type Logger struct {
 
 // InitClient creates a logging client
 func InitClient(projectID string, credentialsJSON string, environment string, serviceName string) (Logger, error) {
-	// Checks if were in the development environment, because if we are Cloud Logging is not needed
-	if environment == "DEV" {
-		return Logger{nil, false, serviceName}, nil
-	}
-
 	// The client takes the credentials in a byte array, so we do that conversion here
 	credentialsByte := []byte(credentialsJSON)
 	ctx := context.Background()
@@ -46,7 +42,15 @@ func InitClient(projectID string, credentialsJSON string, environment string, se
 	// Creates the actual logger
 	logger := loggingClient.Logger(serviceName)
 
-	return Logger{logger, false, serviceName}, nil
+	// If we are in a dev environment, we don't want to log to the cloud, so this variable is used as the value for InitError, and if is set to true, nothing will be logged to the cloud
+	var isDev bool = false
+
+	// Here the aforementioned variable is set to true if we are in the DEV environment
+	if environment == "DEV" {
+		isDev = true
+	}
+
+	return Logger{logger, isDev, serviceName}, nil
 }
 
 // This is an empty Entry struct, which is used to substitute in for any of the optional arguments that are not passed
