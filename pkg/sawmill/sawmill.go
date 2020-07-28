@@ -3,6 +3,7 @@ package sawmill
 // If you're wondering why this package is named sawmill, I do too: https://clips.twitch.tv/PlacidOutstandingPelicanCharlieBitMe
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -19,20 +20,25 @@ type Logger struct {
 	InitError bool
 	// The service that logging was created for
 	ServiceName string
+	// If we are in the DEV environment, it won't log to the cloud
+	isDevEnv bool
 }
 
 // InitClient creates a logging client
 func InitClient(projectID string, credentialsJSON string, environment string, serviceName string) (Logger, error) {
+	if credentialsJSON == "" {
+		return Logger{nil, true, "", false}, fmt.Errorf("Credentials ENV (found in config.yml) not set")
+	}
+
 	// The client takes the credentials in a byte array, so we do that conversion here
 	credentialsByte := []byte(credentialsJSON)
 	ctx := context.Background()
 
 	// Initializes an Google logging client
-	loggingClient, err := logging.NewClient(ctx, projectID, option.WithCredentialsJSON(credentialsByte)) // WithCredentialsJSON takes a raw JSON string in a byte array
-
+	loggingClient, err := logging.NewClient(ctx, projectID, option.WithCredentialsJSON(credentialsByte))
 	if err != nil {
 		// If there is an error with initialization, it returns a Client object containing an empty ErrorClient, so nothing will get logged to the cloud, only the console
-		return Logger{nil, true, ""}, err
+		return Logger{nil, true, "", false}, err
 	}
 
 	loggingClient.OnError = func(err error) {
@@ -43,14 +49,13 @@ func InitClient(projectID string, credentialsJSON string, environment string, se
 	logger := loggingClient.Logger(serviceName)
 
 	// If we are in a dev environment, we don't want to log to the cloud, so this variable is used as the value for InitError, and if is set to true, nothing will be logged to the cloud
-	var isDev bool = false
+	var isDevEnv bool = false
 
-	// Here the aforementioned variable is set to true if we are in the DEV environment
 	if environment == "DEV" {
-		isDev = true
+		isDevEnv = true
 	}
 
-	return Logger{logger, isDev, serviceName}, nil
+	return Logger{logger, false, serviceName, isDevEnv}, nil
 }
 
 // This is an empty Entry struct, which is used to substitute in for any of the optional arguments that are not passed
@@ -61,12 +66,16 @@ func (c Logger) LogErr(err error, operation string, req *http.Request) {
 	// Logs the error to the terminal
 	log.Printf("%s ["+operation+"]: %v ", c.ServiceName, err)
 
+	// Checks if we are in the DEV environment
+	if c.isDevEnv {
+		return
+	}
+
 	// Checks if there was an error with the initialization of the Cloud Logging Client
 	if c.InitError {
 		return
 	}
 
-	// requestStruct holds the value for the HTTPRequest, if req isn't passed, it will stay empty
 	requestStruct := emptyEntry.HTTPRequest
 
 	// If req is passed, this sets requestStruct to a structure containing req
