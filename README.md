@@ -107,6 +107,19 @@ GitHub [Actions](https://docs.github.com/en/actions) is used for tagging functio
   - There is currently only a 'push to master' trigger file. Other useful triggers are on PR, which can run linting,tests, and even pushed to staging, vetting the code being staged for production deployment.
 - The tag written is taken from the first line of the `.version` file. The function used splits on the colon, uses the first half using everything from the `v` forward.
 
+### Basic Workflow
+
+There is a separate Actions trigger file for each function. The Action will trigger whenever there is a change in the functions directory (e.g. `cmd/tokengen/*`). The following occurs:
+
+1. The code is checked out
+1. The version is extracted from the first line of the version file
+1. A tag is written to the merge's SHA using the version extracted from the file
+1. The config.yml file is written to disk
+1. glcoud action is loaded
+1. The deploy is run using the `.deployment` file from the function's directory.
+
+### Required Secrets
+
 The Actions configuration requires four [secrets](https://github.com/PixelogicDev/gruveebackend/settings/secrets) to be configured in GitHub repo:
 
 - **PROD_CONFIG_YAML** The configuration file used by GCP for the function's variables
