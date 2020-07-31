@@ -34,6 +34,15 @@
         "doc",
         "maintenance"
       ]
+    },
+    {
+      "login": "LeviHarrison",
+      "name": "Levi Harrison",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/54278938?v=4",
+      "profile": "https://github.com/LeviHarrison",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
