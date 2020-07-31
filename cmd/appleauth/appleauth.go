@@ -2,7 +2,6 @@ package appleauth
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -41,28 +40,11 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Grab Apple Developer token from DB or create a new one
-	createAppleDevURI := hostname + "/createAppleDevToken"
-	appleDevTokenReq, appleDevTokenReqErr := http.NewRequest("GET", createAppleDevURI, nil)
-	if appleDevTokenReqErr != nil {
-		http.Error(writer, appleDevTokenReqErr.Error(), http.StatusInternalServerError)
-		logger.LogErr("AppleDevToken Request", appleDevTokenReqErr, appleDevTokenReq)
-		return
-	}
-
-	appleDevTokenResp, appleDevTokenRespErr := httpClient.Do(appleDevTokenReq)
-	if appleDevTokenRespErr != nil {
-		http.Error(writer, appleDevTokenRespErr.Error(), http.StatusInternalServerError)
-		logger.LogErr("AppleDevToken Response", appleDevTokenRespErr, nil)
-		return
-	}
-
-	// Decode Token
-	var appleDevToken firebase.FirestoreAppleDevJWT
-	appleDevTokenDecodeErr := json.NewDecoder(appleDevTokenResp.Body).Decode(&appleDevToken)
-	if appleDevTokenDecodeErr != nil {
-		http.Error(writer, appleDevTokenDecodeErr.Error(), http.StatusInternalServerError)
-		logger.LogErr("AppleDevToken Decoder", appleDevTokenDecodeErr, nil)
+	// Get Apple Dev Token
+	appleDevToken, appleDevTokenErr := firebase.GetAppleDeveloperToken()
+	if appleDevTokenErr != nil {
+		http.Error(writer, appleDevTokenErr.Error(), http.StatusInternalServerError)
+		log.Printf("[GetAppleMusicMedia]: %v", appleDevTokenErr)
 		return
 	}
 

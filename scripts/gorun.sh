@@ -15,7 +15,11 @@ then
     # These are the replace paths that are needed for shared packages.
     firebaseReplace="github.com/pixelogicdev/gruveebackend/pkg/firebase=../../pkg/firebase"
     socialReplace="github.com/pixelogicdev/gruveebackend/pkg/social=../../pkg/social"
+<<<<<<< d37bd237eca9350814aa6c3f08ddee63d9032d09
     sawmillReplace="github.com/pixelogicdev/gruveebackend/pkg/sawmill=../../pkg/sawmill"
+=======
+    mediaHelpersReplace="github.com/pixelogicdev/gruveebackend/pkg/mediahelpers=../../pkg/mediahelpers"
+>>>>>>> Adding getAppleMusicMedia function && adding mediaHelpers package && cleaning up other functions
 
     # Add googleCreds to terminal instance
     export GOOGLE_APPLICATION_CREDENTIALS=$googleCredsPath
@@ -30,6 +34,7 @@ then
         go mod edit -replace $firebaseReplace
         go mod edit -replace $socialReplace
         go mod edit -replace $sawmillReplace
+        go mod edit -replace $mediaHelpersReplace
 
         # Move back up a directory
         cd ..
