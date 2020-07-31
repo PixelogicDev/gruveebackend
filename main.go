@@ -19,6 +19,7 @@ import (
 	"github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist"
 	"github.com/pixelogicdev/gruveebackend/cmd/createuser"
 	"github.com/pixelogicdev/gruveebackend/cmd/doesuserdocexist"
+	"github.com/pixelogicdev/gruveebackend/cmd/getapplemusicmedia"
 	"github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia"
 	"github.com/pixelogicdev/gruveebackend/cmd/socialplatform"
 	"github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh"
@@ -58,6 +59,7 @@ func main() {
 
 	// Get Media Endpoints
 	funcframework.RegisterHTTPFunction("/getSpotifyMedia", getspotifymedia.GetSpotifyMedia)
+	funcframework.RegisterHTTPFunction("/getAppleMusicMedia", getapplemusicmedia.GetAppleMusicMedia)
 
 	// WIP: Local trigger endpoint for cloud event
 	// funcframework.RegisterHTTPFunction("/localCloudTrigger", localcloudtrigger.LocalCloudTrigger)
