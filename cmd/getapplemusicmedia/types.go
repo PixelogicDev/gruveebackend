@@ -16,6 +16,11 @@ type appleMusicPlaylistResp struct {
 	Data []appleMusicPlaylistData `json:"data"`
 }
 
+// appleMusicAlbumResp defines the data retuned and needed from the Apple Music Get Album API
+type appleMusicAlbumResp struct {
+	Data []appleMusicAlbumData `json:"data"`
+}
+
 // -- DATA -- //
 
 // appleMusicTrackData defines the track data inside the data array response
@@ -31,7 +36,7 @@ type appleMusicTrackData struct {
 
 // appleMusicPlaylistData defines the playlist data inside the data array response
 type appleMusicPlaylistData struct {
-	Attrbutes struct {
+	Attributes struct {
 		Artwork          appleMusicArtwork        `json:"artwork"`
 		CuratorName      string                   `json:"curatorName"`
 		Description      appleMusicEditorialNotes `json:"description"`
@@ -44,6 +49,31 @@ type appleMusicPlaylistData struct {
 		Tracks appleMusicTrackRelationship `json:"tracks"`
 	} `json:"relationships"`
 	Type string `json:"type"`
+}
+
+// appleMusicAlbumData defines the album data inside the data array response
+type appleMusicAlbumData struct {
+	Attributes struct {
+		AlbumName           string                   `json:"albumName"`
+		ArtistName          string                   `json:"artistName"`
+		Artwork             appleMusicArtwork        `json:"artwork"`
+		ContentRating       string                   `json:"contentRating"`
+		Copyright           string                   `json:"copyright"`
+		EditorialNotes      appleMusicEditorialNotes `json:"editorialNotes"`
+		GenreNames          []string                 `json:"genreNames"`
+		IsComplete          bool                     `json:"isComplete"`
+		IsSingle            bool                     `json:"isSingle"`
+		Name                string                   `json:"name"`
+		RecordLabel         string                   `json:"recordLabel"`
+		ReleaseDate         string                   `json:"releaseDate"`
+		TrackCount          int                      `json:"trackCount"`
+		URL                 string                   `json:"url"`
+		IsMasteredForItunes bool                     `json:"isMasteredForItunes"`
+	} `json:"attributes"`
+
+	Relationships struct {
+		Tracks appleMusicTrackRelationship `json:"tracks"`
+	} `json:"relationships"`
 }
 
 // appleMusicVideoData defines the music video data
