@@ -1,22 +1,15 @@
 package getspotifymedia
 
 import (
-	"context"
-	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"net/url"
-	"os"
-	"strings"
 
 	"cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
+	"github.com/pixelogicdev/gruveebackend/pkg/mediahelpers"
 	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // -- Types -- //
@@ -80,23 +73,17 @@ var httpClient *http.Client
 var firestoreClient *firestore.Client
 var logger sawmill.Logger
 var spotifyAccessTokenURI = "https://accounts.spotify.com/api/token"
-
-// Get Media Endpoints
-var spotifyGetTrackURI = "https://api.spotify.com/v1/tracks"
-var spotifyGetPlaylistURI = "https://api.spotify.com/v1/playlists"
-var spotifyGetAlbumURI = "https://api.spotify.com/v1/albums"
+var (
+	httpClient            *http.Client
+	firestoreClient       *firestore.Client
+	spotifyAccessTokenURI = "https://accounts.spotify.com/api/token"
+	spotifyGetTrackURI    = "https://api.spotify.com/v1/tracks"
+	spotifyGetPlaylistURI = "https://api.spotify.com/v1/playlists"
+	spotifyGetAlbumURI    = "https://api.spotify.com/v1/albums"
+)
 
 // Draco401 - "Draco401 was here." (04/17/20)
 func init() {
-	client, err := firestore.NewClient(context.Background(), "gruvee-3b7c4")
-	if err != nil {
-		log.Printf("GetSpotifyMedia [Init Firestore]: %v", err)
-		return
-	}
-	firestoreClient = client
-
-	httpClient = &http.Client{}
-
 	log.Println("GetSpotifyMedia Initialized")
 }
 
@@ -111,7 +98,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Decode Request body to get track data
-	var spotifyMediaReq getSpotifyMediaReq
+	var spotifyMediaReq social.GetMediaReq
 	spotifyReqDecodeErr := json.NewDecoder(request.Body).Decode(&spotifyMediaReq)
 	if spotifyReqDecodeErr != nil {
 		http.Error(writer, spotifyReqDecodeErr.Error(), http.StatusInternalServerError)
@@ -120,13 +107,14 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Check to see if media is already part of collection, if so, just return that
-	mediaData, mediaDataErr := getMediaFromFirestore(spotifyMediaReq.MediaID)
+	mediaData, mediaDataErr := mediahelpers.GetMediaFromFirestore(*firestoreClient, spotifyMediaReq.Provider, spotifyMediaReq.MediaID)
 	if mediaDataErr != nil {
 		http.Error(writer, mediaDataErr.Error(), http.StatusInternalServerError)
 		logger.LogErr("GetMediaFromFirestore", mediaDataErr, request)
 		return
 	}
 
+	// MediaData exists, return it to the client
 	if mediaData != nil {
 		log.Printf("Media already exists, returning")
 		writer.WriteHeader(http.StatusOK)
@@ -135,7 +123,8 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Get Spotify access token
+	// Get Spotify access token (currently getting access token of user)
+	// TODO: Really at this point we want to makes these requests without getting a user access token
 	creds, credErr := getCreds()
 	if credErr != nil {
 		http.Error(writer, credErr.Error(), http.StatusInternalServerError)
@@ -143,49 +132,34 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	log.Println(spotifyMediaReq)
+	var (
+		firestoreMediaData    interface{}
+		firestoreMediaDataErr error
+	)
 
 	// Setup and call Spotify search
 	switch spotifyMediaReq.MediaType {
 	case "track":
-		// Call track API
-		firestoreMediaTrackData, firestoreMediaDataErr := getSpotifyTrack(spotifyMediaReq.MediaID, creds.AccessToken)
+		firestoreMediaData, firestoreMediaDataErr = getSpotifyTrack(spotifyMediaReq.MediaID, creds.AccessToken)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
 			logger.LogErr("GetSpotifyAlbum Switch", firestoreMediaDataErr, request)
 			return
 		}
-
-		writer.WriteHeader(http.StatusOK)
-		writer.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(writer).Encode(firestoreMediaTrackData)
-		return
 	case "playlist":
-		// Call playlist API
-		firestoreMediaPlaylistData, firestoreMediaDataErr := getSpotifyPlaylist(spotifyMediaReq.MediaID, creds.AccessToken)
+		firestoreMediaData, firestoreMediaDataErr = getSpotifyPlaylist(spotifyMediaReq.MediaID, creds.AccessToken)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
 			logger.LogErr("GetSpotifyAlbum Switch", firestoreMediaDataErr, request)
 			return
 		}
-
-		writer.WriteHeader(http.StatusOK)
-		writer.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(writer).Encode(firestoreMediaPlaylistData)
-		return
 	case "album":
-		// Call album API
-		firestoreMediaAlbumData, firestoreMediaDataErr := getSpotifyAlbum(spotifyMediaReq.MediaID, creds.AccessToken)
+		firestoreMediaData, firestoreMediaDataErr = getSpotifyAlbum(spotifyMediaReq.MediaID, creds.AccessToken)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
 			logger.LogErr("GetSpotifyAlbum Switch", firestoreMediaDataErr, request)
 			return
 		}
-
-		writer.WriteHeader(http.StatusOK)
-		writer.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(writer).Encode(firestoreMediaAlbumData)
-		return
 	default:
 		http.Error(writer, spotifyMediaReq.MediaType+" media type does not exist", http.StatusInternalServerError)
 		log.Printf("GetSpotifyMedia [MediaTypeSwitch]: %v media type does not exist", spotifyMediaReq.MediaType)
@@ -419,110 +393,7 @@ func getSpotifyPlaylist(playlistID string, accessToken string) (*firebase.Firest
 		ExternalURLs: map[string]string{"spotify": playlistData.ExternalURLs.Spotify},
 	}
 
-	return &firestoreMedia, nil
+	writer.WriteHeader(http.StatusOK)
+	writer.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(writer).Encode(firestoreMediaData)
 }
-
-func getSpotifyAlbum(albumID string, accessToken string) (*firebase.FirestoreMedia, error) {
-	// Generate URI
-	spotifyGetURI := spotifyGetAlbumURI + "/" + albumID
-
-	// Generate request
-	spotifyAlbumReq, spotifyAlbumReqErr := http.NewRequest("GET", spotifyGetURI, nil)
-	if spotifyAlbumReqErr != nil {
-		return nil, fmt.Errorf("GetSpotifyMedia [http.NewRequest]: %v", spotifyAlbumReqErr)
-	}
-
-	// Add headers and call request
-	spotifyAlbumReq.Header.Add("Authorization", "Bearer "+accessToken)
-	spotifyAlbumResp, spotifyAlbumRespErr := httpClient.Do(spotifyAlbumReq)
-	if spotifyAlbumRespErr != nil {
-		return nil, fmt.Errorf("GetSpotifyMedia [client.Do]: %v", spotifyAlbumRespErr)
-	}
-
-	// Check to see if request was valid
-	if spotifyAlbumResp.StatusCode != http.StatusOK {
-		// Convert Spotify Error Object
-		var spotifyErrorObj social.SpotifyRequestError
-
-		err := json.NewDecoder(spotifyAlbumResp.Body).Decode(&spotifyErrorObj)
-		if err != nil {
-			return nil, fmt.Errorf("GetSpotifyMedia [Spotify Request Decoder]: %v", err)
-		}
-		return nil, fmt.Errorf("GetSpotifyMedia [Spotify Track Request]: %v", spotifyErrorObj.Error.Message)
-	}
-
-	var albumData spotifyAlbum
-
-	// syszen - "wait that it? #easyGo"(02/27/20)
-	// LilCazza - "Why the fuck doesn't this shit work" (02/27/20)
-	respDecodeErr := json.NewDecoder(spotifyAlbumResp.Body).Decode(&albumData)
-	if respDecodeErr != nil {
-		return nil, fmt.Errorf("GetSpotifyMedia [Spotify Response Decoder]: %v", respDecodeErr)
-	}
-
-	// If multiple artists append to a string
-	var creators string
-	for index, artist := range albumData.Artists {
-		if index == 0 {
-			creators = artist.Name
-		} else {
-			creators = creators + ", " + artist.Name
-		}
-	}
-
-	// Setup FirestoreMeida object
-	firestoreMedia := firebase.FirestoreMedia{
-		ID:           albumData.ID,
-		Name:         albumData.Name,
-		Album:        albumData.Name,
-		Type:         albumData.Type,
-		Creator:      creators,
-		Images:       albumData.Images,
-		ExternalURLs: map[string]string{"spotify": albumData.ExternalURLs.Spotify},
-	}
-
-	return &firestoreMedia, nil
-}
-
-// refreshToken will check for an expired token and call Spotify refresh if needed
-/* func refreshToken(creds platformCredentials) (*firebase.APIToken, error) {
-	// Get current time
-	var currentTime = time.Now()
-
-	fmt.Printf("Expires In: %d seconds\n", creds.APIToken.ExpiresIn)
-	fmt.Printf("Expired At: %s\n", creds.APIToken.ExpiredAt)
-	fmt.Printf("Created At: %s\n", creds.APIToken.CreatedAt)
-
-	expiredAtTime, expiredAtTimeErr := time.Parse(time.RFC3339, creds.APIToken.ExpiredAt)
-	if expiredAtTimeErr != nil {
-		return nil, fmt.Errorf(expiredAtTimeErr.Error())
-	}
-
-	if currentTime.After(expiredAtTime) {
-		// Call API refresh
-		fmt.Printf("Access token is expired. Calling Refresh...\n")
-		refreshToken, tokenActionErr := refreshTokenAction(platform)
-		if tokenActionErr != nil {
-			return nil, fmt.Errorf(tokenActionErr.Error())
-		}
-
-		var expiredAtStr = time.Now().Add(time.Second * time.Duration(refreshToken.ExpiresIn))
-		var refreshedAPIToken = firebase.APIToken{
-			CreatedAt: time.Now().Format(time.RFC3339),
-			ExpiredAt: expiredAtStr.Format(time.RFC3339),
-			ExpiresIn: refreshToken.ExpiresIn,
-			Token:     refreshToken.AccessToken,
-		}
-
-		// Set new token data in database
-		writeTokenErr := writeToken(platform.ID, refreshedAPIToken)
-		if writeTokenErr != nil {
-			fmt.Errorf(writeTokenErr.Error())
-		}
-
-		return &refreshedAPIToken, nil
-	}
-
-	// Nothing is expired just return original token
-	return nil, nil
-} */
