@@ -104,7 +104,7 @@ GitHub [Actions](https://docs.github.com/en/actions) is used for tagging functio
 - All code destined for `master` should/must go through a pull request (pr). No pushes should go directly to master, let's keep good habits!
 - GitHub Actions yaml files are kept at `.github/workflows/`
 - There is **one** Actions yaml file per **function** per **trigger**. This allows multiple functions to be updated in a push and each will be tagged and deployed as needed.
-  - There is currently only a 'push to master' trigger file. Other useful triggers are on PR, which can run linting,tests, and even pushed to staging, vetting the code being staged for production deployment.
+  - There is currently only a 'push to master' trigger file. Other useful triggers are on PR, which can run linting, tests, and even pushed to staging, vetting the code being staged for production deployment.
 - The tag written is taken from the first line of the `.version` file. The function used splits on the colon, uses the first half using everything from the `v` forward.
 
 ### Basic Workflow
@@ -140,6 +140,7 @@ Each function has it's own GitHub Actions file under `.github/workflows`. At the
     - **line 8**: Replace [function name] with the function's name (e.g. `tokengen`)
     - **line 17**: Replace [function name] with the function's name (e.g. `tokengen`)
 1. That is all, GitHub Actions is now configured for the function. (after the files are pushed to master that is 😃)
+1. Add a new badge to the readme file. You can get the badge from the Actions page or create from one of the existing ones and change the function name in the label and url.
 
 ### Deployment Status (refresh page to update)
 
