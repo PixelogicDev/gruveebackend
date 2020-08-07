@@ -1,12 +1,7 @@
 <!-- markdownlint-disable -->
 <h1 align="center">Grüvee-Backend</h1>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<<<<<<< dce5e593219618b2ce758974af982c1f20dd9c44
 [![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
->>>>>>> docs: update README.md [skip ci]
-=======
-[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
->>>>>>> docs: update README.md [skip ci]
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 <p align="center">
   <strong>Let's get Grüvee with a new social, collaborative playlist for iPhone and Android</strong>
@@ -174,6 +169,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://edburtnieks.me"><img src="https://avatars0.githubusercontent.com/u/47947787?v=4" width="100px;" alt=""/><br /><sub><b>Edgar Burtnieks</b></sub></a><br /><a href="https://github.com/PixelogicDev/gruveebackend/commits?author=edburtnieks" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/isabellabrookes"><img src="https://avatars1.githubusercontent.com/u/12928252?v=4" width="100px;" alt=""/><br /><sub><b>Isabella Brookes</b></sub></a><br /><a href="https://github.com/PixelogicDev/gruveebackend/commits?author=isabellabrookes" title="Documentation">📖</a> <a href="#maintenance-isabellabrookes" title="Maintenance">🚧</a></td>
     <td align="center"><a href="https://github.com/LeviHarrison"><img src="https://avatars3.githubusercontent.com/u/54278938?v=4" width="100px;" alt=""/><br /><sub><b>Levi Harrison</b></sub></a><br /><a href="https://github.com/PixelogicDev/gruveebackend/commits?author=LeviHarrison" title="Code">💻</a></td>
+    <td align="center"><a href="http://blog.brettski.com"><img src="https://avatars3.githubusercontent.com/u/473633?v=4" width="100px;" alt=""/><br /><sub><b>Brett Slaski</b></sub></a><br /><a href="https://github.com/PixelogicDev/gruveebackend/commits?author=brettski" title="Code">💻</a> <a href="https://github.com/PixelogicDev/gruveebackend/commits?author=brettski" title="Documentation">📖</a></td>
   </tr>
 </table>
 
