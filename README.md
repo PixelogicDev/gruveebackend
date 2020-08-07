@@ -29,6 +29,8 @@
   <a href="README-Support/FAQ.md">FAQ</a>
   <span> · </span>
   <a href="README-Support/CONTRIBUTING.md#-current-contributors">Current Contributors</a>
+  <span> . </span>
+  <a href="README-Support/DEPLOYMENT_STATUS.md">Deployment Status</a>
 </h3>
 <!-- markdownlint-enable -->
 <!-- markdownlint-disable MD013 MD041 -->
@@ -115,7 +117,7 @@ There is a separate Actions trigger file for each function. The Action will trig
 1. The version is extracted from the first line of the version file
 1. A tag is written to the merge's SHA using the version extracted from the file
 1. The config.yml file is written to disk
-1. glcoud action is loaded
+1. gcloud action is loaded
 1. The deploy is run using the `.deployment` file from the function's directory.
 
 ### Required Secrets
@@ -140,23 +142,11 @@ Each function has it's own GitHub Actions file under `.github/workflows`. At the
     - **line 8**: Replace [function name] with the function's name (e.g. `tokengen`)
     - **line 17**: Replace [function name] with the function's name (e.g. `tokengen`)
 1. That is all, GitHub Actions is now configured for the function. (after the files are pushed to master that is 😃)
-1. Add a new badge to the readme file. You can get the badge from the Actions page or create from one of the existing ones and change the function name in the label and url.
+1. Add a new badge to the [Deployment Status](./README-Support/DEPLOYMENT_STATUS.md) page. You can get the badge from the Actions page or create from one of the existing ones by changing the function's name in the label and url.
 
-### Deployment Status (refresh page to update)
+### Deployment Status
 
-![appleauth function push master](https://github.com/PixelogicDev/gruveebackend/workflows/appleauth%20function%20push%20master/badge.svg)  
-![createappledevtoken function push master](https://github.com/PixelogicDev/gruveebackend/workflows/createappledevtoken%20function%20push%20master/badge.svg)  
-![createprovideruser function push master](https://github.com/PixelogicDev/gruveebackend/workflows/createprovideruser%20function%20push%20master/badge.svg)  
-![createsocialplaylist function push master](https://github.com/PixelogicDev/gruveebackend/workflows/createsocialplaylist%20function%20push%20master/badge.svg)  
-![createuser function push master](https://github.com/PixelogicDev/gruveebackend/workflows/createuser%20function%20push%20master/badge.svg)  
-![doesuserdocexist function push master](https://github.com/PixelogicDev/gruveebackend/workflows/doesuserdocexist%20function%20push%20master/badge.svg)  
-![getspotifymedia function push master](https://github.com/PixelogicDev/gruveebackend/workflows/getspotifymedia%20function%20push%20master/badge.svg)  
-![socialplatform function push master](https://github.com/PixelogicDev/gruveebackend/workflows/socialplatform%20function%20push%20master/badge.svg)  
-![socialtokenrefresh function push master](https://github.com/PixelogicDev/gruveebackend/workflows/socialtokenrefresh%20function%20push%20master/badge.svg)  
-![spotifyauth function push master](https://github.com/PixelogicDev/gruveebackend/workflows/spotifyauth%20function%20push%20master/badge.svg)  
-![tokengen function push master](https://github.com/PixelogicDev/gruveebackend/workflows/tokengen%20function%20push%20master/badge.svg)  
-![updatealgolia function push master](https://github.com/PixelogicDev/gruveebackend/workflows/updatealgolia%20function%20push%20master/badge.svg)  
-![usernameavailable function push master](https://github.com/PixelogicDev/gruveebackend/workflows/usernameavailable%20function%20push%20master/badge.svg)
+See [Deployment Status Page](./README-Support/DEPLOYMENT_STATUS.md) to see the GitHub Actions deployment status of all the functions.
 
 # ❓ FAQ
 
