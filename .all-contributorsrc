@@ -42,7 +42,17 @@
       "profile": "https://github.com/LeviHarrison",
       "contributions": [
         "code"
-      ]docs: update .all-contributorsrc [skip ci]
+      ]
+    },
+    {
+      "login": "brettski",
+      "name": "Brett Slaski",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/473633?v=4",
+      "profile": "http://blog.brettski.com",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
