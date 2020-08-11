@@ -13,6 +13,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
+	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -47,6 +48,7 @@ type spotifyPlaylistRequest struct {
 }
 
 var firestoreClient *firestore.Client
+var logger sawmill.Logger
 var httpClient *http.Client
 var hostname string
 
@@ -64,7 +66,7 @@ func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
 	err := initWithEnv()
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		log.Printf("CreateSocialPlaylist [initWithEnv]: %v", err.Error())
+		logger.LogErr(err, "initWithEnv", nil)
 		return
 	}
 
@@ -74,7 +76,7 @@ func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
 	jsonDecodeErr := json.NewDecoder(request.Body).Decode(&socialPlaylistReq)
 	if jsonDecodeErr != nil {
 		http.Error(writer, jsonDecodeErr.Error(), http.StatusInternalServerError)
-		log.Printf("CreateSocialPlaylist [socialPlaylistReq Decoder]: %v", jsonDecodeErr)
+		logger.LogErr(jsonDecodeErr, "socialPlaylistReq Decoder", request)
 		return
 	}
 
@@ -92,7 +94,7 @@ func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
 		socialRefreshTokens, socialRefreshTokenErr = refreshToken(socialPlaylistReq.SocialPlatform)
 		if socialRefreshTokenErr != nil {
 			http.Error(writer, socialRefreshTokenErr.Error(), http.StatusBadRequest)
-			log.Printf("CreateSocialPlaylist [refreshToken]: %v", socialRefreshTokenErr)
+			logger.LogErr(socialRefreshTokenErr, "refreshToken", request)
 			return
 		}
 	} else if socialPlaylistReq.SocialPlatform.PlatformName == "apple" {
@@ -127,7 +129,7 @@ func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
 	createReqErr := createPlaylist(platformEndpoint, socialPlaylistReq.SocialPlatform, socialPlaylistReq.PlaylistName)
 	if createReqErr != nil {
 		http.Error(writer, createReqErr.Error(), http.StatusBadRequest)
-		log.Printf("CreateSocialPlaylist [createPlaylist]: %v", createReqErr.Error())
+		logger.LogErr(createReqErr, "createPlaylist", request)
 		return
 	}
 
@@ -159,8 +161,15 @@ func initWithEnv() error {
 		return fmt.Errorf("SocialTokenRefresh [Init Firestore]: %v", err)
 	}
 
+	// Initialize Sawmill
+	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), "NOT DEV", "CreateSocialPlaylist")
+	if err != nil {
+		log.Printf("CreateSocial Playlist [Init Sawmill]: %v", err)
+	}
+
 	// DR_DinoMight - "Note to self! Welcome, Dr_DinoMight, Otherwise he'll spit his dummy out!" (06.15.20)
 	firestoreClient = client
+	logger = sawmillLogger
 	return nil
 }
 

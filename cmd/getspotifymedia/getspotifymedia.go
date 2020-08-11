@@ -13,6 +13,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
+	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -77,6 +78,7 @@ type spotifyArtist struct {
 
 var httpClient *http.Client
 var firestoreClient *firestore.Client
+var logger sawmill.Logger
 var spotifyAccessTokenURI = "https://accounts.spotify.com/api/token"
 
 // Get Media Endpoints
@@ -104,7 +106,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		log.Printf("GetSpotifyMedia [initWithEnv]: %v", initWithEnvErr)
+		logger.LogErr(initWithEnvErr, "initWithEnv", nil)
 		return
 	}
 
@@ -113,7 +115,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	spotifyReqDecodeErr := json.NewDecoder(request.Body).Decode(&spotifyMediaReq)
 	if spotifyReqDecodeErr != nil {
 		http.Error(writer, spotifyReqDecodeErr.Error(), http.StatusInternalServerError)
-		log.Printf("GetSpotifyMedia [Request Decoder]: %v", spotifyReqDecodeErr)
+		logger.LogErr(spotifyReqDecodeErr, "Request Decoder", request)
 		return
 	}
 
@@ -121,7 +123,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	mediaData, mediaDataErr := getMediaFromFirestore(spotifyMediaReq.MediaID)
 	if mediaDataErr != nil {
 		http.Error(writer, mediaDataErr.Error(), http.StatusInternalServerError)
-		log.Printf("GetSpotifyMedia [getMediaFromFirestore]: %v", mediaDataErr)
+		logger.LogErr(mediaDataErr, "getMediaFromFirestore", request)
 		return
 	}
 
@@ -137,7 +139,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	creds, credErr := getCreds()
 	if credErr != nil {
 		http.Error(writer, credErr.Error(), http.StatusInternalServerError)
-		log.Printf("GetSpotifyMedia [getCreds]: %v", credErr)
+		logger.LogErr(credErr, "getCreds", nil)
 		return
 	}
 
@@ -150,7 +152,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 		firestoreMediaTrackData, firestoreMediaDataErr := getSpotifyTrack(spotifyMediaReq.MediaID, creds.AccessToken)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
-			log.Printf("GetSpotifyMedia [GetSpotifyTrack Switch]: %v", firestoreMediaDataErr)
+			logger.LogErr(firestoreMediaDataErr, "GetSpotifyTrack Switch", request)
 			return
 		}
 
@@ -163,7 +165,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 		firestoreMediaPlaylistData, firestoreMediaDataErr := getSpotifyPlaylist(spotifyMediaReq.MediaID, creds.AccessToken)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
-			log.Printf("GetSpotifyMedia [GetSpotifyPlaylist Switch]: %v", firestoreMediaDataErr)
+			logger.LogErr(firestoreMediaDataErr, "GetSpotifyPlaylist Switch", request)
 			return
 		}
 
@@ -176,7 +178,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 		firestoreMediaAlbumData, firestoreMediaDataErr := getSpotifyAlbum(spotifyMediaReq.MediaID, creds.AccessToken)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
-			log.Printf("GetSpotifyMedia [GetSpotifyPlaylist Switch]: %v", firestoreMediaDataErr)
+			logger.LogErr(firestoreMediaDataErr, "GetSpotifyPlaylist Switch", request)
 			return
 		}
 
@@ -187,6 +189,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	default:
 		http.Error(writer, spotifyMediaReq.MediaType+" media type does not exist", http.StatusInternalServerError)
 		log.Printf("GetSpotifyMedia [MediaTypeSwitch]: %v media type does not exist", spotifyMediaReq.MediaType)
+		logger.LogErr(fmt.Errorf("%v media type does not exist", spotifyMediaReq.MediaType), "MediaTypeSwitch", request)
 		return
 	}
 }
@@ -208,9 +211,16 @@ func initWithEnv() error {
 	// Initialize Firestore
 	client, err := firestore.NewClient(context.Background(), currentProject)
 	if err != nil {
-		return fmt.Errorf("CreateUser [Init Firestore]: %v", err)
+		return fmt.Errorf("GetSpotifyMedia [Init Firestore]: %v", err)
 	}
 
+	// Initialize Sawmill
+	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), "NOT DEV", "GetSpotifyMedia")
+	if err != nil {
+		log.Printf("GetSpotifyMedia [Init Sawmill]: %v", err)
+	}
+
+	logger = sawmillLogger
 	firestoreClient = client
 	return nil
 }

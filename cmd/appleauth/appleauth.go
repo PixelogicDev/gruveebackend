@@ -10,6 +10,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
+	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
 	"github.com/unrolled/render"
 )
 
@@ -19,6 +20,7 @@ type appleDevTokenResp struct {
 }
 
 var firestoreClient *firestore.Client
+var logger sawmill.Logger
 var appleDevToken firebase.FirestoreAppleDevJWT
 var httpClient *http.Client
 var hostname string
@@ -35,7 +37,7 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		log.Printf("[AuthorizeWithApple] [initWithEnv]: %v", initWithEnvErr)
+		logger.LogErr(initWithEnvErr, "initWithEnv", nil)
 		return
 	}
 
@@ -44,14 +46,14 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 	appleDevTokenReq, appleDevTokenReqErr := http.NewRequest("GET", createAppleDevURI, nil)
 	if appleDevTokenReqErr != nil {
 		http.Error(writer, appleDevTokenReqErr.Error(), http.StatusInternalServerError)
-		log.Println(appleDevTokenReqErr.Error())
+		logger.LogErr(appleDevTokenReqErr, "appleDevToken Request", appleDevTokenReq)
 		return
 	}
 
 	appleDevTokenResp, appleDevTokenRespErr := httpClient.Do(appleDevTokenReq)
 	if appleDevTokenRespErr != nil {
 		http.Error(writer, appleDevTokenRespErr.Error(), http.StatusInternalServerError)
-		log.Println(appleDevTokenRespErr.Error())
+		logger.LogErr(appleDevTokenRespErr, "appleDevToken Response", nil)
 		return
 	}
 
@@ -60,7 +62,7 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 	appleDevTokenDecodeErr := json.NewDecoder(appleDevTokenResp.Body).Decode(&appleDevToken)
 	if appleDevTokenDecodeErr != nil {
 		http.Error(writer, appleDevTokenDecodeErr.Error(), http.StatusInternalServerError)
-		log.Printf("AppleAuth [appleDevToken Decoder]: %v", appleDevTokenDecodeErr)
+		logger.LogErr(appleDevTokenDecodeErr, "appleDevToken Decoder", nil)
 		return
 	}
 
@@ -71,7 +73,7 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 	renderErr := render.HTML(writer, http.StatusOK, "auth", appleDevToken)
 	if renderErr != nil {
 		http.Error(writer, renderErr.Error(), http.StatusInternalServerError)
-		log.Printf("[AuthorizeWithApple] [render]: %v", renderErr)
+		logger.LogErr(renderErr, "render", nil)
 		return
 	}
 }
@@ -102,6 +104,13 @@ func initWithEnv() error {
 		return fmt.Errorf("AuthorizeWithApple [Init Firestore]: %v", err)
 	}
 
+	// Initialize Sawmill
+	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), "NOT DEV", "AuthorizeWithApple")
+	if err != nil {
+		log.Printf("AuthorizeWithApple [Init Sawmill]: %v", err)
+	}
+
 	firestoreClient = client
+	logger = sawmillLogger
 	return nil
 }

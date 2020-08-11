@@ -11,9 +11,11 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
+	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
 )
 
 var firestoreClient *firestore.Client
+var logger sawmill.Logger
 
 // JackGamesFTW - "TriHard 7" (03/18/20)
 func init() {
@@ -26,7 +28,7 @@ func CreateSocialPlatform(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		log.Printf("CreateSocialPlatform [initWithEnv]: %v", initWithEnvErr)
+		logger.LogErr(initWithEnvErr, "initWithEnvErr", nil)
 		return
 	}
 
@@ -35,7 +37,7 @@ func CreateSocialPlatform(writer http.ResponseWriter, request *http.Request) {
 	socialPlatformErr := json.NewDecoder(request.Body).Decode(&socialPlatform)
 	if socialPlatformErr != nil {
 		http.Error(writer, socialPlatformErr.Error(), http.StatusInternalServerError)
-		log.Printf("CreateSocialPlatform [socialPlatform Decoder]: %v", socialPlatformErr)
+		logger.LogErr(socialPlatformErr, "socialPlatform Decoder", request)
 		return
 	}
 
@@ -43,7 +45,7 @@ func CreateSocialPlatform(writer http.ResponseWriter, request *http.Request) {
 	_, writeErr := firestoreClient.Collection("social_platforms").Doc(socialPlatform.ID).Set(context.Background(), socialPlatform)
 	if writeErr != nil {
 		http.Error(writer, writeErr.Error(), http.StatusInternalServerError)
-		log.Printf("CreateSocialPlatform [fireStore Set]: %v", writeErr)
+		logger.LogErr(writeErr, "fireStore Set", nil)
 		return
 	}
 
@@ -70,6 +72,13 @@ func initWithEnv() error {
 		return fmt.Errorf("SocialTokenRefresh [Init Firestore]: %v", err)
 	}
 
+	// Initialize Sawmill
+	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), "NOT DEV", "CreateSocialPlatform")
+	if err != nil {
+		log.Printf("CreateSocialPlatform [Init Sawmill]: %v", err)
+	}
+
+	logger = sawmillLogger
 	firestoreClient = client
 	return nil
 }
