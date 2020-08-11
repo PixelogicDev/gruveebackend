@@ -41,6 +41,7 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Get Apple Dev Token
+	// DR_DinoMight: Dammmmn, Apple Really?!?!?! (08/11/20)
 	appleDevToken, appleDevTokenErr := firebase.GetAppleDeveloperToken()
 	if appleDevTokenErr != nil {
 		http.Error(writer, appleDevTokenErr.Error(), http.StatusInternalServerError)

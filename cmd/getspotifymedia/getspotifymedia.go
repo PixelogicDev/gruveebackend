@@ -124,7 +124,6 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Get Spotify access token (currently getting access token of user)
-	// TODO: Really at this point we want to makes these requests without getting a user access token
 	creds, credErr := getCreds()
 	if credErr != nil {
 		http.Error(writer, credErr.Error(), http.StatusInternalServerError)
@@ -140,21 +139,21 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	// Setup and call Spotify search
 	switch spotifyMediaReq.MediaType {
 	case "track":
-		firestoreMediaData, firestoreMediaDataErr = getSpotifyTrack(spotifyMediaReq.MediaID, creds.AccessToken)
+		firestoreMediaData, firestoreMediaDataErr = getSpotifyTrack(spotifyMediaReq.MediaID, creds.Token)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
 			logger.LogErr("GetSpotifyAlbum Switch", firestoreMediaDataErr, request)
 			return
 		}
 	case "playlist":
-		firestoreMediaData, firestoreMediaDataErr = getSpotifyPlaylist(spotifyMediaReq.MediaID, creds.AccessToken)
+		firestoreMediaData, firestoreMediaDataErr = getSpotifyPlaylist(spotifyMediaReq.MediaID, creds.Token)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
 			logger.LogErr("GetSpotifyAlbum Switch", firestoreMediaDataErr, request)
 			return
 		}
 	case "album":
-		firestoreMediaData, firestoreMediaDataErr = getSpotifyAlbum(spotifyMediaReq.MediaID, creds.AccessToken)
+		firestoreMediaData, firestoreMediaDataErr = getSpotifyAlbum(spotifyMediaReq.MediaID, creds.Token)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
 			logger.LogErr("GetSpotifyAlbum Switch", firestoreMediaDataErr, request)

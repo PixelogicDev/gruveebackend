@@ -65,6 +65,14 @@ type FirestoreAppleDevJWT struct {
 	Token     string `json:"token"`
 }
 
+// FirestoreSpotifyAuthToken represents the auth token object needed for calling Spotify APIs
+type FirestoreSpotifyAuthToken struct {
+	ExpiredAt string `json:"expiredAt"`
+	ExpiresIn int    `json:"expiresIn"`
+	IssuedAt  string `json:"issuedAt"`
+	Token     string `json:"token"`
+}
+
 // FirestorePlaylist represents the data for a playlist store in Firestore
 type FirestorePlaylist struct {
 	ID        string                   `firestore:"id" json:"id"`
