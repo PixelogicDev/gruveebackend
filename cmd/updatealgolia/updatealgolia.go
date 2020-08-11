@@ -9,7 +9,6 @@ import (
 	"cloud.google.com/go/functions/metadata"
 	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
-	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
 )
 
 // algoliaUser implements a partial amount of data from firestoreUser to use for indexing
@@ -54,19 +53,13 @@ func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
 	// Init our client
 	client := search.NewClient(algoliaAppID, algoliaSecretID)
 	index := client.InitIndex(algoliaIndexName)
-	
+
 	var currentProject string
 
 	if os.Getenv("ENVIRONMENT") == "DEV" {
 		currentProject = os.Getenv("FIREBASE_PROJECTID_DEV")
 	} else if os.Getenv("ENVIRONMENT") == "PROD" {
 		currentProject = os.Getenv("FIREBASE_PROJECTID_PROD")
-	}
-
-	// Initialize Sawmill
-	logger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CREDENTIALS"), os.Getenv("ENVIRONMENT"), "UpdateAlgolia")
-	if err != nil {
-		log.Printf("UpdateAlgolia [Init Sawmill]: %v", err)
 	}
 
 	meta, err := metadata.FromContext(ctx)
