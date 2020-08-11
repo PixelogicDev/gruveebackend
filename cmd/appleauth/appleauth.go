@@ -105,7 +105,7 @@ func initWithEnv() error {
 	}
 
 	// Initialize Sawmill
-	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), "NOT DEV", "AuthorizeWithApple")
+	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), os.Getenv("ENVIRONMENT"), "AuthorizeWithApple")
 	if err != nil {
 		log.Printf("AuthorizeWithApple [Init Sawmill]: %v", err)
 	}

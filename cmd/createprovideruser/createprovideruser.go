@@ -87,7 +87,7 @@ func initWithEnv() error {
 	}
 
 	// Initialize Sawmill
-	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), "NOT DEV", "CreateProviderUser")
+	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), os.Getenv("ENVIRONMENT"), "CreateProviderUser")
 	if err != nil {
 		log.Printf("CreateAppleDevToken [Init Sawmill]: %v", err)
 	}

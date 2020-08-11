@@ -54,8 +54,6 @@ func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
 	client := search.NewClient(algoliaAppID, algoliaSecretID)
 	index := client.InitIndex(algoliaIndexName)
 
-	var currentProject string
-
 	if os.Getenv("ENVIRONMENT") == "DEV" {
 		currentProject = os.Getenv("FIREBASE_PROJECTID_DEV")
 	} else if os.Getenv("ENVIRONMENT") == "PROD" {
@@ -64,7 +62,6 @@ func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
 
 	meta, err := metadata.FromContext(ctx)
 	if err != nil {
-		logger.LogErr(err, "metadata.FromContext", nil)
 		return fmt.Errorf("metadata.FromContext: %v", err)
 	}
 
@@ -85,7 +82,7 @@ func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
 	log.Printf("[UpdateAlgolia] SaveObject Res: %v", res)
 
 	if err != nil {
-		logger.LogErr(err, "index.SaveObject", nil)
+		log.Printf("UpdateAlgolia [index.SaveObject]: %v", err)
 		return fmt.Errorf(err.Error())
 	}
 

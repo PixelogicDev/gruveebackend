@@ -88,7 +88,7 @@ func initWithEnv() error {
 	}
 
 	// Initialize Sawmill
-	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), "NOT DEV", "DoesUserDocExist")
+	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), os.Getenv("ENVIRONMENT"), "DoesUserDocExist")
 	if err != nil {
 		log.Printf("DoesUserDocExist [Init Sawmill]: %v", err)
 	}

@@ -162,7 +162,7 @@ func initWithEnv() error {
 	}
 
 	// Initialize Sawmill
-	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), "NOT DEV", "CreateSocialPlaylist")
+	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), os.Getenv("ENVIRONMENT"), "CreateSocialPlaylist")
 	if err != nil {
 		log.Printf("CreateSocial Playlist [Init Sawmill]: %v", err)
 	}
