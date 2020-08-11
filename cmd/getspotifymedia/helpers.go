@@ -10,10 +10,13 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // initWithEnv takes our yaml env variables and maps them properly.
@@ -42,14 +45,73 @@ func initWithEnv() error {
 }
 
 // getApiToken checks to see if we have an APIToken for client credential calls
-func getCreds() (*social.SpotifyClientCredsAuthResp, error) {
+func getCreds() (*firebase.FirestoreSpotifyAuthToken, error) {
 	// Check to see if we have env variables
 	if os.Getenv("SPOTIFY_CLIENTID") == "" || os.Getenv("SPOTIFY_SECRET") == "" {
 		log.Fatalln("GetSpotifyMedia [Check Env Props]: PROPS NOT HERE.")
 		return nil, fmt.Errorf("getSpotifyMedia [Check Env Props]: PROPS NOT HERE")
 	}
 
-	// Generate authStr for requests
+	// Check for Auth token in DB
+	authToken, authTokenErr := fetchToken()
+	if authTokenErr != nil {
+		return nil, authTokenErr
+	}
+
+	// Check to see if auth token exists && needs to be refreshed
+	if authToken != nil {
+		log.Println("Checking to see if token needs to be refreshed")
+
+		latestCreds, refreshAuthTokenErr := refreshAuthToken(*authToken)
+		if refreshAuthTokenErr != nil {
+			return nil, refreshAuthTokenErr
+		}
+
+		return latestCreds, nil
+	}
+
+	// If we are here, no auth token was found
+	newAuthToken, newAuthTokenErr := generateAuthToken()
+	if newAuthTokenErr != nil {
+		return nil, newAuthTokenErr
+	}
+
+	// Store new token in DB
+	writeSpotifyAuthErr := writeSpotifyAuthtoken(*newAuthToken)
+	if writeSpotifyAuthErr != nil {
+		return nil, writeSpotifyAuthErr
+	}
+
+	// TheYagich01: "Gejnerated" (08/11/20)
+	log.Println("Generated auth token")
+	return newAuthToken, nil
+}
+
+// fetchToken will grab the Apple Developer Token from DB
+func fetchToken() (*firebase.FirestoreSpotifyAuthToken, error) {
+	// Go to Firebase and see if spotifyAuthToken exists
+	snapshot, snapshotErr := firestoreClient.Collection("internal_tokens").Doc("spotifyAuthToken").Get(context.Background())
+	if status.Code(snapshotErr) == codes.NotFound {
+		log.Println("[GetSpotifyMedia] SpotifyAuthToken not found in DB. Need to create.")
+		return nil, nil
+	}
+
+	if snapshotErr != nil {
+		return nil, fmt.Errorf(snapshotErr.Error())
+	}
+
+	var spotifyAuthToken firebase.FirestoreSpotifyAuthToken
+	dataToErr := snapshot.DataTo(&spotifyAuthToken)
+	if dataToErr != nil {
+		return nil, fmt.Errorf(dataToErr.Error())
+	}
+
+	return &spotifyAuthToken, nil
+}
+
+// generateAuthToken will call Spotify creds service to get authToken for making requests
+func generateAuthToken() (*firebase.FirestoreSpotifyAuthToken, error) {
+	// If not there generate new one and store
 	authStr := os.Getenv("SPOTIFY_CLIENTID") + ":" + os.Getenv("SPOTIFY_SECRET")
 
 	// Create Request
@@ -69,36 +131,80 @@ func getCreds() (*social.SpotifyClientCredsAuthResp, error) {
 		return nil, fmt.Errorf(accessTokenRespErr.Error())
 	}
 
-	// Decode the token to send back
+	// Decode the token
 	var spotifyClientCredsAuthResp social.SpotifyClientCredsAuthResp
 	refreshTokenDecodeErr := json.NewDecoder(accessTokenResp.Body).Decode(&spotifyClientCredsAuthResp)
 	if refreshTokenDecodeErr != nil {
 		return nil, fmt.Errorf(refreshTokenDecodeErr.Error())
 	}
 
-	return &spotifyClientCredsAuthResp, nil
-
-	// TODO: This block of code checked for refresh of token
-	// At this point we are getting a new token every time
-	/* spotifyCredsRef := firestoreClient.Doc("platform_credentials/spotify")
-	if spotifyCredsRef == nil {
-		return nil, fmt.Errorf("spotify credentials do not exist")
+	// Generate authToken for DB
+	issuedAt := time.Now()
+	expiresAt := issuedAt.Add(time.Second * time.Duration(spotifyClientCredsAuthResp.ExpiresIn))
+	authToken := firebase.FirestoreSpotifyAuthToken{
+		IssuedAt:  issuedAt.Format(time.RFC3339),
+		ExpiresIn: spotifyClientCredsAuthResp.ExpiresIn,
+		ExpiredAt: expiresAt.Format(time.RFC3339),
+		Token:     spotifyClientCredsAuthResp.AccessToken,
 	}
 
-	// Grab token see if it is expired
-	spotifyCredSnap, spotifyCredSnapErr := spotifyCredsRef.Get(context.Background())
-	if status.Code(spotifyCredSnapErr) == codes.NotFound {
-		return nil, fmt.Errorf("Spotify cred was not found")
+	return &authToken, nil
+}
+
+// refreshAuthToken will check to see if Spotify AuthToken needs to be refreshed
+func refreshAuthToken(authToken firebase.FirestoreSpotifyAuthToken) (*firebase.FirestoreSpotifyAuthToken, error) {
+	// Get current time
+	var currentTime = time.Now()
+
+	fmt.Printf("Expires In: %d seconds\n", authToken.ExpiresIn)
+	fmt.Printf("Expires At: %s seconds\n", authToken.ExpiredAt)
+
+	expiredAtTime, expiredAtTimeErr := time.Parse(time.RFC3339, authToken.ExpiredAt)
+	if expiredAtTimeErr != nil {
+		return nil, fmt.Errorf(expiredAtTimeErr.Error())
 	}
 
-	var spotifyCreds platformCredentials
-	dataErr := spotifyCredSnap.DataTo(&spotifyCreds)
-	if dataErr != nil {
-		return nil, fmt.Errorf("doesUserExist: %v", dataErr)
+	if currentTime.After(expiredAtTime) {
+		fmt.Println("spotifyAuthToken is expired. Refreshing...")
+		refreshToken, tokenActionErr := generateAuthToken()
+		if tokenActionErr != nil {
+			return nil, fmt.Errorf(tokenActionErr.Error())
+		}
+
+		// Set new token data in database
+		writeTokenErr := writeSpotifyAuthtoken(*refreshToken)
+		if writeTokenErr != nil {
+			return nil, fmt.Errorf(writeTokenErr.Error())
+		}
+
+		return refreshToken, nil
 	}
 
-	log.Println(spotifyCreds)
-	return &spotifyCreds, nil */
+	// Nothing is expired just return original token
+	return &authToken, nil
+}
+
+// writeSpotifyAuthtoken will take spotifyAuthToken and write it to the internal_tokens collection
+func writeSpotifyAuthtoken(authToken firebase.FirestoreSpotifyAuthToken) error {
+	spotifyAuthTokenDoc := firestoreClient.Collection("internal_tokens").Doc("spotifyAuthToken")
+	if spotifyAuthTokenDoc == nil {
+		return fmt.Errorf("spotifyAuthTokenDoc could not be found")
+	}
+
+	// MergeAll doesn't allow custom Go types so we need to create a map
+	authMap := map[string]interface{}{
+		"expiredAt": authToken.ExpiredAt,
+		"expiresIn": authToken.ExpiresIn,
+		"issuedAt":  authToken.IssuedAt,
+		"token":     authToken.Token,
+	}
+
+	_, writeErr := spotifyAuthTokenDoc.Set(context.Background(), authMap, firestore.MergeAll)
+	if writeErr != nil {
+		return fmt.Errorf(writeErr.Error())
+	}
+
+	return nil
 }
 
 // getSpotifyTrack calls Spotify GET track API and converts to Golang Type
@@ -156,6 +262,7 @@ func getSpotifyTrack(trackID string, accessToken string) (*firebase.FirestoreMed
 	return &firestoreMedia, nil
 }
 
+// getSpotifyAlbum calls Spotify API to get playlist metadata
 func getSpotifyPlaylist(playlistID string, accessToken string) (*firebase.FirestoreMedia, error) {
 	// Generate URI
 	spotifyGetURI := spotifyGetPlaylistURI + "/" + playlistID
@@ -210,6 +317,7 @@ func getSpotifyPlaylist(playlistID string, accessToken string) (*firebase.Firest
 	return &firestoreMedia, nil
 }
 
+// getSpotifyAlbum calls Spotify API to get album metadata
 func getSpotifyAlbum(albumID string, accessToken string) (*firebase.FirestoreMedia, error) {
 	// Generate URI
 	spotifyGetURI := spotifyGetAlbumURI + "/" + albumID
@@ -264,7 +372,7 @@ func getSpotifyAlbum(albumID string, accessToken string) (*firebase.FirestoreMed
 	return &firestoreMedia, nil
 }
 
-// GenerateArtistsString takes in a list of artists and returns a comma separated string
+// generateArtistsString takes in a list of artists and returns a comma separated string
 func generateArtistsString(artists []spotifyArtist) string {
 	var creators = []string{}
 
@@ -274,46 +382,3 @@ func generateArtistsString(artists []spotifyArtist) string {
 
 	return strings.Join(creators, ", ")
 }
-
-// refreshToken will check for an expired token and call Spotify refresh if needed
-/* func refreshToken(creds platformCredentials) (*firebase.APIToken, error) {
-	// Get current time
-	var currentTime = time.Now()
-
-	fmt.Printf("Expires In: %d seconds\n", creds.APIToken.ExpiresIn)
-	fmt.Printf("Expired At: %s\n", creds.APIToken.ExpiredAt)
-	fmt.Printf("Created At: %s\n", creds.APIToken.CreatedAt)
-
-	expiredAtTime, expiredAtTimeErr := time.Parse(time.RFC3339, creds.APIToken.ExpiredAt)
-	if expiredAtTimeErr != nil {
-		return nil, fmt.Errorf(expiredAtTimeErr.Error())
-	}
-
-	if currentTime.After(expiredAtTime) {
-		// Call API refresh
-		fmt.Printf("Access token is expired. Calling Refresh...\n")
-		refreshToken, tokenActionErr := refreshTokenAction(platform)
-		if tokenActionErr != nil {
-			return nil, fmt.Errorf(tokenActionErr.Error())
-		}
-
-		var expiredAtStr = time.Now().Add(time.Second * time.Duration(refreshToken.ExpiresIn))
-		var refreshedAPIToken = firebase.APIToken{
-			CreatedAt: time.Now().Format(time.RFC3339),
-			ExpiredAt: expiredAtStr.Format(time.RFC3339),
-			ExpiresIn: refreshToken.ExpiresIn,
-			Token:     refreshToken.AccessToken,
-		}
-
-		// Set new token data in database
-		writeTokenErr := writeToken(platform.ID, refreshedAPIToken)
-		if writeTokenErr != nil {
-			fmt.Errorf(writeTokenErr.Error())
-		}
-
-		return &refreshedAPIToken, nil
-	}
-
-	// Nothing is expired just return original token
-	return nil, nil
-} */
