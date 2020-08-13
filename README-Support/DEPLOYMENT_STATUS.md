@@ -1,6 +1,6 @@
 # Deployment Status
 
-## Grüvee Functions GitHub Actions deployment status
+## Grüvee Functions GitHub Actions Deployment Status
 
 ![appleauth function push master](https://github.com/PixelogicDev/gruveebackend/workflows/appleauth%20function%20push%20master/badge.svg)  
 ![createappledevtoken function push master](https://github.com/PixelogicDev/gruveebackend/workflows/createappledevtoken%20function%20push%20master/badge.svg)  
