@@ -40,6 +40,9 @@ Grüvee is an open source social, collaborative playlist made by the [PixelogicD
 This is currently the Backend portion of the platform. We are currently building a Mobile client that can be found [here](https://github.com/PixelogicDev/Gruvee-Mobile)!
 
 If you are interested in becoming a member of the team check out the **[PixelogicDev Twitch](https://twitch.tv/pixelogicdev)**, the **[PixelogicDev Discord](https://discord.gg/ubgX6T8)** and **[contribute](#-how-to-contribute)** to this awesome project!
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 ---
 
@@ -51,7 +54,7 @@ If you are interested in becoming a member of the team check out the **[Pixelogi
 | -------- | :----------------------------------------------------------------------------------------- | :------------------------------------------------------------- |
 | IDE      | [Visual Studio Code](https://code.visualstudio.com/)                                       | You can use your preferred IDE but this is the one we like 🙃   |
 | Backend  | [Firebase (Repo)](https://github.com/PixelogicDev/Gruvee-Backend)                          | Serverless Functions in Firebase using GoLang                  |
-| Frontend | [React Native 0.60](<[LinkToReactNative0.60](https://www.npmjs.com/package/react-native)>) | Utilising Javascript to develop this cross platform mobile app |
+| Frontend | [React Native 0.60](<[LinkToReactNative0.60](https://www.npmjs.com/package/react-native)>) | Utilizing Javascript to develop this cross platform mobile app |
 
 > ALL of these sections are open for contributions and are highly encouraged!
 
@@ -92,29 +95,27 @@ When you want to run all the functions locally, all you need to do is run `scrip
 
 This script does the following:
 
-```text
-Adds all the replace lines in all the go mod files
-Builds and runs the `main.go` file in the root
-```
+- Adds all the replace lines in all the go mod files
+- Builds and runs the `main.go` file in the root
 
 ## Auto Tagging and Deploy with Github Actions
 
 GitHub [Actions](https://docs.github.com/en/actions) is used for tagging functions when updated and pushing them to gcp. This is an automated process which has the following requirements:
 
 - Any change made in a function's folder structure (e.g. `/cmd/appleauth/**`) must be accompanied with a new version (maintained in `.version` file).
-  - If a change is made to a function and the same tag is used again, the deploy will fail!
+  - If a change is made to a function and the same tag is used again, the deploy will **fail**!
 - All code destined for `master` should/must go through a pull request (pr). No pushes should go directly to master, let's keep good habits!
 - GitHub Actions yaml files are kept at `.github/workflows/`
 - There is **one** Actions yaml file per **function** per **trigger**. This allows multiple functions to be updated in a push and each will be tagged and deployed as needed.
   - There is currently only a 'push to master' trigger file. Other useful triggers are on PR, which can run linting, tests, and even pushed to staging, vetting the code being staged for production deployment.
-- The tag written is taken from the first line of the `.version` file. The function used splits on the colon, uses the first half using everything from the `v` forward.
+- The tag written is taken from the first line of the `.version` file (e.g. - v1.0.0-beta.3: Tweaking...). The function used splits on the colon, uses the first half grabbing everything from the `v` forward.
 
 ### Basic Workflow
 
 There is a separate Actions trigger file for each function. The Action will trigger whenever there is a change in the functions directory (e.g. `cmd/tokengen/*`). The following occurs:
 
 1. The code is checked out
-1. The version is extracted from the first line of the version file
+1. The version is extracted from the first line of the `.version` file
 1. A tag is written to the merge's SHA using the version extracted from the file
 1. The config.yml file is written to disk
 1. gcloud action is loaded
@@ -124,16 +125,16 @@ There is a separate Actions trigger file for each function. The Action will trig
 
 The Actions configuration requires four [secrets](https://github.com/PixelogicDev/gruveebackend/settings/secrets) to be configured in GitHub repo:
 
-- **PROD_CONFIG_YAML** The configuration file used by GCP for the function's variables
-- **PROD_CONFIG_YAML_64** A base64 encoded version of `PROD_CONFIG_YAML`
-- **PROD_CLOUD_AUTH** GCP service account which can deploy to the GCP project's function. `JSON` format with no carriage returns or line feeds
-- **PROD_GCP_PROJECT_ID** The GCP project id being deployed to
+- **PROD_CONFIG_YAML** --  The configuration file used by GCP for the function's variables
+- **PROD_CONFIG_YAML_64** -- A base64 encoded version of `PROD_CONFIG_YAML`
+- **PROD_CLOUD_AUTH** -- GCP service account which can deploy to the GCP project's function. `JSON` format with no carriage returns or line feeds
+- **PROD_GCP_PROJECT_ID** -- The GCP project id being deployed to
 
 You may be wondering why there are both the yaml config file and the yaml config file base64 encoded. The base64 version is used to write the file used by the deploy process. The regular yaml version is used to redact all the values from the log. It's a work-around to ensure values aren't leaked in the logs. IT IS VERY IMPORTANT TO UPDATE BOTH OF THESE FILES WHENEVER THERE IS A CONFIGURATION CHANGE!
 
 ### Setting up a new function for tagging and deploy on push to master
 
-Each function has it's own GitHub Actions file under `.github/workflows`. At the time of writing all of these files are triggered on **push master**. The steps for creating a file for a function is _very_ easy. There are only **three** lines to update (1, 8, 17).
+Each function has it's own GitHub Actions file under `.github/workflows`. At the time of writing all of these files are triggered on **push master**. The steps for creating a file for a function is _very_ straight forward. There are only **three** lines to update (1, 8, 17).
 
 1. Copy `template_pushMaster.yml` file from the workflows template directory, `.github/workflow_templates/`, into the workflows directory, `.github/workflows`.
 1. Rename the file copied with the function's name. E.g. function `tokengen` would be renamed: `tokengen_pushMaster.yml`
