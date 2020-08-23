@@ -1,0 +1,75 @@
+name: spotifyauth function push master
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'cmd/spotifyauth/**'
+
+jobs:
+  tag:
+    name: Tag Master then Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Function Vars
+        run: |
+          echo "::set-env name=FUNC_PATH::cmd/spotifyauth"
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Get Version
+        run: |
+          echo "shell is $SHELL"
+          cd $FUNC_PATH
+          pwd
+          # parse version out of .version file
+          VLINE=$(head -n 1 .version)
+          echo "Line retrieved from .version: $VLINE"
+          VERSION=$(echo "$VLINE" | awk -F':' '{print $1}' | egrep -o "v.*")
+          echo "The found version is $VERSION"
+          if [ -z $VERSION ]; then exit 99; fi
+          echo "::set-env name=NEWVER::$VERSION"
+      - name: Dump vars
+        run: |
+          echo "FUNC_PATH: $FUNC_PATH"
+          echo "NEWVER: $NEWVER"
+          echo "github ref: $GITHUB_REF"
+          echo "merge sha $GITHUB_SHA"
+      - name: Tag Commit
+        run: |
+          NEW_TAG="refs/tags/$FUNC_PATH/$NEWVER"
+          echo "creating tag $NEW_TAG on sha: $GITHUB_SHA"
+          STATUS_CODE=$(curl -o ./response.txt -w "%{http_code}" -X POST --url https://api.github.com/repos/PixelogicDev/gruveebackend/git/refs \
+          -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+          -H 'content-type: application/json' \
+          -d "{ \"ref\": \"$NEW_TAG\", \"sha\": \"$GITHUB_SHA\" }")
+          if [ "$?" != "0" ]; then echo "error running curl"; exit 19; fi
+          if [ "$STATUS_CODE" == "422" ]; then echo "Status 422, probably duplicate tag!!"; exit 22; fi
+          if [ "$STATUS_CODE" != "201" ]; then echo "non-201 Create, status: $STATUS_CODE"; exit 201; fi
+          echo "response of request:"
+          cat ./response.txt
+      - name: Deploy prep
+        run: |
+          pwd
+          echo -n $CONFIG_YAML_64 | base64 -d > ./internal/config.yaml
+          echo "config.yaml character count: $(wc -c < ./internal/config.yaml)"
+        env:
+          CONFIG_YAML: ${{ secrets.PROD_CONFIG_YAML }}
+          CONFIG_YAML_64: ${{ secrets.PROD_CONFIG_YAML_64 }}
+      - name: Setup gcloud Actions
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          service_account_key: ${{ secrets.PROD_GCLOUD_AUTH }}
+          project_id: ${{ secrets.PROD_GCP_PROJECT_ID }}
+      - name: Run GCP Deploy Function
+        run: |
+          cd $FUNC_PATH
+          pwd
+          ls -lasi ../../internal
+          sh ./.deployment
+        env:
+          CLOUDSDK_CORE_PROJECT: ${{ secrets.PROD_GCP_PROJECT_ID }}
+
+        
