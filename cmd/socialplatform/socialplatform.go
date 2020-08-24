@@ -28,7 +28,7 @@ func CreateSocialPlatform(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(initWithEnvErr, "initWithEnvErr", nil)
+		logger.LogErr("InitWithEnvErr", initWithEnvErr, nil)
 		return
 	}
 
@@ -37,7 +37,7 @@ func CreateSocialPlatform(writer http.ResponseWriter, request *http.Request) {
 	socialPlatformErr := json.NewDecoder(request.Body).Decode(&socialPlatform)
 	if socialPlatformErr != nil {
 		http.Error(writer, socialPlatformErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(socialPlatformErr, "socialPlatform Decoder", request)
+		logger.LogErr("SocialPlatform Decoder", socialPlatformErr, request)
 		return
 	}
 
@@ -45,7 +45,7 @@ func CreateSocialPlatform(writer http.ResponseWriter, request *http.Request) {
 	_, writeErr := firestoreClient.Collection("social_platforms").Doc(socialPlatform.ID).Set(context.Background(), socialPlatform)
 	if writeErr != nil {
 		http.Error(writer, writeErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(writeErr, "fireStore Set", nil)
+		logger.LogErr("FireStore Set", writeErr, nil)
 		return
 	}
 
@@ -78,7 +78,7 @@ func initWithEnv() error {
 		log.Printf("CreateSocialPlatform [Init Sawmill]: %v", err)
 	}
 
-	logger = sawmillLogger
 	firestoreClient = client
+	logger = sawmillLogger
 	return nil
 }

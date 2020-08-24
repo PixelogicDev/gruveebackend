@@ -66,7 +66,7 @@ func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
 	err := initWithEnv()
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		logger.LogErr(err, "initWithEnv", nil)
+		logger.LogErr("InitWithEnv", err, nil)
 		return
 	}
 
@@ -76,7 +76,7 @@ func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
 	jsonDecodeErr := json.NewDecoder(request.Body).Decode(&socialPlaylistReq)
 	if jsonDecodeErr != nil {
 		http.Error(writer, jsonDecodeErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(jsonDecodeErr, "socialPlaylistReq Decoder", request)
+		logger.LogErr("SocialPlaylistReq Decoder", jsonDecodeErr, request)
 		return
 	}
 
@@ -94,7 +94,7 @@ func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
 		socialRefreshTokens, socialRefreshTokenErr = refreshToken(socialPlaylistReq.SocialPlatform)
 		if socialRefreshTokenErr != nil {
 			http.Error(writer, socialRefreshTokenErr.Error(), http.StatusBadRequest)
-			logger.LogErr(socialRefreshTokenErr, "refreshToken", request)
+			logger.LogErr("RefreshToken", socialRefreshTokenErr, request)
 			return
 		}
 	} else if socialPlaylistReq.SocialPlatform.PlatformName == "apple" {
@@ -129,7 +129,7 @@ func CreateSocialPlaylist(writer http.ResponseWriter, request *http.Request) {
 	createReqErr := createPlaylist(platformEndpoint, socialPlaylistReq.SocialPlatform, socialPlaylistReq.PlaylistName)
 	if createReqErr != nil {
 		http.Error(writer, createReqErr.Error(), http.StatusBadRequest)
-		logger.LogErr(createReqErr, "createPlaylist", request)
+		logger.LogErr("CreatePlaylist", createReqErr, request)
 		return
 	}
 

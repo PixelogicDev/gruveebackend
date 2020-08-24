@@ -32,7 +32,7 @@ func CreateProviderUser(writer http.ResponseWriter, request *http.Request) {
 	initErr := initWithEnv()
 	if initErr != nil {
 		http.Error(writer, initErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(initErr, "initWithEnv", nil)
+		logger.LogErr("InitWithEnv", initErr, nil)
 		return
 	}
 
@@ -42,7 +42,7 @@ func CreateProviderUser(writer http.ResponseWriter, request *http.Request) {
 	reqDataErr := json.NewDecoder(request.Body).Decode(&reqData)
 	if reqDataErr != nil {
 		http.Error(writer, reqDataErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(reqDataErr, "reqData Decoder", request)
+		logger.LogErr("ReqData Decoder", reqDataErr, request)
 		return
 	}
 
@@ -59,7 +59,7 @@ func CreateProviderUser(writer http.ResponseWriter, request *http.Request) {
 	_, writeErr := firebaseProviderDocRef.Set(context.Background(), providerUserData)
 	if writeErr != nil {
 		http.Error(writer, writeErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(writeErr, "fireStore Set", request)
+		logger.LogErr("FireStore Set", writeErr, request)
 		return
 	}
 

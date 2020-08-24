@@ -37,7 +37,7 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(initWithEnvErr, "initWithEnv", nil)
+		logger.LogErr("InitWithEnv", initWithEnvErr, nil)
 		return
 	}
 
@@ -46,14 +46,14 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 	appleDevTokenReq, appleDevTokenReqErr := http.NewRequest("GET", createAppleDevURI, nil)
 	if appleDevTokenReqErr != nil {
 		http.Error(writer, appleDevTokenReqErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(appleDevTokenReqErr, "appleDevToken Request", appleDevTokenReq)
+		logger.LogErr("AppleDevToken Request", appleDevTokenReqErr, appleDevTokenReq)
 		return
 	}
 
 	appleDevTokenResp, appleDevTokenRespErr := httpClient.Do(appleDevTokenReq)
 	if appleDevTokenRespErr != nil {
 		http.Error(writer, appleDevTokenRespErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(appleDevTokenRespErr, "appleDevToken Response", nil)
+		logger.LogErr("AppleDevToken Response", appleDevTokenRespErr, nil)
 		return
 	}
 
@@ -62,7 +62,7 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 	appleDevTokenDecodeErr := json.NewDecoder(appleDevTokenResp.Body).Decode(&appleDevToken)
 	if appleDevTokenDecodeErr != nil {
 		http.Error(writer, appleDevTokenDecodeErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(appleDevTokenDecodeErr, "appleDevToken Decoder", nil)
+		logger.LogErr("AppleDevToken Decoder", appleDevTokenDecodeErr, nil)
 		return
 	}
 
@@ -73,7 +73,7 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 	renderErr := render.HTML(writer, http.StatusOK, "auth", appleDevToken)
 	if renderErr != nil {
 		http.Error(writer, renderErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(renderErr, "render", nil)
+		logger.LogErr("Render", renderErr, nil)
 		return
 	}
 }

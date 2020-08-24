@@ -27,7 +27,7 @@ func CreateUser(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(initWithEnvErr, "initWithEnv", nil)
+		logger.LogErr("InitWithEnv", initWithEnvErr, nil)
 		return
 	}
 
@@ -36,7 +36,7 @@ func CreateUser(writer http.ResponseWriter, request *http.Request) {
 	jsonDecodeErr := json.NewDecoder(request.Body).Decode(&createUserReq)
 	if jsonDecodeErr != nil {
 		http.Error(writer, jsonDecodeErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(jsonDecodeErr, "social.CreateUserReq Decoder", request)
+		logger.LogErr("CreateUserReq Decoder", jsonDecodeErr, request)
 		return
 	}
 
@@ -44,7 +44,7 @@ func CreateUser(writer http.ResponseWriter, request *http.Request) {
 	socialPlatDocRef := firestoreClient.Doc(createUserReq.SocialPlatformPath)
 	if socialPlatDocRef == nil {
 		http.Error(writer, jsonDecodeErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(jsonDecodeErr, "social.CreateUserReq Decoder", request)
+		logger.LogErr("CreateUserReq Decoder", jsonDecodeErr, request)
 		return
 	}
 
@@ -64,7 +64,7 @@ func CreateUser(writer http.ResponseWriter, request *http.Request) {
 	_, writeErr := firestoreClient.Collection("users").Doc(firestoreUser.ID).Set(context.Background(), firestoreUser)
 	if writeErr != nil {
 		http.Error(writer, writeErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(writeErr, "fireStore Set", nil)
+		logger.LogErr("FireStore Set", writeErr, nil)
 		return
 	}
 

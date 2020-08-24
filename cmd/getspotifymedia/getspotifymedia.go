@@ -106,7 +106,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(initWithEnvErr, "initWithEnv", nil)
+		logger.LogErr("InitWithEnv", initWithEnvErr, nil)
 		return
 	}
 
@@ -115,7 +115,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	spotifyReqDecodeErr := json.NewDecoder(request.Body).Decode(&spotifyMediaReq)
 	if spotifyReqDecodeErr != nil {
 		http.Error(writer, spotifyReqDecodeErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(spotifyReqDecodeErr, "Request Decoder", request)
+		logger.LogErr("Request Decoder", spotifyReqDecodeErr, request)
 		return
 	}
 
@@ -123,7 +123,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	mediaData, mediaDataErr := getMediaFromFirestore(spotifyMediaReq.MediaID)
 	if mediaDataErr != nil {
 		http.Error(writer, mediaDataErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(mediaDataErr, "getMediaFromFirestore", request)
+		logger.LogErr("GetMediaFromFirestore", mediaDataErr, request)
 		return
 	}
 
@@ -139,7 +139,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	creds, credErr := getCreds()
 	if credErr != nil {
 		http.Error(writer, credErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(credErr, "getCreds", nil)
+		logger.LogErr("GetCreds", credErr, nil)
 		return
 	}
 
@@ -152,7 +152,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 		firestoreMediaTrackData, firestoreMediaDataErr := getSpotifyTrack(spotifyMediaReq.MediaID, creds.AccessToken)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
-			logger.LogErr(firestoreMediaDataErr, "GetSpotifyTrack Switch", request)
+			logger.LogErr("GetSpotifyAlbum Switch", firestoreMediaDataErr, request)
 			return
 		}
 
@@ -165,7 +165,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 		firestoreMediaPlaylistData, firestoreMediaDataErr := getSpotifyPlaylist(spotifyMediaReq.MediaID, creds.AccessToken)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
-			logger.LogErr(firestoreMediaDataErr, "GetSpotifyPlaylist Switch", request)
+			logger.LogErr("GetSpotifyAlbum Switch", firestoreMediaDataErr, request)
 			return
 		}
 
@@ -178,7 +178,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 		firestoreMediaAlbumData, firestoreMediaDataErr := getSpotifyAlbum(spotifyMediaReq.MediaID, creds.AccessToken)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
-			logger.LogErr(firestoreMediaDataErr, "GetSpotifyPlaylist Switch", request)
+			logger.LogErr("GetSpotifyAlbum Switch", firestoreMediaDataErr, request)
 			return
 		}
 
@@ -189,7 +189,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	default:
 		http.Error(writer, spotifyMediaReq.MediaType+" media type does not exist", http.StatusInternalServerError)
 		log.Printf("GetSpotifyMedia [MediaTypeSwitch]: %v media type does not exist", spotifyMediaReq.MediaType)
-		logger.LogErr(fmt.Errorf("%v media type does not exist", spotifyMediaReq.MediaType), "MediaTypeSwitch", request)
+		logger.LogErr("MediaTypeSwitch", fmt.Errorf("%v media type does not exist", spotifyMediaReq.MediaType), request)
 		return
 	}
 }

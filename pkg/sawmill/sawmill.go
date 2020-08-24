@@ -68,7 +68,7 @@ func (c Logger) Log(msg string, operation string) {
 }
 
 // LogErr logs an error
-func (c Logger) LogErr(err error, operation string, req *http.Request) {
+func (c Logger) LogErr(operation string, err error, req *http.Request) {
 	// Logs the error to the terminal
 	log.Printf("%s ["+operation+"]: %v ", c.ServiceName, err)
 

@@ -38,7 +38,7 @@ func DoesUserDocExist(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(initWithEnvErr, "initWithEnv", nil)
+		logger.LogErr("InitWithEnv", initWithEnvErr, nil)
 		return
 	}
 
@@ -48,7 +48,7 @@ func DoesUserDocExist(writer http.ResponseWriter, request *http.Request) {
 	reqDataErr := json.NewDecoder(request.Body).Decode(&reqData)
 	if reqDataErr != nil {
 		http.Error(writer, reqDataErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(reqDataErr, "reqData Decoder", request)
+		logger.LogErr("ReqData Decoder", reqDataErr, request)
 		return
 	}
 

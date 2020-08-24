@@ -33,7 +33,7 @@ func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(initWithEnvErr, "initWithEnv", nil)
+		logger.LogErr("InitWithEnv", initWithEnvErr, nil)
 		return
 	}
 
@@ -41,7 +41,7 @@ func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
 	devToken, devTokenErr := fetchToken()
 	if devTokenErr != nil {
 		http.Error(writer, devTokenErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(devTokenErr, "getAppleDevToken", nil)
+		logger.LogErr("GetAppleDevToken", devTokenErr, nil)
 		return
 	}
 
@@ -54,20 +54,20 @@ func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
 		if isTokenExpired(devToken) {
 			if os.Getenv("APPLE_TEAM_ID") == "" {
 				http.Error(writer, "[CreateAppleDevToken] APPLE_TEAM_ID does not exist!", http.StatusInternalServerError)
-				logger.LogErr(fmt.Errorf("APPLE_TEAM_ID does not exist"), "RefreshAppleDevToken", nil)
+				logger.LogErr("RefreshAppleDevToken", fmt.Errorf("APPLE_TEAM_ID does not exist"), nil)
 				return
 			}
 
 			if os.Getenv("APPLE_KID") == "" {
 				http.Error(writer, "[CreateAppleDevToken] APPLE_KID does not exist!", http.StatusInternalServerError)
-				logger.LogErr(fmt.Errorf("APPLE_KID does not exist"), "RefreshAppleDevToken", nil)
+				logger.LogErr("RefreshAppleDevToken", fmt.Errorf("APPLE_KID does not exist"), nil)
 				return
 			}
 
 			token, tokenErr := generateJWT()
 			if tokenErr != nil {
 				http.Error(writer, tokenErr.Error(), http.StatusInternalServerError)
-				logger.LogErr(tokenErr, "RefreshAppleDevToken", nil)
+				logger.LogErr("RefreshAppleDevToken", tokenErr, nil)
 				return
 			}
 
@@ -84,7 +84,7 @@ func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
 	token, tokenErr := generateJWT()
 	if tokenErr != nil {
 		http.Error(writer, tokenErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(tokenErr, "GenerateAppleDevToken", nil)
+		logger.LogErr("GenerateAppleDevToken", tokenErr, nil)
 		return
 	}
 
@@ -117,8 +117,8 @@ func initWithEnv() error {
 		log.Printf("CreateAppleDevToken [Init Sawmill]: %v", err)
 	}
 
-	logger = sawmillLogger
 	firestoreClient = client
+	logger = sawmillLogger
 	return nil
 }
 

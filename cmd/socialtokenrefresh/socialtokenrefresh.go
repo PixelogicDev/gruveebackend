@@ -51,7 +51,7 @@ func SocialTokenRefresh(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(initWithEnvErr, "initWithEnv", nil)
+		logger.LogErr("InitWithEnv", initWithEnvErr, nil)
 		return
 	}
 
@@ -62,7 +62,7 @@ func SocialTokenRefresh(writer http.ResponseWriter, request *http.Request) {
 	socialTokenErr := json.NewDecoder(request.Body).Decode(&socialTokenReq)
 	if socialTokenErr != nil {
 		http.Error(writer, socialTokenErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(socialTokenErr, "socialTokenReq Decoder", request)
+		logger.LogErr("SocialTokenReq Decoder", socialTokenErr, request)
 		return
 	}
 
@@ -70,7 +70,7 @@ func SocialTokenRefresh(writer http.ResponseWriter, request *http.Request) {
 	platsToRefresh, platformErr := getUserPlatformsToRefresh(socialTokenReq.UID)
 	if platformErr != nil {
 		http.Error(writer, platformErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(platformErr, "getUserPlatforms", request)
+		logger.LogErr("GetUserPlatforms", platformErr, request)
 		return
 	}
 
@@ -113,8 +113,8 @@ func initWithEnv() error {
 		log.Printf("SocialTokenRefresh [Init Sawmill]: %v", err)
 	}
 
-	logger = sawmillLogger
 	firestoreClient = client
+	logger = sawmillLogger
 	return nil
 }
 

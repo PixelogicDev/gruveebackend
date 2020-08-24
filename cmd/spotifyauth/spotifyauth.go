@@ -50,7 +50,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(initWithEnvErr, "initWithEnvErr", nil)
+		logger.LogErr("InitWithEnvErr", initWithEnvErr, nil)
 		return
 	}
 
@@ -59,20 +59,20 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 	authResponseErr := json.NewDecoder(request.Body).Decode(&spotifyAuthRequest)
 	if authResponseErr != nil {
 		http.Error(writer, authResponseErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(authResponseErr, "spotifyAuthRequest Decoder", request)
+		logger.LogErr("SpotifyAuthRequest Decoder", authResponseErr, request)
 		return
 	}
 
 	if len(spotifyAuthRequest.APIToken) == 0 {
 		http.Error(writer, "AuthorizeWithSpotify: ApiToken was empty.", http.StatusBadRequest)
-		logger.LogErr(fmt.Errorf("ApiToken was empty"), "spotifyAuthRequest Decoder", request)
+		logger.LogErr("SpotifyAuthRequest Decoder", fmt.Errorf("ApiToken was empty"), request)
 		return
 	}
 
 	spotifyMeReq, spotifyMeReqErr := http.NewRequest("GET", spotifyMeURI, nil)
 	if spotifyMeReqErr != nil {
 		http.Error(writer, spotifyMeReqErr.Error(), http.StatusInternalServerError)
-		logger.LogErr(spotifyMeReqErr, "http.NewRequest", spotifyMeReq)
+		logger.LogErr("Request", spotifyMeReqErr, spotifyMeReq)
 		return
 	}
 
@@ -81,7 +81,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 	resp, httpErr := httpClient.Do(spotifyMeReq)
 	if httpErr != nil {
 		http.Error(writer, httpErr.Error(), http.StatusBadRequest)
-		logger.LogErr(httpErr, "client.Do", spotifyMeReq)
+		logger.LogErr("GET Request", httpErr, spotifyMeReq)
 		return
 	}
 
@@ -93,12 +93,12 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		err := json.NewDecoder(resp.Body).Decode(&spotifyErrorObj)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
-			logger.LogErr(err, "Spotify Request Decoder", spotifyMeReq)
+			logger.LogErr("Spotify Request Decoder", err, spotifyMeReq)
 			return
 		}
 
 		http.Error(writer, spotifyErrorObj.Error.Message, spotifyErrorObj.Error.Status)
-		logger.LogErr(fmt.Errorf(spotifyErrorObj.Error.Message), "Spotify Request Decoder", spotifyMeReq)
+		logger.LogErr("Spotify Request Decoder", fmt.Errorf(spotifyErrorObj.Error.Message), spotifyMeReq)
 		return
 	}
 
@@ -109,7 +109,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 	respDecodeErr := json.NewDecoder(resp.Body).Decode(&spotifyMeResponse)
 	if respDecodeErr != nil {
 		http.Error(writer, respDecodeErr.Error(), http.StatusBadRequest)
-		logger.LogErr(respDecodeErr, "Spotify Request Decoder", spotifyMeReq)
+		logger.LogErr("Spotify Request Decoder", respDecodeErr, spotifyMeReq)
 		return
 	}
 
@@ -117,7 +117,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 	authorizeWithSpotifyResp, userErr := getUser(spotifyMeResponse.ID)
 	if userErr != nil {
 		http.Error(writer, userErr.Error(), http.StatusBadRequest)
-		logger.LogErr(userErr, "getUser", nil)
+		logger.LogErr("GetUser", userErr, nil)
 		return
 	}
 
@@ -127,7 +127,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		socialPlatDocRef, socialPlatData, socialPlatErr := createSocialPlatform(spotifyMeResponse, spotifyAuthRequest)
 		if socialPlatErr != nil {
 			http.Error(writer, socialPlatErr.Error(), http.StatusBadRequest)
-			logger.LogErr(socialPlatErr, "createSocialPlatform", nil)
+			logger.LogErr("CreateSocialPlatform", socialPlatErr, nil)
 			return
 		}
 
@@ -143,7 +143,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		var customToken, customTokenErr = getCustomToken(firestoreUser.ID)
 		if customTokenErr != nil {
 			http.Error(writer, customTokenErr.Error(), http.StatusBadRequest)
-			logger.LogErr(customTokenErr, "customToken", nil)
+			logger.LogErr("CustomToken", customTokenErr, nil)
 			return
 		}
 
@@ -170,7 +170,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		var customToken, customTokenErr = getCustomToken(authorizeWithSpotifyResp.ID)
 		if customTokenErr != nil {
 			http.Error(writer, customTokenErr.Error(), http.StatusBadRequest)
-			logger.LogErr(customTokenErr, "customToken", nil)
+			logger.LogErr("CustomToken", customTokenErr, nil)
 			return
 		}
 		authorizeWithSpotifyResp.JWT = customToken.Token
@@ -212,8 +212,8 @@ func initWithEnv() error {
 	log.Println(currentProject)
 	log.Println(hostname)
 
-	logger = sawmillLogger
 	firestoreClient = client
+	logger = sawmillLogger
 	return nil
 }
 

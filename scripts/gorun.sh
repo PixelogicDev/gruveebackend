@@ -15,7 +15,7 @@ then
     # These are the replace paths that are needed for shared packages.
     firebaseReplace="github.com/pixelogicdev/gruveebackend/pkg/firebase=../../pkg/firebase"
     socialReplace="github.com/pixelogicdev/gruveebackend/pkg/social=../../pkg/social"
-    sawmillReplace="github.com/pixelogicdev/gruveebackend/pkg/social=../../pkg/sawmill"
+    sawmillReplace="github.com/pixelogicdev/gruveebackend/pkg/sawmill=../../pkg/sawmill"
 
     # Add googleCreds to terminal instance
     export GOOGLE_APPLICATION_CREDENTIALS=$googleCredsPath
