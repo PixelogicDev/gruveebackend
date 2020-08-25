@@ -40,6 +40,19 @@ type spotifyRequestErrorDetails struct {
 	Message string `json:"message"`
 }
 
+// AuthorizeWithSpotifyResponse represents the data to send back to the client for a user
+type AuthorizeWithSpotifyResponse struct {
+	Email                   string                             `json:"email"`
+	ID                      string                             `json:"id"`
+	Playlists               []firebase.FirestorePlaylist       `json:"playlists"`
+	PreferredSocialPlatform firebase.FirestoreSocialPlatform   `json:"preferredSocialPlatform"`
+	SocialPlatforms         []firebase.FirestoreSocialPlatform `json:"socialPlatforms"`
+	Username                string                             `json:"username"`
+	JWT                     string                             `json:"jwt,omitempty"`
+}
+
+// -- APPLE MUSIC AUTH -- //
+
 // AppleMusicRequestError represents the Apple Music Error Object
 type AppleMusicRequestError struct {
 	Errors []appleMusicError `json:"errors"`
@@ -52,17 +65,6 @@ type appleMusicError struct {
 	ID     string `json:"id"`
 	Status string `json:"status"`
 	Title  string `json:"title"`
-}
-
-// AuthorizeWithSpotifyResponse represents the data to send back to the client for a user
-type AuthorizeWithSpotifyResponse struct {
-	Email                   string                             `json:"email"`
-	ID                      string                             `json:"id"`
-	Playlists               []firebase.FirestorePlaylist       `json:"playlists"`
-	PreferredSocialPlatform firebase.FirestoreSocialPlatform   `json:"preferredSocialPlatform"`
-	SocialPlatforms         []firebase.FirestoreSocialPlatform `json:"socialPlatforms"`
-	Username                string                             `json:"username"`
-	JWT                     string                             `json:"jwt,omitempty"`
 }
 
 // -- GENERATE TOKEN -- //
@@ -108,4 +110,15 @@ type CreateUserReq struct {
 	ProfileImage       *firebase.SpotifyImage `json:"profileImage"`
 	DisplayName        string                 `json:"displayName"`
 	Username           string                 `json:"username"`
+}
+
+// -- COMMON GET MEDIA -- //
+
+// GetMediaReq is the payload that inclues the provider, mediaId, and mediaType for finding media service
+type GetMediaReq struct {
+	Provider  string `json:"provider"`
+	MediaID   string `json:"mediaId"`
+	MediaType string `json:"mediaType"`
+	// This is only an Apple Music property so remove if not passed through
+	Storefront string `json:"storefront,omitempty"`
 }

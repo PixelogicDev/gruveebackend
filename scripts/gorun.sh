@@ -15,6 +15,7 @@ then
     # These are the replace paths that are needed for shared packages.
     firebaseReplace="github.com/pixelogicdev/gruveebackend/pkg/firebase=../../pkg/firebase"
     socialReplace="github.com/pixelogicdev/gruveebackend/pkg/social=../../pkg/social"
+    mediaHelpersReplace="github.com/pixelogicdev/gruveebackend/pkg/mediahelpers=../../pkg/mediahelpers"
 
     # Add googleCreds to terminal instance
     export GOOGLE_APPLICATION_CREDENTIALS=$googleCredsPath
@@ -28,6 +29,7 @@ then
 
         go mod edit -replace $firebaseReplace
         go mod edit -replace $socialReplace
+        go mod edit -replace $mediaHelpersReplace
 
         # Move back up a directory
         cd ..

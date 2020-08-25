@@ -14,6 +14,8 @@ require (
 	github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist v1.0.0-beta.6
 	github.com/pixelogicdev/gruveebackend/cmd/createuser v1.0.0-beta.2
 	github.com/pixelogicdev/gruveebackend/cmd/doesuserdocexist v1.0.0-beta.1
+	github.com/pixelogicdev/gruveebackend/cmd/fetchallmedia v1.0.0-beta.1
+	github.com/pixelogicdev/gruveebackend/cmd/getapplemusicmedia v1.0.0-beta.1
 	github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia v1.0.0-beta.2
 	github.com/pixelogicdev/gruveebackend/cmd/socialplatform v1.0.0-beta.2
 	github.com/pixelogicdev/gruveebackend/cmd/socialtokenrefresh v1.0.0-beta.4
@@ -22,6 +24,8 @@ require (
 	github.com/pixelogicdev/gruveebackend/cmd/updatealgolia v1.0.0-beta.8
 	github.com/pixelogicdev/gruveebackend/cmd/usernameavailable v1.0.0-beta.1
 	github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.12
+	github.com/pixelogicdev/gruveebackend/pkg/mediahelpers v1.0.0-beta.1
+	github.com/pixelogicdev/gruveebackend/pkg/sawmill v1.0.0-beta.1
 	github.com/pixelogicdev/gruveebackend/pkg/social v1.0.0-beta.5
 	google.golang.org/grpc v1.30.0
 )
@@ -42,7 +46,11 @@ replace github.com/pixelogicdev/gruveebackend/cmd/createsocialplaylist => ./cmd/
 
 replace github.com/pixelogicdev/gruveebackend/cmd/updatealgolia => ./cmd/updatealgolia
 
+replace github.com/pixelogicdev/gruveebackend/cmd/fetchallmedia => ./cmd/fetchallmedia
+
 replace github.com/pixelogicdev/gruveebackend/cmd/getspotifymedia => ./cmd/getspotifymedia
+
+replace github.com/pixelogicdev/gruveebackend/cmd/getapplemusicmedia => ./cmd/getapplemusicmedia
 
 replace github.com/pixelogicdev/gruveebackend/cmd/createappledevtoken => ./cmd/createappledevtoken
 
@@ -55,6 +63,10 @@ replace github.com/pixelogicdev/gruveebackend/cmd/createprovideruser => ./cmd/cr
 replace github.com/pixelogicdev/gruveebackend/pkg/firebase => ./pkg/firebase
 
 replace github.com/pixelogicdev/gruveebackend/pkg/social => ./pkg/social
+
+replace github.com/pixelogicdev/gruveebackend/pkg/mediahelpers => ./pkg/mediahelpers
+
+replace github.com/pixelogicdev/gruveebackend/pkg/sawmill => ./pkg/sawmill
 
 // WIP
 replace github.com/pixelogicdev/gruveebackend/internal/helpers/localcloudtrigger => ./internal/helpers/localcloudtrigger

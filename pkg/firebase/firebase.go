@@ -3,6 +3,10 @@ package firebase
 // no_neon_one - "go to GO or no to GO" (03/01/20)
 // no_neon_one - "I think Microsoft named .Net so it wouldn’t show up in a Unix directory listing (by Oktal )." (03/08/20)
 import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"os"
 	"time"
 
 	firestore "cloud.google.com/go/firestore"
@@ -37,20 +41,35 @@ type FirestoreSocialPlatform struct {
 
 // FirestoreMedia represents the "song" item stored in the songs collection. We use media because techincally this doens't have to be just a song
 type FirestoreMedia struct {
-	ID      string `firestore:"id" json:"id"`
-	Name    string `firestore:"name" json:"name"`
-	Album   string `firestore:"album,omitempty" json:"album,omitempty"`
-	Type    string `firestore:"type" json:"type"`
-	Creator string `firestore:"creator" json:"creator"`
-	// TODO: SpotifyImage should probably to a more generic name in phast 1 or 2
-	Images       []SpotifyImage    `firestore:"images" json:"images"`
-	ExternalURLs map[string]string `firestore:"externalUrls" json:"externalUrls"`
+	ID      string                     `firestore:"id" json:"id"`
+	Name    string                     `firestore:"name" json:"name"`
+	Album   string                     `firestore:"album,omitempty" json:"album,omitempty"`
+	Type    string                     `firestore:"type" json:"type"`
+	Creator string                     `firestore:"creator" json:"creator"`
+	Apple   FirestoreMediaPlatformData `firestore:"apple,omitempty" json:"apple,omitempty"`
+	Spotify FirestoreMediaPlatformData `firestore:"spotify,omitempty" json:"spotify,omitempty"`
+	YouTube FirestoreMediaPlatformData `firestore:"youtube,omitempty" json:"youtube,omitempty"`
+}
+
+// FirestoreMediaPlatformData includes the specific data for the current media based on platform
+type FirestoreMediaPlatformData struct {
+	ID     string      `firestore:"id" json:"id"`
+	URL    string      `firestore:"url" json:"url"`
+	Images interface{} `firestore:"images" json:"images"`
 }
 
 // FirestoreAppleDevJWT rerpresents the JWT object that is needed for calling Apple Music API stuff
 type FirestoreAppleDevJWT struct {
 	ExpiresAt int64  `json:"expiresAt"`
 	IssuedAt  int64  `json:"issuedAt"`
+	Token     string `json:"token"`
+}
+
+// FirestoreSpotifyAuthToken represents the auth token object needed for calling Spotify APIs
+type FirestoreSpotifyAuthToken struct {
+	ExpiredAt string `json:"expiredAt"`
+	ExpiresIn int    `json:"expiresIn"`
+	IssuedAt  string `json:"issuedAt"`
 	Token     string `json:"token"`
 }
 
@@ -70,6 +89,8 @@ type PlaylistSongs struct {
 	AddedBy  map[string][]string      `firestore:"addedBy" json:"addedBy"`
 	AllSongs []*firestore.DocumentRef `firestore:"allSongs" json:"allSongs"`
 }
+
+// -- FIRESTORE EVENTS -- //
 
 // FirestoreEvent implements the Firestore event from a trigger function
 type FirestoreEvent struct {
@@ -97,6 +118,31 @@ type FirestoreEventUser struct {
 	Username     stringValue          `json:"username"`
 }
 
+// FirestoreEventSongs implements the values that come from a trigger event based on the songs collection
+type FirestoreEventSongs struct {
+	OldValue   FirestoreEventSong `json:"oldValue"`
+	Value      FirestoreEventSong `json:"value"`
+	UpdateMask struct {
+		FieldPaths []string `json:"fieldPaths"`
+	} `json:"updateMask"`
+}
+
+// FirestoreEventSong implements the data in the song document
+type FirestoreEventSong struct {
+	Fields struct {
+		ID      stringValue    `json:"id"`
+		Album   stringValue    `json:"album"`
+		Creator stringValue    `json:"creator"`
+		Name    stringValue    `json:"name"`
+		Type    stringValue    `json:"type"`
+		Apple   *mediaMapValue `json:"apple"`
+		Spotify *mediaMapValue `json:"spotify"`
+		YouTube *mediaMapValue `json:"youtube"`
+	} `json:"fields"`
+	Name       string `json:"name"`
+	UpdateTime string `json:"updateTime"`
+}
+
 // FirestoreEventProfileImage implements data needed for firestore image
 type FirestoreEventProfileImage struct {
 	Width  integerValue `json:"width,omitempty"`
@@ -104,10 +150,24 @@ type FirestoreEventProfileImage struct {
 	URL    stringValue  `json:"url,omitempty"`
 }
 
+// FirestoreEventMedia implements the data per provider for a firestore song
+type FirestoreEventMedia struct {
+	ID stringValue `json:"id"`
+	// Technically images should be here, but I don't think we need it.
+	URL stringValue `json:"url"`
+}
+
 // profileImageMapValue implements the profileImage nested object value type for Firestore Event
 type profileImageMapValue struct {
 	MapValue struct {
 		Fields FirestoreEventProfileImage `json:"fields"`
+	} `json:"mapValue"`
+}
+
+// mediaMapValue implements the provider nested object value for a Firestore Song Event
+type mediaMapValue struct {
+	MapValue struct {
+		Fields FirestoreEventMedia `json:"fields"`
 	} `json:"mapValue"`
 }
 
@@ -136,4 +196,40 @@ type SpotifyImage struct {
 	Height int    `firestore:"height,omitempty" json:"height,omitempty"`
 	URL    string `firestore:"url" json:"url"`
 	Width  int    `firestore:"width,omitempty" json:"width,omitempty"`
+}
+
+// -- HELPER FUNCTIONS -- //
+
+// GetAppleDeveloperToken will go to Firestore and grab developer token if it exists and will refresh it if expired
+func GetAppleDeveloperToken() (*FirestoreAppleDevJWT, error) {
+	var hostname string
+	httpClient := &http.Client{}
+	if os.Getenv("ENVIRONMENT") == "DEV" {
+		hostname = os.Getenv("HOSTNAME_DEV")
+	} else if os.Getenv("ENVIRONMENT") == "PROD" {
+		hostname = os.Getenv("HOSTNAME_PROD")
+	}
+
+	// Create URI
+	createAppleDevURI := hostname + "/createAppleDevToken"
+	appleDevTokenReq, appleDevTokenReqErr := http.NewRequest("GET", createAppleDevURI, nil)
+	if appleDevTokenReqErr != nil {
+		return nil, fmt.Errorf("[GetAppleDeveloperToken]: %v", appleDevTokenReqErr)
+	}
+
+	// Call endpoint
+	appleDevTokenResp, appleDevTokenRespErr := httpClient.Do(appleDevTokenReq)
+	if appleDevTokenRespErr != nil {
+		return nil, fmt.Errorf("[GetAppleDeveloperToken]: %v", appleDevTokenRespErr)
+	}
+
+	// Decode response to AppleDevJWT
+	var appleDevToken FirestoreAppleDevJWT
+	appleDevTokenDecodeErr := json.NewDecoder(appleDevTokenResp.Body).Decode(&appleDevToken)
+	if appleDevTokenDecodeErr != nil {
+		return nil, fmt.Errorf("[GetAppleDeveloperToken]: %v", appleDevTokenDecodeErr)
+	}
+
+	// Return JWT
+	return &appleDevToken, nil
 }
