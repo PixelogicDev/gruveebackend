@@ -90,6 +90,8 @@ type PlaylistSongs struct {
 	AllSongs []*firestore.DocumentRef `firestore:"allSongs" json:"allSongs"`
 }
 
+// -- FIRESTORE EVENTS -- //
+
 // FirestoreEvent implements the Firestore event from a trigger function
 type FirestoreEvent struct {
 	OldValue   FirestoreValue `json:"oldValue"`
@@ -116,6 +118,31 @@ type FirestoreEventUser struct {
 	Username     stringValue          `json:"username"`
 }
 
+// FirestoreEventSongs implements the values that come from a trigger event based on the songs collection
+type FirestoreEventSongs struct {
+	OldValue   FirestoreEventSong `json:"oldValue"`
+	Value      FirestoreEventSong `json:"value"`
+	UpdateMask struct {
+		FieldPaths []string `json:"fieldPaths"`
+	} `json:"updateMask"`
+}
+
+// FirestoreEventSong implements the data in the song document
+type FirestoreEventSong struct {
+	Fields struct {
+		ID      stringValue    `json:"id"`
+		Album   stringValue    `json:"album"`
+		Creator stringValue    `json:"creator"`
+		Name    stringValue    `json:"name"`
+		Type    stringValue    `json:"type"`
+		Apple   *mediaMapValue `json:"apple"`
+		Spotify *mediaMapValue `json:"spotify"`
+		YouTube *mediaMapValue `json:"youtube"`
+	} `json:"fields"`
+	Name       string `json:"name"`
+	UpdateTime string `json:"updateTime"`
+}
+
 // FirestoreEventProfileImage implements data needed for firestore image
 type FirestoreEventProfileImage struct {
 	Width  integerValue `json:"width,omitempty"`
@@ -123,10 +150,24 @@ type FirestoreEventProfileImage struct {
 	URL    stringValue  `json:"url,omitempty"`
 }
 
+// FirestoreEventMedia implements the data per provider for a firestore song
+type FirestoreEventMedia struct {
+	ID stringValue `json:"id"`
+	// Technically images should be here, but I don't think we need it.
+	URL stringValue `json:"url"`
+}
+
 // profileImageMapValue implements the profileImage nested object value type for Firestore Event
 type profileImageMapValue struct {
 	MapValue struct {
 		Fields FirestoreEventProfileImage `json:"fields"`
+	} `json:"mapValue"`
+}
+
+// mediaMapValue implements the provider nested object value for a Firestore Song Event
+type mediaMapValue struct {
+	MapValue struct {
+		Fields FirestoreEventMedia `json:"fields"`
 	} `json:"mapValue"`
 }
 
