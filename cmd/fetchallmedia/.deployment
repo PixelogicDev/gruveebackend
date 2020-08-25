@@ -1,0 +1,5 @@
+gcloud functions deploy FetchAllMedia \
+    --runtime go113 \
+    --trigger-event providers/cloud.firestore/eventTypes/document.create \
+    --trigger-resource "projects/gruvee-3b7c4/databases/(default)/documents/songs/{pushId}" \
+    --env-vars-file ../../internal/config.yaml
