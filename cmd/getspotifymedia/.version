@@ -1,3 +1,4 @@
+- v1.0.0-beta.5: Fixing merge
 - v1.0.0-beta.4: Reving Firebase package to the latest
 - v1.0.0-beta.3: Moving shared functions to helpers file
 - v1.0.0-beta.2: Changing enviornment variable check location
