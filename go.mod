@@ -3,7 +3,7 @@ module github.com/pixelogicdev/gruveebackend
 go 1.13
 
 require (
-	cloud.google.com/go/firestore v1.2.0
+	cloud.google.com/go/firestore v1.3.0
 	github.com/GoogleCloudPlatform/functions-framework-go v1.0.0
 	github.com/cloudevents/sdk-go v1.1.2 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -23,11 +23,11 @@ require (
 	github.com/pixelogicdev/gruveebackend/cmd/tokengen v1.0.0-beta.3
 	github.com/pixelogicdev/gruveebackend/cmd/updatealgolia v1.0.0-beta.8
 	github.com/pixelogicdev/gruveebackend/cmd/usernameavailable v1.0.0-beta.1
-	github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.12
+	github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.13
 	github.com/pixelogicdev/gruveebackend/pkg/mediahelpers v1.0.0-beta.1
 	github.com/pixelogicdev/gruveebackend/pkg/sawmill v1.0.0-beta.1
-	github.com/pixelogicdev/gruveebackend/pkg/social v1.0.0-beta.5
-	google.golang.org/grpc v1.30.0
+	github.com/pixelogicdev/gruveebackend/pkg/social v1.0.0-beta.6
+	google.golang.org/grpc v1.31.1
 )
 
 replace github.com/pixelogicdev/gruveebackend/cmd/appleauth => ./cmd/appleauth
