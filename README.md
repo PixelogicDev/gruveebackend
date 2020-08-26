@@ -49,7 +49,7 @@ If you are interested in becoming a member of the team check out the **[Pixelogi
 
 | Stack    | Tech                                                                                       |                                                                |
 | -------- | :----------------------------------------------------------------------------------------- | :------------------------------------------------------------- |
-| IDE      | [Visual Studio Code](https://code.visualstudio.com/)                                       | You can use your preferred IDE but this is the one we like 🙃  |
+| IDE      | [Visual Studio Code](https://code.visualstudio.com/)                                       | You can use your preferred IDE but this is the one we like 🙃   |
 | Backend  | [Firebase (Repo)](https://github.com/PixelogicDev/Gruvee-Backend)                          | Serverless Functions in Firebase using GoLang                  |
 | Frontend | [React Native 0.60](<[LinkToReactNative0.60](https://www.npmjs.com/package/react-native)>) | Utilizing Javascript to develop this cross platform mobile app |
 
@@ -124,7 +124,7 @@ The Actions configuration requires four [secrets](https://github.com/PixelogicDe
 
 - **PROD_CONFIG_YAML** --  The configuration file used by GCP for the function's variables
 - **PROD_CONFIG_YAML_64** -- A base64 encoded version of `PROD_CONFIG_YAML`
-- **PROD_CLOUD_AUTH** -- GCP service account which can deploy to the GCP project's function. `JSON` format with no carriage returns or line feeds
+- **PROD_GCLOUD_AUTH** -- GCP service account which can deploy to the GCP project's function. `JSON` format with no carriage returns or line feeds
 - **PROD_GCP_PROJECT_ID** -- The GCP project id being deployed to
 
 You may be wondering why there are both the yaml config file and the yaml config file base64 encoded. The base64 version is used to write the file used by the deploy process. The regular yaml version is used to redact all the values from the log. It's a work-around to ensure values aren't leaked in the logs. IT IS VERY IMPORTANT TO UPDATE BOTH OF THESE FILES WHENEVER THERE IS A CONFIGURATION CHANGE!
