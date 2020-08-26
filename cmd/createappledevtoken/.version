@@ -1,3 +1,4 @@
+- v1.0.0-beta.4: Updating firebase pkg
 - v1.0.0-beta.3: Removed Firebase Bucket logic and added .p8 file and logic
 - v1.0.0-beta.2: Changing logic to get .p8 file from Firebase Bucket
 - v1.0.0-beta.1: Initial instance of function
