@@ -15,6 +15,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
+	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -22,6 +23,7 @@ import (
 // DR_DinoMight - "Alec loves the song "Nelly's - Hot In Here" (05/05/20)
 var currentProject string
 var firestoreClient *firestore.Client
+var logger sawmill.Logger
 var appleDevToken firebase.FirestoreAppleDevJWT
 var applePrivateKeyPath string
 
@@ -31,7 +33,7 @@ func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		log.Printf("[AuthorizeWithApple] [initWithEnv]: %v", initWithEnvErr)
+		logger.LogErr("InitWithEnv", initWithEnvErr, nil)
 		return
 	}
 
@@ -39,7 +41,7 @@ func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
 	devToken, devTokenErr := fetchToken()
 	if devTokenErr != nil {
 		http.Error(writer, devTokenErr.Error(), http.StatusInternalServerError)
-		log.Printf("[CreateAppleDevToken] [getAppleDevToken]: %v", devTokenErr)
+		logger.LogErr("GetAppleDevToken", devTokenErr, nil)
 		return
 	}
 
@@ -52,20 +54,20 @@ func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
 		if isTokenExpired(devToken) {
 			if os.Getenv("APPLE_TEAM_ID") == "" {
 				http.Error(writer, "[CreateAppleDevToken] APPLE_TEAM_ID does not exist!", http.StatusInternalServerError)
-				log.Println("[CreateAppleDevToken] APPLE_TEAM_ID does not exist!")
+				logger.LogErr("RefreshAppleDevToken", fmt.Errorf("APPLE_TEAM_ID does not exist"), nil)
 				return
 			}
 
 			if os.Getenv("APPLE_KID") == "" {
 				http.Error(writer, "[CreateAppleDevToken] APPLE_KID does not exist!", http.StatusInternalServerError)
-				log.Println("[CreateAppleDevToken] APPLE_KID does not exist!")
+				logger.LogErr("RefreshAppleDevToken", fmt.Errorf("APPLE_KID does not exist"), nil)
 				return
 			}
 
 			token, tokenErr := generateJWT()
 			if tokenErr != nil {
 				http.Error(writer, tokenErr.Error(), http.StatusInternalServerError)
-				log.Printf("[CreateAppleDevToken]: %v", tokenErr)
+				logger.LogErr("RefreshAppleDevToken", tokenErr, nil)
 				return
 			}
 
@@ -82,7 +84,7 @@ func CreateAppleDevToken(writer http.ResponseWriter, request *http.Request) {
 	token, tokenErr := generateJWT()
 	if tokenErr != nil {
 		http.Error(writer, tokenErr.Error(), http.StatusInternalServerError)
-		log.Printf("CreateAppleDevToken]: %v", tokenErr)
+		logger.LogErr("GenerateAppleDevToken", tokenErr, nil)
 		return
 	}
 
@@ -109,7 +111,14 @@ func initWithEnv() error {
 		return fmt.Errorf("CreateAppleDevToken [Init Firestore]: %v", err)
 	}
 
+	// Initialize Sawmill
+	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), os.Getenv("ENVIRONMENT"), "CreateAppleDevToken")
+	if err != nil {
+		log.Printf("CreateAppleDevToken [Init Sawmill]: %v", err)
+	}
+
 	firestoreClient = client
+	logger = sawmillLogger
 	return nil
 }
 

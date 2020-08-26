@@ -9,6 +9,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
+	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
 	"github.com/unrolled/render"
 )
 
@@ -18,6 +19,7 @@ type appleDevTokenResp struct {
 }
 
 var firestoreClient *firestore.Client
+var logger sawmill.Logger
 var appleDevToken firebase.FirestoreAppleDevJWT
 var httpClient *http.Client
 var hostname string
@@ -34,7 +36,7 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		log.Printf("[AuthorizeWithApple] [initWithEnv]: %v", initWithEnvErr)
+		logger.LogErr("InitWithEnv", initWithEnvErr, nil)
 		return
 	}
 
@@ -54,7 +56,7 @@ func AuthorizeWithApple(writer http.ResponseWriter, request *http.Request) {
 	renderErr := render.HTML(writer, http.StatusOK, "auth", appleDevToken)
 	if renderErr != nil {
 		http.Error(writer, renderErr.Error(), http.StatusInternalServerError)
-		log.Printf("[AuthorizeWithApple] [render]: %v", renderErr)
+		logger.LogErr("Render", renderErr, nil)
 		return
 	}
 }
@@ -85,6 +87,13 @@ func initWithEnv() error {
 		return fmt.Errorf("AuthorizeWithApple [Init Firestore]: %v", err)
 	}
 
+	// Initialize Sawmill
+	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), os.Getenv("ENVIRONMENT"), "AuthorizeWithApple")
+	if err != nil {
+		log.Printf("AuthorizeWithApple [Init Sawmill]: %v", err)
+	}
+
 	firestoreClient = client
+	logger = sawmillLogger
 	return nil
 }

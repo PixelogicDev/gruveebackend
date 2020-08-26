@@ -14,11 +14,13 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
+	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
 )
 
 var httpClient *http.Client
 var firestoreClient *firestore.Client
+var logger sawmill.Logger
 var spotifyRefreshTokenURI = "https://accounts.spotify.com/api/token"
 
 func init() {
@@ -49,7 +51,7 @@ func SocialTokenRefresh(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		log.Printf("SocialTokenRefresh [initWithEnv]: %v", initWithEnvErr)
+		logger.LogErr("InitWithEnv", initWithEnvErr, nil)
 		return
 	}
 
@@ -60,7 +62,7 @@ func SocialTokenRefresh(writer http.ResponseWriter, request *http.Request) {
 	socialTokenErr := json.NewDecoder(request.Body).Decode(&socialTokenReq)
 	if socialTokenErr != nil {
 		http.Error(writer, socialTokenErr.Error(), http.StatusInternalServerError)
-		log.Printf("SocialTokenRefresh [socialTokenReq Decoder]: %v", socialTokenErr)
+		logger.LogErr("SocialTokenReq Decoder", socialTokenErr, request)
 		return
 	}
 
@@ -68,7 +70,7 @@ func SocialTokenRefresh(writer http.ResponseWriter, request *http.Request) {
 	platsToRefresh, platformErr := getUserPlatformsToRefresh(socialTokenReq.UID)
 	if platformErr != nil {
 		http.Error(writer, platformErr.Error(), http.StatusInternalServerError)
-		log.Printf("SocialTokenRefresh [getUserPlatforms]: %v", platformErr)
+		logger.LogErr("GetUserPlatforms", platformErr, request)
 		return
 	}
 
@@ -105,7 +107,14 @@ func initWithEnv() error {
 		return fmt.Errorf("SocialTokenRefresh [Init Firestore]: %v", err)
 	}
 
+	// Initialize Sawmill
+	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), os.Getenv("ENVIRONMENT"), "SocialTokenRefersh")
+	if err != nil {
+		log.Printf("SocialTokenRefresh [Init Sawmill]: %v", err)
+	}
+
 	firestoreClient = client
+	logger = sawmillLogger
 	return nil
 }
 

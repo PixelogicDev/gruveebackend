@@ -2,6 +2,13 @@ package getspotifymedia
 
 import "github.com/pixelogicdev/gruveebackend/pkg/firebase"
 
+// getSpotifyMediaReq takes in the data needed to request the media data from Spotify
+type getSpotifyMediaReq struct {
+	Provider  string `json:"provider"`
+	MediaID   string `json:"mediaId"`
+	MediaType string `json:"mediaType"`
+}
+
 // spotifyTrackResp defines the data returned and needed from the Spotify Get Track API
 type spotifyTrackResp struct {
 	ID           string          `json:"id"`

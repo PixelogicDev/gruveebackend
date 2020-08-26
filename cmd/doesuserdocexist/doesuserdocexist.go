@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"cloud.google.com/go/firestore"
+	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -24,6 +25,7 @@ type doesUserDocExistResp struct {
 }
 
 var firestoreClient *firestore.Client
+var logger sawmill.Logger
 
 func init() {
 	log.Println("DoesUserDocExist intialized")
@@ -36,7 +38,7 @@ func DoesUserDocExist(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		log.Printf("DoesUserDocExist [initWithEnv]: %v", initWithEnvErr)
+		logger.LogErr("InitWithEnv", initWithEnvErr, nil)
 		return
 	}
 
@@ -46,7 +48,7 @@ func DoesUserDocExist(writer http.ResponseWriter, request *http.Request) {
 	reqDataErr := json.NewDecoder(request.Body).Decode(&reqData)
 	if reqDataErr != nil {
 		http.Error(writer, reqDataErr.Error(), http.StatusInternalServerError)
-		log.Printf("DoesUserDocExist [reqData Decoder]: %v", reqDataErr)
+		logger.LogErr("ReqData Decoder", reqDataErr, request)
 		return
 	}
 
@@ -84,7 +86,14 @@ func initWithEnv() error {
 	if err != nil {
 		return fmt.Errorf("DoesUserDocExist [Init Firestore]: %v", err)
 	}
-	firestoreClient = client
 
+	// Initialize Sawmill
+	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), os.Getenv("ENVIRONMENT"), "DoesUserDocExist")
+	if err != nil {
+		log.Printf("DoesUserDocExist [Init Sawmill]: %v", err)
+	}
+
+	firestoreClient = client
+	logger = sawmillLogger
 	return nil
 }

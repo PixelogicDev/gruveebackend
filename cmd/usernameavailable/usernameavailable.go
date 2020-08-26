@@ -9,6 +9,10 @@ import (
 	"os"
 
 	"cloud.google.com/go/firestore"
+<<<<<<< da3878c925ca6ef481f9b424c30ccaafe56a0d2e
+	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
+=======
+>>>>>>> Adding new usernameavailable function
 )
 
 // usernameAvailableReq includes the username to query the user collection
@@ -22,6 +26,7 @@ type usernameAvailableResp struct {
 }
 
 var firestoreClient *firestore.Client
+var logger sawmill.Logger
 
 func init() {
 	log.Println("UsernameAvailable intialized")
@@ -34,7 +39,7 @@ func UsernameAvailable(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		log.Printf("DoesUserDocExist [initWithEnv]: %v", initWithEnvErr)
+		logger.LogErr("InitWithEnv", initWithEnvErr, nil)
 		return
 	}
 
@@ -44,7 +49,7 @@ func UsernameAvailable(writer http.ResponseWriter, request *http.Request) {
 	reqDataErr := json.NewDecoder(request.Body).Decode(&reqData)
 	if reqDataErr != nil {
 		http.Error(writer, reqDataErr.Error(), http.StatusInternalServerError)
-		log.Printf("UsernameAvailable [reqData Decoder]: %v", reqDataErr)
+		logger.LogErr("ReqData Decoder", reqDataErr, request)
 		return
 	}
 
@@ -53,7 +58,7 @@ func UsernameAvailable(writer http.ResponseWriter, request *http.Request) {
 	documents, documentsErr := snapshots.Query.Documents(context.Background()).GetAll()
 	if documentsErr != nil {
 		http.Error(writer, documentsErr.Error(), http.StatusInternalServerError)
-		log.Printf("UsernameAvailable [Firebase GetDocumentsQuery]: %v", documentsErr)
+		logger.LogErr("Firebase GetDocumentsQuery", documentsErr, request)
 		return
 	}
 
@@ -90,7 +95,14 @@ func initWithEnv() error {
 	if err != nil {
 		return fmt.Errorf("UsernameAvailable [Init Firestore]: %v", err)
 	}
-	firestoreClient = client
 
+	// Initialize Sawmill
+	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), os.Getenv("ENVIRONMENT"), "UsernameAvailable")
+	if err != nil {
+		log.Printf("UsernameAvailable [Init Sawmill]: %v", err)
+	}
+
+	firestoreClient = client
+	logger = sawmillLogger
 	return nil
 }

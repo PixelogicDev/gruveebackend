@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"cloud.google.com/go/firestore"
+	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
 )
 
 // updateProviderUserReq takes in the Firebase Provider UID and the platform provider UID to map
@@ -23,6 +24,7 @@ type providerUser struct {
 }
 
 var firestoreClient *firestore.Client
+var logger sawmill.Logger
 
 // CreateProviderUser will check to see if the newly created user needs to be added to the providers_users collection
 func CreateProviderUser(writer http.ResponseWriter, request *http.Request) {
@@ -30,7 +32,7 @@ func CreateProviderUser(writer http.ResponseWriter, request *http.Request) {
 	initErr := initWithEnv()
 	if initErr != nil {
 		http.Error(writer, initErr.Error(), http.StatusInternalServerError)
-		log.Printf("CreateProviderUser [Init failure]: %v", initErr)
+		logger.LogErr("InitWithEnv", initErr, nil)
 		return
 	}
 
@@ -40,7 +42,7 @@ func CreateProviderUser(writer http.ResponseWriter, request *http.Request) {
 	reqDataErr := json.NewDecoder(request.Body).Decode(&reqData)
 	if reqDataErr != nil {
 		http.Error(writer, reqDataErr.Error(), http.StatusInternalServerError)
-		log.Printf("CreateProviderUser [reqData Decoder]: %v", reqDataErr)
+		logger.LogErr("ReqData Decoder", reqDataErr, request)
 		return
 	}
 
@@ -57,7 +59,7 @@ func CreateProviderUser(writer http.ResponseWriter, request *http.Request) {
 	_, writeErr := firebaseProviderDocRef.Set(context.Background(), providerUserData)
 	if writeErr != nil {
 		http.Error(writer, writeErr.Error(), http.StatusInternalServerError)
-		log.Printf("CreateProviderUser [fireStore Set]: %v", writeErr)
+		logger.LogErr("FireStore Set", writeErr, request)
 		return
 	}
 
@@ -83,7 +85,14 @@ func initWithEnv() error {
 	if err != nil {
 		return fmt.Errorf("CreateProviderUser [Init Firestore]: %v", err)
 	}
-	firestoreClient = client
 
+	// Initialize Sawmill
+	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), os.Getenv("ENVIRONMENT"), "CreateProviderUser")
+	if err != nil {
+		log.Printf("CreateAppleDevToken [Init Sawmill]: %v", err)
+	}
+
+	firestoreClient = client
+	logger = sawmillLogger
 	return nil
 }

@@ -76,7 +76,7 @@ func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
 	log.Printf("[UpdateAlgolia] SaveObject Res: %v", res)
 
 	if err != nil {
-		log.Println(err.Error())
+		log.Printf("UpdateAlgolia [index.SaveObject]: %v", err)
 		return fmt.Errorf(err.Error())
 	}
 

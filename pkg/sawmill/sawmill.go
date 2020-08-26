@@ -61,8 +61,14 @@ func InitClient(projectID string, credentialsJSON string, environment string, se
 // This is an empty Entry struct, which is used to substitute in for any of the optional arguments that are not passed
 var emptyEntry logging.Entry
 
+// Log Just logs a standalone message to the console
+func (c Logger) Log(msg string, operation string) {
+	// Logs to the terminal
+	log.Printf("%s ["+operation+"]: %s ", c.ServiceName, msg)
+}
+
 // LogErr logs an error
-func (c Logger) LogErr(err error, operation string, req *http.Request) {
+func (c Logger) LogErr(operation string, err error, req *http.Request) {
 	// Logs the error to the terminal
 	log.Printf("%s ["+operation+"]: %v ", c.ServiceName, err)
 

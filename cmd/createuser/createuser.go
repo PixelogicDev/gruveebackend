@@ -10,10 +10,12 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
+	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
 )
 
 var firestoreClient *firestore.Client
+var logger sawmill.Logger
 
 func init() {
 	log.Println("CreateUser Initialized")
@@ -25,7 +27,7 @@ func CreateUser(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		log.Printf("CreateUser [initWithEnv]: %v", initWithEnvErr)
+		logger.LogErr("InitWithEnv", initWithEnvErr, nil)
 		return
 	}
 
@@ -34,7 +36,7 @@ func CreateUser(writer http.ResponseWriter, request *http.Request) {
 	jsonDecodeErr := json.NewDecoder(request.Body).Decode(&createUserReq)
 	if jsonDecodeErr != nil {
 		http.Error(writer, jsonDecodeErr.Error(), http.StatusInternalServerError)
-		log.Printf("CreateUser [social.CreateUserReq Decoder]: %v", jsonDecodeErr)
+		logger.LogErr("CreateUserReq Decoder", jsonDecodeErr, request)
 		return
 	}
 
@@ -42,7 +44,7 @@ func CreateUser(writer http.ResponseWriter, request *http.Request) {
 	socialPlatDocRef := firestoreClient.Doc(createUserReq.SocialPlatformPath)
 	if socialPlatDocRef == nil {
 		http.Error(writer, jsonDecodeErr.Error(), http.StatusInternalServerError)
-		log.Printf("CreateUser [social.CreateUserReq Decoder]: %v", jsonDecodeErr)
+		logger.LogErr("CreateUserReq Decoder", jsonDecodeErr, request)
 		return
 	}
 
@@ -62,7 +64,7 @@ func CreateUser(writer http.ResponseWriter, request *http.Request) {
 	_, writeErr := firestoreClient.Collection("users").Doc(firestoreUser.ID).Set(context.Background(), firestoreUser)
 	if writeErr != nil {
 		http.Error(writer, writeErr.Error(), http.StatusInternalServerError)
-		log.Printf("CreateUser [fireStore Set]: %v", writeErr)
+		logger.LogErr("FireStore Set", writeErr, nil)
 		return
 	}
 
@@ -92,6 +94,13 @@ func initWithEnv() error {
 		return fmt.Errorf("CreateUser [Init Firestore]: %v", err)
 	}
 
+	// Initialize Sawmill
+	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), os.Getenv("ENVIRONMENT"), "CreateUser")
+	if err != nil {
+		log.Printf("CreateSocial Playlist [Init Sawmill]: %v", err)
+	}
+
 	firestoreClient = client
+	logger = sawmillLogger
 	return nil
 }
