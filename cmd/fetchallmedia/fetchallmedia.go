@@ -19,7 +19,7 @@ var (
 func FetchAllMedia(ctx context.Context, event firebase.FirestoreEventSongs) error {
 	initErr := initWithEnv()
 	if initErr != nil {
-		logger.LogErr(initErr, "InitWithErr", nil)
+		logger.LogErr("InitWithErr", initErr, nil)
 		return initErr
 	}
 	log.Println(event)
@@ -54,7 +54,7 @@ func FetchAllMedia(ctx context.Context, event firebase.FirestoreEventSongs) erro
 		log.Println("[FetchAllMedia] Getting media for Spotify...")
 		data, queryErr := querySpotifyMedia(mediaName, mediaCreator, mediaType)
 		if queryErr != nil {
-			logger.LogErr(queryErr, "QuerySpotifyMedia", nil)
+			logger.LogErr("QuerySpotifyMedia", queryErr, nil)
 			return queryErr
 		}
 
@@ -103,14 +103,14 @@ func FetchAllMedia(ctx context.Context, event firebase.FirestoreEventSongs) erro
 
 	if len(docPath) == 0 {
 		error := fmt.Errorf("DocPath split was empty")
-		logger.LogErr(error, "DocPath Split", nil)
+		logger.LogErr("DocPath Split", error, nil)
 		return error
 	}
 
 	// Write data to db
 	writeDataErr := writeData(dataBlob, docPath[1])
 	if writeDataErr != nil {
-		logger.LogErr(writeDataErr, "WriteData", nil)
+		logger.LogErr("WriteData", writeDataErr, nil)
 		return writeDataErr
 	}
 

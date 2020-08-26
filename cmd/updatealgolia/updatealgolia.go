@@ -54,12 +54,6 @@ func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
 	client := search.NewClient(algoliaAppID, algoliaSecretID)
 	index := client.InitIndex(algoliaIndexName)
 
-	if os.Getenv("ENVIRONMENT") == "DEV" {
-		currentProject = os.Getenv("FIREBASE_PROJECTID_DEV")
-	} else if os.Getenv("ENVIRONMENT") == "PROD" {
-		currentProject = os.Getenv("FIREBASE_PROJECTID_PROD")
-	}
-
 	meta, err := metadata.FromContext(ctx)
 	if err != nil {
 		return fmt.Errorf("metadata.FromContext: %v", err)
