@@ -1,3 +1,4 @@
+- v1.0.0-beta.8: Adding more log statements for test GH Action deployment
 - v1.0.0-beta.7: Fixing merge
 - v1.0.0-beta.6: Reving firebase package to latest
 - v1.0.0-beta.5: Changing enviornment variable check location

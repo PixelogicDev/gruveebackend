@@ -63,6 +63,8 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	log.Printf("Decoded SpotifyAuthRequest: %v", spotifyAuthRequest)
+
 	if len(spotifyAuthRequest.APIToken) == 0 {
 		http.Error(writer, "AuthorizeWithSpotify: ApiToken was empty.", http.StatusBadRequest)
 		logger.LogErr("SpotifyAuthRequest Decoder", fmt.Errorf("ApiToken was empty"), request)
@@ -76,8 +78,13 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	log.Printf("Created SpotifyMeRequest %v", spotifyMeReq)
+
 	// pheonix_d123 - "Client's gotta do what the Client's gotta do!" (02/26/20)
 	spotifyMeReq.Header.Add("Authorization", "Bearer "+spotifyAuthRequest.APIToken)
+
+	log.Printf("Added Headers tp SpotifyMeRequest %v", spotifyMeReq.Header)
+
 	resp, httpErr := httpClient.Do(spotifyMeReq)
 	if httpErr != nil {
 		http.Error(writer, httpErr.Error(), http.StatusBadRequest)
@@ -87,6 +94,8 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 
 	// Check to see if request was valid
 	if resp.StatusCode != http.StatusOK {
+		log.Printf("SpotifyMeReq came back with code %v", resp.StatusCode)
+
 		// Convert Spotify Error Object
 		var spotifyErrorObj social.SpotifyRequestError
 
@@ -113,6 +122,8 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	log.Printf("SpotifyMeReq was a success. Decoded response: %v", spotifyMeResponse)
+
 	// Check DB for user, if there return user object
 	authorizeWithSpotifyResp, userErr := getUser(spotifyMeResponse.ID)
 	if userErr != nil {
@@ -121,8 +132,12 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	log.Printf("Response from getUser check %v", authorizeWithSpotifyResp)
+
 	// We do not have our user
 	if authorizeWithSpotifyResp == nil && userErr == nil {
+		log.Println("No user found. Need to create one.")
+
 		// First, generate & write social platform object
 		socialPlatDocRef, socialPlatData, socialPlatErr := createSocialPlatform(spotifyMeResponse, spotifyAuthRequest)
 		if socialPlatErr != nil {
@@ -130,6 +145,8 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 			logger.LogErr("CreateSocialPlatform", socialPlatErr, nil)
 			return
 		}
+
+		log.Printf("Social platform generated: %v", socialPlatDocRef)
 
 		// Then, generate & write Firestore User object
 		var firestoreUser, firestoreUserErr = createUser(spotifyMeResponse, socialPlatDocRef)
@@ -139,6 +156,8 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 
+		log.Printf("Firestore user generated: %v", firestoreUser)
+
 		// Finally, get custom JWT
 		var customToken, customTokenErr = getCustomToken(firestoreUser.ID)
 		if customTokenErr != nil {
@@ -146,6 +165,8 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 			logger.LogErr("CustomToken", customTokenErr, nil)
 			return
 		}
+
+		log.Printf("Custom JWT Generated: %v", customToken)
 
 		// sillyonly: "path.addLine(to: CGPoint(x: rect.width, y: rect.height))" (03/13/20)
 		writer.WriteHeader(http.StatusOK)
@@ -166,6 +187,7 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 
 	// We have our user
 	if authorizeWithSpotifyResp != nil {
+		log.Println("User found!")
 		// Still need to get our custom token here
 		var customToken, customTokenErr = getCustomToken(authorizeWithSpotifyResp.ID)
 		if customTokenErr != nil {
@@ -174,6 +196,8 @@ func AuthorizeWithSpotify(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 		authorizeWithSpotifyResp.JWT = customToken.Token
+
+		log.Printf("Received token: %v", customToken.Token)
 
 		writer.WriteHeader(http.StatusOK)
 		writer.Header().Set("Content-Type", "application/json")
@@ -226,12 +250,16 @@ func getUser(uid string) (*social.AuthorizeWithSpotifyResponse, error) {
 		return nil, fmt.Errorf("doesUserExist: users/%s is an odd path", fbID)
 	}
 
+	log.Printf("Firebase ID: %v", fbID)
+
 	// If uid does not exist return nil
 	userSnap, err := userRef.Get(context.Background())
 	if status.Code(err) == codes.NotFound {
 		log.Printf("User with id %s was not found", fbID)
 		return nil, nil
 	}
+
+	log.Printf("UserSnap: %v", userSnap)
 
 	// UID does exist, return firestore user
 	var firestoreUser firebase.FirestoreUser
@@ -240,14 +268,18 @@ func getUser(uid string) (*social.AuthorizeWithSpotifyResponse, error) {
 		return nil, fmt.Errorf("doesUserExist: %v", dataErr)
 	}
 
+	log.Printf("Decoded firestoreUser: %v", firestoreUser)
+
 	// Get references from socialPlatforms
 	socialPlatformSnaps, socialPlatformSnapsErr := fetchSnapshots(firestoreUser.SocialPlatforms)
 	if socialPlatformSnapsErr != nil {
 		return nil, fmt.Errorf("FetchSnapshots: %v", socialPlatformSnapsErr)
 	}
 
-	// Conver socialPlatforms to data
+	// Convert socialPlatforms to data
 	socialPlatforms, preferredPlatform := snapsToSocialPlatformData(socialPlatformSnaps)
+
+	log.Printf("Received data from socialplatforms: %v", socialPlatforms)
 
 	// Get references from playlists
 	playlistsSnaps, playlistSnapsErr := fetchSnapshots(firestoreUser.Playlists)
