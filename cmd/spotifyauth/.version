@@ -1,3 +1,4 @@
+- v1.0.0-beta.10: Reving to trigger deployment (IGNORE)
 - v1.0.0-beta.9: Adding more logging & adding types and helpers files.
 - v1.0.0-beta.8: Adding more log statements for test GH Action deployment
 - v1.0.0-beta.7: Fixing merge
