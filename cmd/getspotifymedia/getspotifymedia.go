@@ -12,14 +12,17 @@ import (
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
 )
 
-var (
-	httpClient            *http.Client
-	firestoreClient       *firestore.Client
-	logger                sawmill.Logger
+const (
 	spotifyAccessTokenURI = "https://accounts.spotify.com/api/token"
 	spotifyGetTrackURI    = "https://api.spotify.com/v1/tracks"
 	spotifyGetPlaylistURI = "https://api.spotify.com/v1/playlists"
 	spotifyGetAlbumURI    = "https://api.spotify.com/v1/albums"
+)
+
+var (
+	httpClient      *http.Client
+	firestoreClient *firestore.Client
+	logger          sawmill.Logger
 )
 
 // Draco401 - "Draco401 was here." (04/17/20)
@@ -46,6 +49,8 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	logger.Log("GetSpotifyMedia", "Decoded response.")
+
 	// Check to see if media is already part of collection, if so, just return that
 	mediaData, mediaDataErr := mediahelpers.GetMediaFromFirestore(*firestoreClient, spotifyMediaReq.Provider, spotifyMediaReq.MediaID)
 	if mediaDataErr != nil {
@@ -54,9 +59,11 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	logger.Log("GetSpotifyMedia", "Recieved media from Firestore")
+
 	// MediaData exists, return it to the client
 	if mediaData != nil {
-		log.Printf("Media already exists, returning")
+		logger.Log("GetSpotifyMedia", "Media already exists, returning.")
 		writer.WriteHeader(http.StatusOK)
 		writer.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(writer).Encode(mediaData)
@@ -71,6 +78,9 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	logger.Log("GetSpotifyMedia", "Receieved credentials")
+
+	// We only initialize this if we need to call Spotify search
 	var (
 		firestoreMediaData    interface{}
 		firestoreMediaDataErr error
@@ -79,6 +89,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 	// Setup and call Spotify search
 	switch spotifyMediaReq.MediaType {
 	case "track":
+		logger.Log("GetSpotifyMedia", "Calling track API")
 		firestoreMediaData, firestoreMediaDataErr = getSpotifyTrack(spotifyMediaReq.MediaID, creds.Token)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
@@ -86,6 +97,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 	case "playlist":
+		logger.Log("GetSpotifyMedia", "Calling playlist API")
 		firestoreMediaData, firestoreMediaDataErr = getSpotifyPlaylist(spotifyMediaReq.MediaID, creds.Token)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
@@ -93,6 +105,7 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 	case "album":
+		logger.Log("GetSpotifyMedia", "Calling album API")
 		firestoreMediaData, firestoreMediaDataErr = getSpotifyAlbum(spotifyMediaReq.MediaID, creds.Token)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
@@ -101,10 +114,11 @@ func GetSpotifyMedia(writer http.ResponseWriter, request *http.Request) {
 		}
 	default:
 		http.Error(writer, spotifyMediaReq.MediaType+" media type does not exist", http.StatusInternalServerError)
-		log.Printf("GetSpotifyMedia [MediaTypeSwitch]: %v media type does not exist", spotifyMediaReq.MediaType)
 		logger.LogErr("MediaTypeSwitch", fmt.Errorf("%v media type does not exist", spotifyMediaReq.MediaType), request)
 		return
 	}
+
+	logger.Log("GetSpotifyMedia", "Successfully received media data.")
 
 	writer.WriteHeader(http.StatusOK)
 	writer.Header().Set("Content-Type", "application/json")

@@ -4,18 +4,18 @@ package socialplatform
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
 	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
 )
 
-var firestoreClient *firestore.Client
-var logger sawmill.Logger
+var (
+	firestoreClient *firestore.Client
+	logger          sawmill.Logger
+)
 
 // JackGamesFTW - "TriHard 7" (03/18/20)
 func init() {
@@ -41,6 +41,8 @@ func CreateSocialPlatform(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	logger.Log("CreateSocialPlatform", "Decoded socialPlatform.")
+
 	// Write SocialPlatform to Firestore
 	_, writeErr := firestoreClient.Collection("social_platforms").Doc(socialPlatform.ID).Set(context.Background(), socialPlatform)
 	if writeErr != nil {
@@ -49,36 +51,7 @@ func CreateSocialPlatform(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	logger.Log("CreateSocialPlatform", "Successfully wrote platform to firestore.")
+
 	writer.WriteHeader(http.StatusOK)
-}
-
-// Helpers
-
-// initWithEnv takes our yaml env variables and maps them properly.
-// Unfortunately, we had to do this is main because in init we weren't able to access env variables
-func initWithEnv() error {
-	// Get paths
-	var currentProject string
-
-	if os.Getenv("ENVIRONMENT") == "DEV" {
-		currentProject = os.Getenv("FIREBASE_PROJECTID_DEV")
-	} else if os.Getenv("ENVIRONMENT") == "PROD" {
-		currentProject = os.Getenv("FIREBASE_PROJECTID_PROD")
-	}
-
-	// Initialize Firestore
-	client, err := firestore.NewClient(context.Background(), currentProject)
-	if err != nil {
-		return fmt.Errorf("SocialTokenRefresh [Init Firestore]: %v", err)
-	}
-
-	// Initialize Sawmill
-	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), os.Getenv("ENVIRONMENT"), "CreateSocialPlatform")
-	if err != nil {
-		log.Printf("CreateSocialPlatform [Init Sawmill]: %v", err)
-	}
-
-	firestoreClient = client
-	logger = sawmillLogger
-	return nil
 }

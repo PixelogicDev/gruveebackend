@@ -62,7 +62,7 @@ func InitClient(projectID string, credentialsJSON string, environment string, se
 var emptyEntry logging.Entry
 
 // Log Just logs a standalone message to the console
-func (c Logger) Log(msg string, operation string) {
+func (c Logger) Log(operation string, msg string) {
 	// Logs to the terminal
 	log.Printf("%s ["+operation+"]: %s ", c.ServiceName, msg)
 }

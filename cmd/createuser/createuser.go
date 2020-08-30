@@ -3,10 +3,8 @@ package createuser
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
@@ -14,8 +12,10 @@ import (
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
 )
 
-var firestoreClient *firestore.Client
-var logger sawmill.Logger
+var (
+	firestoreClient *firestore.Client
+	logger          sawmill.Logger
+)
 
 func init() {
 	log.Println("CreateUser Initialized")
@@ -40,6 +40,8 @@ func CreateUser(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	logger.Log("CreateUser", "Decoded Request successfully.")
+
 	// Get Document references for social platform
 	socialPlatDocRef := firestoreClient.Doc(createUserReq.SocialPlatformPath)
 	if socialPlatDocRef == nil {
@@ -47,6 +49,8 @@ func CreateUser(writer http.ResponseWriter, request *http.Request) {
 		logger.LogErr("CreateUserReq Decoder", jsonDecodeErr, request)
 		return
 	}
+
+	logger.Log("CreateUser", "Receieved Social Document Reference successfully.")
 
 	// Create Firestore user
 	firestoreUser := firebase.FirestoreUser{
@@ -68,39 +72,10 @@ func CreateUser(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	logger.Log("CreateUser", "Successfully wrote new data to Firestore.")
+
 	// Return Firestore User
 	writer.WriteHeader(http.StatusOK)
 	writer.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(writer).Encode(firestoreUser)
-}
-
-// Helpers
-
-// initWithEnv takes our yaml env variables and maps them properly.
-// Unfortunately, we had to do this is main because in init we weren't able to access env variables
-func initWithEnv() error {
-	// Get paths
-	var currentProject string
-
-	if os.Getenv("ENVIRONMENT") == "DEV" {
-		currentProject = os.Getenv("FIREBASE_PROJECTID_DEV")
-	} else if os.Getenv("ENVIRONMENT") == "PROD" {
-		currentProject = os.Getenv("FIREBASE_PROJECTID_PROD")
-	}
-
-	// Initialize Firestore
-	client, err := firestore.NewClient(context.Background(), currentProject)
-	if err != nil {
-		return fmt.Errorf("CreateUser [Init Firestore]: %v", err)
-	}
-
-	// Initialize Sawmill
-	sawmillLogger, err := sawmill.InitClient(currentProject, os.Getenv("GCLOUD_CONFIG"), os.Getenv("ENVIRONMENT"), "CreateUser")
-	if err != nil {
-		log.Printf("CreateSocial Playlist [Init Sawmill]: %v", err)
-	}
-
-	firestoreClient = client
-	logger = sawmillLogger
-	return nil
 }
