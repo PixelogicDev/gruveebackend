@@ -1,6 +1,6 @@
 # Grüvee Functions Documentation
 
-### This file contains a list of all the functions we have, what they do, and their requests and responses.
+### This file contains a list of all the functions we have, what they do, and their requests and responses. This is a living document that will be updated as much as possible!
 
 ## Functions
 ### **AuthorizeWithApple** - */authorizeWithApple*
