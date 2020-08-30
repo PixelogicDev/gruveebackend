@@ -9,33 +9,40 @@ import (
 	"cloud.google.com/go/functions/metadata"
 	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
+	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
 )
 
-// algoliaUser implements a partial amount of data from firestoreUser to use for indexing
-type algoliaUser struct {
-	ObjectID        string `json:"objectID"`
-	ID              string `json:"id"`
-	Email           string `json:"email"`
-	ProfileImageURI string `json:"profileImage"`
-	DisplayName     string `json:"displayName"`
-	Username        string `json:"username"`
+var (
+	logger   sawmill.Logger
+	hostname string
+)
+
+func init() {
+	log.Println("UpdateAlgolia intialized")
 }
 
 // UpdateAlgolia sends new data to Algolia service for indexing
 func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
-	log.Println("[UpdateAlgolia] Starting update...")
+	// Initialize
+	initWithEnvErr := initWithEnv()
+	if initWithEnvErr != nil {
+		logger.LogErr("InitWithEnvErr", initWithEnvErr, nil)
+		return initWithEnvErr
+	}
 
 	// Get IDs
 	algoliaAppID := os.Getenv("ALGOLIA_APP_ID")
 	if algoliaAppID == "" {
-		log.Println("Algolia App ID was empty in yaml file")
-		return fmt.Errorf("Algolia App ID was empty in yaml file")
+		error := fmt.Errorf("Algolia App ID was empty in yaml file")
+		logger.LogErr("UpdateAlgolia", error, nil)
+		return error
 	}
 
 	algoliaSecretID := os.Getenv("ALGOLIA_SECRET_ID")
 	if algoliaSecretID == "" {
-		log.Println("Algolia Secret ID was empty in yaml file")
-		return fmt.Errorf("Algolia Secret ID was empty in yaml file")
+		error := fmt.Errorf("Algolia Secret ID was empty in yaml file")
+		logger.LogErr("UpdateAlgolia", error, nil)
+		return error
 	}
 
 	var algoliaIndexName string
@@ -46,8 +53,9 @@ func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
 	}
 
 	if algoliaIndexName == "" {
-		log.Println("Algolia Index Name was empty in yaml file")
-		return fmt.Errorf("Algolia Index Name was empty in yaml file")
+		error := fmt.Errorf("Algolia Index Name was empty in yaml file")
+		logger.LogErr("UpdateAlgolia", error, nil)
+		return error
 	}
 
 	// Init our client
@@ -56,12 +64,16 @@ func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
 
 	meta, err := metadata.FromContext(ctx)
 	if err != nil {
-		return fmt.Errorf("metadata.FromContext: %v", err)
+		error := fmt.Errorf("metadata.FromContext: %v", err)
+		logger.LogErr("UpdateAlgolia", error, nil)
+		return error
 	}
 
+	logger.Log("UpdateAlgolia", "Algolia clients created.")
+
 	// Print out our trigger data
-	log.Printf("Function triggered by change to: %v", meta.Resource)
-	log.Printf("Event Trigger: %v", event)
+	logger.Log("UpdateAlgolia", fmt.Sprintf("Function triggered by change to: %v", meta.Resource))
+	logger.Log("UpdateAlgolia", fmt.Sprintf("Event Trigger: %v", event))
 
 	// Write objects to Algolia
 	res, err := index.SaveObject(algoliaUser{
@@ -73,12 +85,14 @@ func UpdateAlgolia(ctx context.Context, event firebase.FirestoreEvent) error {
 		Username:        event.Value.Fields.Username.StringValue,
 	})
 
-	log.Printf("[UpdateAlgolia] SaveObject Res: %v", res)
+	logger.Log("UpdateAlgolia", fmt.Sprintf("SaveObject Res: %v", res))
 
 	if err != nil {
-		log.Printf("UpdateAlgolia [index.SaveObject]: %v", err)
-		return fmt.Errorf(err.Error())
+		logger.LogErr("UpdateAlgolia", err, nil)
+		return err
 	}
+
+	logger.Log("UpdateAlgolia", "Successfully wrote new user to Aloglia.")
 
 	return nil
 }

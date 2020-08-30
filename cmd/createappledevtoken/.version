@@ -1,3 +1,4 @@
+- v1.0.0-beta.5: Adding more log statements & creating separate helpers file
 - v1.0.0-beta.5: Fixing merge
 - v1.0.0-beta.4: Updating firebase pkg
 - v1.0.0-beta.3: Removed Firebase Bucket logic and added .p8 file and logic

@@ -14,33 +14,31 @@ import (
 	"log"
 	"net/http"
 
-	"firebase.google.com/go"
 	"firebase.google.com/go/auth"
+	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
 )
 
-var client *auth.Client
+var (
+	client   *auth.Client
+	logger   sawmill.Logger
+	hostname string
+)
 
 func init() {
-	// Init Firebase App
-	app, err := firebase.NewApp(context.Background(), nil)
-	if err != nil {
-		log.Printf("firebase.NewApp: %v", err)
-		return
-	}
-	log.Println("Firebase NewApp initialized")
-
-	// Init Fireabase Auth Admin
-	client, err = app.Auth(context.Background())
-	if err != nil {
-		log.Printf("auth.Client: %v", err)
-		return
-	}
-	log.Println("Firebase AuthAdmin initialized")
+	log.Println("GenerateCustomToken initialized")
 }
 
 // GenerateCustomToken generates a CustomToken for Firebase Login
 func GenerateCustomToken(writer http.ResponseWriter, request *http.Request) {
+	// Initialize
+	initWithEnvErr := initWithEnv()
+	if initWithEnvErr != nil {
+		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
+		logger.LogErr("InitWithEnvErr", initWithEnvErr, nil)
+		return
+	}
+
 	// If this is getting called, we have already authorized the user by verifying their API token is valid and pulls back their data
 	var tokenRequest social.GenerateTokenRequest
 
@@ -52,6 +50,8 @@ func GenerateCustomToken(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	logger.Log("GenerateCustomToken", "Decoded request.")
+
 	// Garahorn - "We need to generate the quantum GUID once the flux capacitor reaches terminal velocity." (02/24/20)
 	token, err := client.CustomToken(context.Background(), tokenRequest.UID)
 	if err != nil {
@@ -59,6 +59,8 @@ func GenerateCustomToken(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	logger.Log("GenerateCustomToken", "Successfully generated token.")
 
 	// Create reponse object and pass it along
 	tokenResponse := social.GenerateTokenResponse{Token: token}

@@ -2,21 +2,24 @@ package getapplemusicmedia
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
 	"cloud.google.com/go/firestore"
 	"github.com/pixelogicdev/gruveebackend/pkg/firebase"
 	"github.com/pixelogicdev/gruveebackend/pkg/mediahelpers"
+	"github.com/pixelogicdev/gruveebackend/pkg/sawmill"
 	"github.com/pixelogicdev/gruveebackend/pkg/social"
 )
 
-var httpClient *http.Client
-var firestoreClient *firestore.Client
+const catalogHostname = "https://api.music.apple.com/v1/catalog"
 
-// -- Apple Music Endpoints --/
-
-var catalogHostname = "https://api.music.apple.com/v1/catalog"
+var (
+	httpClient      *http.Client
+	firestoreClient *firestore.Client
+	logger          sawmill.Logger
+)
 
 func init() {
 	log.Println("GetAppleMusicMedia Initialized")
@@ -28,7 +31,7 @@ func GetAppleMusicMedia(writer http.ResponseWriter, request *http.Request) {
 	initWithEnvErr := initWithEnv()
 	if initWithEnvErr != nil {
 		http.Error(writer, initWithEnvErr.Error(), http.StatusInternalServerError)
-		log.Printf("GetAppleMusicMedia [initWithEnv]: %v", initWithEnvErr)
+		logger.LogErr("InitWithEnvErr", initWithEnvErr, nil)
 		return
 	}
 
@@ -37,21 +40,23 @@ func GetAppleMusicMedia(writer http.ResponseWriter, request *http.Request) {
 	appleMusicMediaReqErr := json.NewDecoder(request.Body).Decode(&appleMusicMediaReq)
 	if appleMusicMediaReqErr != nil {
 		http.Error(writer, appleMusicMediaReqErr.Error(), http.StatusInternalServerError)
-		log.Printf("GetAppleMusicMedia [Request Decoder]: %v", appleMusicMediaReqErr)
+		logger.LogErr("Request Decoder", appleMusicMediaReqErr, nil)
 		return
 	}
+
+	logger.Log("GetAppleMusicMedia", "AppleMusicMediaReq decoded successfully.")
 
 	// Check to see if media is already part of collection, if so, just return that
 	mediaData, mediaDataErr := mediahelpers.GetMediaFromFirestore(*firestoreClient, appleMusicMediaReq.Provider, appleMusicMediaReq.MediaID)
 	if mediaDataErr != nil {
 		http.Error(writer, mediaDataErr.Error(), http.StatusInternalServerError)
-		log.Printf("[GetAppleMusicMedia]: %v", mediaDataErr)
+		logger.LogErr("GetMediaFromFirestore", mediaDataErr, nil)
 		return
 	}
 
 	// MediaData exists, return it to the client
 	if mediaData != nil {
-		log.Printf("Media already exists, returning")
+		logger.Log("GetAppleMusicMedia", "Media already exists, returning")
 		writer.WriteHeader(http.StatusOK)
 		writer.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(writer).Encode(mediaData)
@@ -63,10 +68,13 @@ func GetAppleMusicMedia(writer http.ResponseWriter, request *http.Request) {
 	appleDevToken, appleDevTokeErr := firebase.GetAppleDeveloperToken()
 	if appleDevTokeErr != nil {
 		http.Error(writer, appleDevTokeErr.Error(), http.StatusInternalServerError)
-		log.Printf("[GetAppleMusicMedia]: %v", appleDevTokeErr)
+		logger.LogErr("GetAppleDeveloperToken", appleDevTokeErr, nil)
 		return
 	}
 
+	logger.Log("GetAppleMusicMedia", "Received Apple Developer Token.")
+
+	// We only declare this here if we need to write new data
 	var (
 		firestoreMediaData    interface{}
 		firestoreMediaDataErr error
@@ -75,31 +83,36 @@ func GetAppleMusicMedia(writer http.ResponseWriter, request *http.Request) {
 	// Time to make our request to Apple Music API
 	switch appleMusicMediaReq.MediaType {
 	case "track":
+		logger.Log("GetAppleMusicMedia", "Making track request")
 		firestoreMediaData, firestoreMediaDataErr = getAppleMusicTrack(appleMusicMediaReq.MediaID, appleMusicMediaReq.Storefront, *appleDevToken)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
-			log.Printf("GetAppleMusicMedia [GetAppleMusicTrack Switch]: %v", firestoreMediaDataErr)
+			logger.LogErr("GetAppleMusicTrack", firestoreMediaDataErr, nil)
 			return
 		}
 	case "playlist":
+		logger.Log("GetAppleMusicMedia", "Making playlist request")
 		firestoreMediaData, firestoreMediaDataErr = getAppleMusicPlaylist(appleMusicMediaReq.MediaID, appleMusicMediaReq.Storefront, *appleDevToken)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
-			log.Printf("GetAppleMusicMedia [GetAppleMusicPlaylist Switch]: %v", firestoreMediaDataErr)
+			logger.LogErr("GetAppleMusicPlaylist", firestoreMediaDataErr, nil)
 			return
 		}
 	case "album":
+		logger.Log("GetAppleMusicMedia", "Making album request")
 		firestoreMediaData, firestoreMediaDataErr = getAppleMusicAlbum(appleMusicMediaReq.MediaID, appleMusicMediaReq.Storefront, *appleDevToken)
 		if firestoreMediaDataErr != nil {
 			http.Error(writer, firestoreMediaDataErr.Error(), http.StatusInternalServerError)
-			log.Printf("GetAppleMusicMedia [GetAppleMusicAlbum Switch]: %v", firestoreMediaDataErr)
+			logger.LogErr("GetAppleMusicAlbum", firestoreMediaDataErr, nil)
 			return
 		}
 	default:
 		http.Error(writer, appleMusicMediaReq.MediaType+" media type does not exist", http.StatusInternalServerError)
-		log.Printf("GetAppleMusicMedia [MediaTypeSwitch]: %v media type does not exist", appleMusicMediaReq.MediaType)
+		logger.LogErr("GetAppleMusicDefault", fmt.Errorf("%v media type does not exist", appleMusicMediaReq.MediaType), nil)
 		return
 	}
+
+	logger.Log("GetAppleMusicMedia", "Successfully got Apple Music Media.")
 
 	writer.WriteHeader(http.StatusOK)
 	writer.Header().Set("Content-Type", "application/json")

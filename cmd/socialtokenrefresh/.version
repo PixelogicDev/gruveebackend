@@ -1,3 +1,4 @@
+- v1.0.0-beta.7: Adding more logging & adding types and helpers files
 - v1.0.0-beta.6: Fixing merge
 - v1.0.0-beta.5: Reving firebase and social package to latest
 - v1.0.0-beta.4: Changing enviornment variable check location

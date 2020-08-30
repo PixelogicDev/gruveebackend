@@ -113,8 +113,8 @@ github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORN
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
 <<<<<<< da3878c925ca6ef481f9b424c30ccaafe56a0d2e
-github.com/pixelogicdev/gruveebackend/pkg/sawmill v1.0.0-beta.1 h1:RMa80r/rpYwfjw03Zxysg8aHjCKSyzDmQ+yuDY0sLLo=
-github.com/pixelogicdev/gruveebackend/pkg/sawmill v1.0.0-beta.1/go.mod h1:Ip1au2SlisxDdTtl6ueXAbl1JIgFuS7D63DPcRr6+6w=
+github.com/pixelogicdev/gruveebackend/pkg/sawmill v1.0.0-beta.2 h1:RMa80r/rpYwfjw03Zxysg8aHjCKSyzDmQ+yuDY0sLLo=
+github.com/pixelogicdev/gruveebackend/pkg/sawmill v1.0.0-beta.2/go.mod h1:Ip1au2SlisxDdTtl6ueXAbl1JIgFuS7D63DPcRr6+6w=
 =======
 >>>>>>> Adding new usernameavailable function
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
