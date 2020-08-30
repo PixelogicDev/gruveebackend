@@ -8,7 +8,7 @@ require (
 	cloud.google.com/go/storage v1.10.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.13
-	github.com/pixelogicdev/gruveebackend/pkg/sawmill v1.0.0-beta.1
+	github.com/pixelogicdev/gruveebackend/pkg/sawmill v1.0.0-beta.2
 	go.opencensus.io v0.22.4 // indirect
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
 	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect

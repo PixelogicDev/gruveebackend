@@ -25,7 +25,7 @@ require (
 	github.com/pixelogicdev/gruveebackend/cmd/usernameavailable v1.0.0-beta.1
 	github.com/pixelogicdev/gruveebackend/pkg/firebase v1.0.0-beta.13
 	github.com/pixelogicdev/gruveebackend/pkg/mediahelpers v1.0.0-beta.1
-	github.com/pixelogicdev/gruveebackend/pkg/sawmill v1.0.0-beta.1
+	github.com/pixelogicdev/gruveebackend/pkg/sawmill v1.0.0-beta.2
 	github.com/pixelogicdev/gruveebackend/pkg/social v1.0.0-beta.6
 	google.golang.org/grpc v1.31.1
 )
