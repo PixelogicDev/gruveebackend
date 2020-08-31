@@ -49,12 +49,12 @@ func FetchAllMedia(ctx context.Context, event firebase.FirestoreEventSongs) erro
 	}
 
 	// Check each provider to see if it exists. If not, go query for that media
-	if event.Value.Fields.Apple == nil {
+	if event.Value.Fields.Apple == (firebase.MediaMapValue{}) {
 		// Call Apple Music Query with data
 		logger.Log("FetchAllMedia", "Getting media for Apple Music...")
 	}
 
-	if event.Value.Fields.Spotify == nil {
+	if event.Value.Fields.Spotify == (firebase.MediaMapValue{}) {
 		// Call Spotify Query with data
 		logger.Log("FetchAllMedia", "Getting media for Spotify...")
 		data, queryErr := querySpotifyMedia(mediaName, mediaCreator, mediaType)
@@ -90,7 +90,7 @@ func FetchAllMedia(ctx context.Context, event firebase.FirestoreEventSongs) erro
 		}
 	}
 
-	if event.Value.Fields.YouTube == nil {
+	if event.Value.Fields.YouTube == (firebase.MediaMapValue{}) {
 		// Call Youtube Query with data
 		logger.Log("FetchAllMedia", "Getting media for YouTube Music...")
 	}
