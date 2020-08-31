@@ -1,3 +1,4 @@
+- v1.0.0-beta.14: Making MediaMapValue exportable to compare in FetchAllMedia function
 - v1.0.0-beta.13: Updated and added shared types
 - v1.0.0-beta.12: Adding DisplayName to FirestoreUser and FirestoreEvent
 - v1.0.0-beta.11: Changing PlaylistsSongs type && FirestorePlaylist type
