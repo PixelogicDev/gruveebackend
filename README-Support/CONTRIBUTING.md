@@ -14,7 +14,7 @@ There are multiple ways to contribute to Grüvee, you don't even have to write a
 
 The only way this project will keep growing and getting better is by all of us chipping in to log bugs and suggesting new features! Please utilize [GitHub Issues](https://github.com/PixelogicDev/gruveebackend/issues) to report any bugs or add suggestions!
 
-Don't be scared to join the [PixelogicDev discord](https://discord.gg/8NFtvp5) if you need help.
+Don't be scared to join the [PixelogicDev discord](https://discord.gg/ubgX6T8) if you need help.
 
 ### 🔀 Pull Requests
 
