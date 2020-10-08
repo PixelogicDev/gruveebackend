@@ -38,7 +38,7 @@ This is currently the Backend portion of the platform. We are currently building
 
 If you are interested in becoming a member of the team check out the **[PixelogicDev Twitch](https://twitch.tv/pixelogicdev)**, the **[PixelogicDev Discord](https://discord.gg/ubgX6T8)** and **[contribute](#-how-to-contribute)** to this awesome project!
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 ---
@@ -168,6 +168,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/isabellabrookes"><img src="https://avatars1.githubusercontent.com/u/12928252?v=4" width="100px;" alt=""/><br /><sub><b>Isabella Brookes</b></sub></a><br /><a href="https://github.com/PixelogicDev/gruveebackend/commits?author=isabellabrookes" title="Documentation">📖</a> <a href="#maintenance-isabellabrookes" title="Maintenance">🚧</a></td>
     <td align="center"><a href="https://github.com/LeviHarrison"><img src="https://avatars3.githubusercontent.com/u/54278938?v=4" width="100px;" alt=""/><br /><sub><b>Levi Harrison</b></sub></a><br /><a href="https://github.com/PixelogicDev/gruveebackend/commits?author=LeviHarrison" title="Code">💻</a></td>
     <td align="center"><a href="http://blog.brettski.com"><img src="https://avatars3.githubusercontent.com/u/473633?v=4" width="100px;" alt=""/><br /><sub><b>Brett Slaski</b></sub></a><br /><a href="https://github.com/PixelogicDev/gruveebackend/commits?author=brettski" title="Code">💻</a> <a href="https://github.com/PixelogicDev/gruveebackend/commits?author=brettski" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/Hexnaught"><img src="https://avatars2.githubusercontent.com/u/1098786?v=4" width="100px;" alt=""/><br /><sub><b>Dan</b></sub></a><br /><a href="https://github.com/PixelogicDev/gruveebackend/commits?author=Hexnaught" title="Documentation">📖</a></td>
   </tr>
 </table>
 
